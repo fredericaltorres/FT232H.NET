@@ -1,0 +1,86 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{D2610E23-15F7-4817-9111-D6870443882C}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>MadeInTheUSB.FT232H</RootNamespace>
+    <AssemblyName>MadeInTheUSB.FT232H.Lib</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="DynamicSugar, Version=0.2.5.0, Culture=neutral, PublicKeyToken=e8dd8df5156875e2, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Public\Ref\DynamicSugar.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="FTD2XX_NET\FT232HDetector.cs" />
+    <Compile Include="FTD2XX_NET\FTD2XX_NET.cs" />
+    <Compile Include="Enums\Common.cs" />
+    <Compile Include="Enums\FtSpiTransferOptions.cs" />
+    <Compile Include="Exception\GpioException.cs" />
+    <Compile Include="Exception\SpiChannelNotConnectedException.cs" />
+    <Compile Include="FT232HDeviceBaseClass.cs" />
+    <Compile Include="Interface\IDigitalWriteRead.cs" />
+    <Compile Include="Interface\ISPI.cs" />
+    <Compile Include="MPSSE\MpsseChannelConfiguration.cs" />
+    <Compile Include="MPSSE\MpsseDeviceInfo.cs" />
+    <Compile Include="MPSSE\MpsseSpiConfig.cs" />
+    <Compile Include="FtdiMpsseSpiConfigOptions.cs" />
+    <Compile Include="Enums\FtdiMpsseSPIResult.cs" />
+    <Compile Include="MPSSE\LibMpsse.cs" />
+    <Compile Include="MPSSE\LibMpsse_AccessToCppDll.cs" />
+    <Compile Include="Performance\PerformanceHelper.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SPI\GpioSpiDeviceBaseClass.gpio.cs" />
+    <Compile Include="SPI\GpioSpiDeviceBaseClass.spi.cs" />
+    <Compile Include="Util\ConsoleEx.cs" />
+    <Compile Include="Util\WinUtil.cs" />
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <Content Include="..\..\Public\Ref\libMPSSE.dll">
+      <Link>MPSSE\libMPSSE.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>echo * * * Copying DLL To "$(ProjectDir)..\..\Public\Ref" * * *
+
+Copy  "$(TargetDir)\MadeInTheUSB.FT232H.Lib.dll"  "$(ProjectDir)..\..\Public\Ref" 
+Copy  "$(TargetDir)\MadeInTheUSB.FT232H.Lib.pdb"  "$(ProjectDir)..\..\Public\Ref" 
+</PostBuildEvent>
+  </PropertyGroup>
+</Project>

@@ -1,0 +1,57 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27130.2010
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MadeInTheUSB.FT232H.Console", "Public\MadeInTheUSB.FT232H.Console\MadeInTheUSB.FT232H.Console.csproj", "{4BAAF81E-23FD-48C0-B199-78B634C6D0B5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MadeInTheUSB.FT232H.Component", "Public\MadeInTheUSB.FT232H.Component\MadeInTheUSB.FT232H.Component.csproj", "{279C5AC3-BF9F-4A60-9E52-92E2D85DC628}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Private", "Private", "{61555362-D633-49DA-AEBE-D15D33DD97F6}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Public", "Public", "{DB709998-56B4-485A-A22F-6DC3EB3D9621}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MadeInTheUSB.FT232H.Lib", "Private\MadeInTheUSB.FT232H.Lib\MadeInTheUSB.FT232H.Lib.csproj", "{D2610E23-15F7-4817-9111-D6870443882C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{3C0B1441-7C3A-491F-878B-C745477DAFAD}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MadeInTheUSB.FT232H.MatrixConsole", "Public\MadeInTheUSB.FT232H.MatrixConsole\MadeInTheUSB.FT232H.MatrixConsole.csproj", "{34B37341-E125-4849-ABE2-D37275374F61}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4BAAF81E-23FD-48C0-B199-78B634C6D0B5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4BAAF81E-23FD-48C0-B199-78B634C6D0B5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4BAAF81E-23FD-48C0-B199-78B634C6D0B5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4BAAF81E-23FD-48C0-B199-78B634C6D0B5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{279C5AC3-BF9F-4A60-9E52-92E2D85DC628}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{279C5AC3-BF9F-4A60-9E52-92E2D85DC628}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{279C5AC3-BF9F-4A60-9E52-92E2D85DC628}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{279C5AC3-BF9F-4A60-9E52-92E2D85DC628}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D2610E23-15F7-4817-9111-D6870443882C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D2610E23-15F7-4817-9111-D6870443882C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D2610E23-15F7-4817-9111-D6870443882C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D2610E23-15F7-4817-9111-D6870443882C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{34B37341-E125-4849-ABE2-D37275374F61}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{34B37341-E125-4849-ABE2-D37275374F61}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{34B37341-E125-4849-ABE2-D37275374F61}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{34B37341-E125-4849-ABE2-D37275374F61}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{4BAAF81E-23FD-48C0-B199-78B634C6D0B5} = {DB709998-56B4-485A-A22F-6DC3EB3D9621}
+		{279C5AC3-BF9F-4A60-9E52-92E2D85DC628} = {DB709998-56B4-485A-A22F-6DC3EB3D9621}
+		{D2610E23-15F7-4817-9111-D6870443882C} = {61555362-D633-49DA-AEBE-D15D33DD97F6}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E006510F-0168-40DB-8718-01B263B85587}
+	EndGlobalSection
+EndGlobal
