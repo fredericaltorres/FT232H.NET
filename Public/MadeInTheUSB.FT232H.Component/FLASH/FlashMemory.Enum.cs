@@ -7,7 +7,7 @@ using System.Threading;
 
 namespace MadeInTheUSB.FT232H.Components
 {
-    public partial class CypressFlashMemory // : GpioSpiDeviceBaseClass
+    public partial class FlashMemory // : GpioSpiDeviceBaseClass
     {
         public Manufacturers Manufacturer = Manufacturers.Unknown;
         public enum Manufacturers : int

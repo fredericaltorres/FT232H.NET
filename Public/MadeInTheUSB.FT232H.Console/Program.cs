@@ -38,8 +38,8 @@ namespace MadeInTheUSB.FT232H.Console
             // CheetahBoosterDemo(gpios, false);
 
             // CypressFlashMemorySample(spi);
-            // FlashMemoryWriteFDriveFileSystem(spi);
-            FlashMemoryWriteFlashContentToLocalFile(spi);
+            FlashMemoryWriteFDriveFileSystem(spi);
+            // FlashMemoryWriteFlashContentToLocalFile(spi);
 
             //Api102RgbLedSample(spi);
             // ADC_MCP3008Demo(spi);

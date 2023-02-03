@@ -46,7 +46,7 @@ namespace MadeInTheUSB.FT232H.Console
                 {
                     foreach (var d in this)
                     {
-                        if (d.FileName != FDriveFileSystem.BLANK_SECTOR_COMMAND)
+                        if (d.FileName != FDriveFAT12FileSystem.BLANK_SECTOR_COMMAND)
                             d.Write(writer);
                     }
                 }

@@ -45,7 +45,7 @@
   <ItemGroup>
     <Compile Include="fDrive\BufferUtils.cs" />
     <Compile Include="fDrive\FDriveFat12Linkedlist.cs" />
-    <Compile Include="fDrive\FDriveFileSystem.cs" />
+    <Compile Include="fDrive\FDriveFAT12FileSystem.cs" />
     <Compile Include="fDrive\FDriveDirectory.cs" />
     <Compile Include="fDrive\FDriveDirectoryEntry.cs" />
     <Compile Include="fDrive\FDriveFat12BootSector.cs" />

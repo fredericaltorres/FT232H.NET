@@ -51,7 +51,7 @@ namespace MadeInTheUSB.FT232H.Console
         };
 
 
-        public FDriveFat12Linkedlist()
+        public FDriveFat12Linkedlist(int sectorCount)
         {
 
         }

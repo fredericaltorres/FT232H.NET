@@ -10,7 +10,7 @@ namespace MadeInTheUSB.FT232H.Components
     /// <summary>
     /// GOOD PDF ABOUT (MPSSE) http://www.ftdichip.com/Support/Documents/AppNotes/AN_135_MPSSE_Basics.pdf
     /// </summary>
-    public partial class CypressFlashMemory //: GpioSpiDeviceBaseClass
+    public partial class FlashMemory //: GpioSpiDeviceBaseClass
     {
         const int EEPROM_WRITE_ENABLE_CMD       = 6;    // Write Enable
         const int EEPROM_WRITE_DISABLE_CMD      = 4;    // Write Disable

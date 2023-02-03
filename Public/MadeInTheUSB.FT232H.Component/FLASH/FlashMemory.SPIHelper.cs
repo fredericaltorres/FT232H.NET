@@ -10,7 +10,7 @@ namespace MadeInTheUSB.FT232H.Components
     /// <summary>
     /// GOOD PDF ABOUT (MPSSE) Mhttp://www.ftdichip.com/Support/Documents/AppNotes/AN_135_MPSSE_Basics.pdf
     /// </summary>
-    public partial class CypressFlashMemory // : GpioSpiDeviceBaseClass
+    public partial class FlashMemory // : GpioSpiDeviceBaseClass
     {
         // Arduino Uno SPI Pin -- NUSBIO
         //  CS      10             3

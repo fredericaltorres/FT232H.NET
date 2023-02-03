@@ -10,7 +10,7 @@ namespace MadeInTheUSB.FT232H.Components
     /// <summary>
     /// GOOD PDF ABOUT (MPSSE) Mhttp://www.ftdichip.com/Support/Documents/AppNotes/AN_135_MPSSE_Basics.pdf
     /// </summary>
-    public partial class CypressFlashMemory //: GpioSpiDeviceBaseClass
+    public partial class FlashMemory //: GpioSpiDeviceBaseClass
     {
         public int SizeInByte;
         
@@ -50,7 +50,7 @@ namespace MadeInTheUSB.FT232H.Components
 
         public int MaxBlock
         {
-            get { return this.SizeInByte / CypressFlashMemory.BLOCK_SIZE; }
+            get { return this.SizeInByte / FlashMemory.BLOCK_SIZE; }
         }
 
         private void Trace(string m)
@@ -59,7 +59,7 @@ namespace MadeInTheUSB.FT232H.Components
                 Debug.WriteLine(m);
         }
         
-        public CypressFlashMemory(ISPI spi) 
+        public FlashMemory(ISPI spi) 
         {
             this.SetUserHardwareInterfaceState(DeviceState.Initializing);
             this._spi = spi;
@@ -161,7 +161,7 @@ namespace MadeInTheUSB.FT232H.Components
 
         public string GetDeviceInfo()
         {
-            return $@"DeviceID:{this.DeviceID}, Size:{this.GetDeviceSizeInMb()} Mb, Manufacturer:{this.Manufacturer}, MaxPage:{this.MaxPage}, Page Size:{PAGE_SIZE}, Page Size Write:{this.GetProgramWritePageSize()}, MaxBlock:{this.MaxBlock}, BlockSize:{CypressFlashMemory.BLOCK_SIZE}";
+            return $@"DeviceID:{this.DeviceID}, Size:{this.GetDeviceSizeInMb()} Mb, Manufacturer:{this.Manufacturer}, MaxPage:{this.MaxPage}, Page Size:{PAGE_SIZE}, Page Size Write:{this.GetProgramWritePageSize()}, MaxBlock:{this.MaxBlock}, BlockSize:{FlashMemory.BLOCK_SIZE}";
         }
 
         private bool SetWriteRegisterEnable(bool checkStatus = true)
@@ -337,7 +337,7 @@ namespace MadeInTheUSB.FT232H.Components
             {
                 if(b != 0 && b % notifyEvery == 0 && notify != null)
                     notify(b);
-                if (!this.Erase64KPage(b * CypressFlashMemory.BLOCK_SIZE))
+                if (!this.Erase64KPage(b * FlashMemory.BLOCK_SIZE))
                     return false;
             }
 

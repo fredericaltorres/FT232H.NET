@@ -17,33 +17,34 @@ namespace MadeInTheUSB.FT232H.Console
     {
         static void FlashMemoryWriteFlashContentToLocalFile(ISPI spi)
         {
-            var flash = new CypressFlashMemory(spi);
+            var flash = new FlashMemory(spi);
             flash.ReadIdentification();
             System.Console.WriteLine(flash.GetDeviceInfo());
 
-            var fDriveFS = new FDriveFileSystem(flash);
+            var fDriveFS = new FDriveFAT12FileSystem(flash);
             fDriveFS.WriteFlashContentToLocalFile("flash.fat12.bin");
         }
-        static void FlashMemoryWriteFDriveFileSystem(ISPI spi)
+        static void FlashMemoryWriteFDriveFileSystem(ISPI spi, bool updateFlash)
         {
-            var flash = new CypressFlashMemory(spi);
+            var flash = new FlashMemory(spi);
             flash.ReadIdentification();
             System.Console.WriteLine(flash.GetDeviceInfo());
 
-            var fDriveFS = new FDriveFileSystem(flash);
+            var fDriveFS = new FDriveFAT12FileSystem(flash);
             fDriveFS.WriteFiles(new List<string> {
                 @"C:\DVT\LILYGO T-Display-S3 ESP32-S3\mass storage\Files\README.TXT",
                 @"C:\DVT\LILYGO T-Display-S3 ESP32-S3\mass storage\Files\WRITEME.TXT",
                 @"C:\DVT\LILYGO T-Display-S3 ESP32-S3\mass storage\Files\MASTER.TXT",
-                FDriveFileSystem.BLANK_SECTOR_COMMAND,
+                FDriveFAT12FileSystem.BLANK_SECTOR_COMMAND,
                 @"C:\DVT\LILYGO T-Display-S3 ESP32-S3\mass storage\Files\VIEWME.JPG",
-            });
+            }, 
+            volumeName: "fDrive.v01", updateFlash);
         }
 
 
         static void CypressFlashMemorySample(ISPI spi)
         {
-            var flash = new CypressFlashMemory(spi);
+            var flash = new FlashMemory(spi);
             flash.ReadIdentification();
             System.Console.WriteLine(flash.GetDeviceInfo());
 
@@ -68,20 +69,20 @@ namespace MadeInTheUSB.FT232H.Console
                 ph.Start();
                 for (var _64kBlock = 0; _64kBlock < flash.MaxBlock; _64kBlock++)
                 {
-                    ph.AddByte(CypressFlashMemory.BLOCK_SIZE);
+                    ph.AddByte(FlashMemory.BLOCK_SIZE);
                     System.Console.WriteLine($"Writing block:{_64kBlock}/{flash.MaxBlock}, {_64kBlock * 100.0 / flash.MaxBlock:0}%");
                     var r = false;
 
                     if (_64kBlock == 11)
                     {
-                        r = flash.WritePages(_64kBlock * CypressFlashMemory.BLOCK_SIZE, _64k0123Buffer, format: true);
+                        r = flash.WritePages(_64kBlock * FlashMemory.BLOCK_SIZE, _64k0123Buffer, format: true);
                     }
                     else
                     {
                         if (_64kBlock % 3 == 0)
-                            r = flash.WritePages(_64kBlock * CypressFlashMemory.BLOCK_SIZE, _64kFredBuffer, format: true);
+                            r = flash.WritePages(_64kBlock * FlashMemory.BLOCK_SIZE, _64kFredBuffer, format: true);
                         else
-                            r = flash.WritePages(_64kBlock * CypressFlashMemory.BLOCK_SIZE, _64kAbdcBuffer, format: true);
+                            r = flash.WritePages(_64kBlock * FlashMemory.BLOCK_SIZE, _64kAbdcBuffer, format: true);
 
                     }
                     if (!r)
@@ -99,10 +100,10 @@ namespace MadeInTheUSB.FT232H.Console
             {
                 System.Console.WriteLine($"Reading block:{_64kBlock}/{flash.MaxBlock}, {_64kBlock * 100.0 / flash.MaxBlock:0}%");
                 var buffer = new List<byte>();
-                if (flash.ReadPages(_64kBlock * CypressFlashMemory.BLOCK_SIZE, CypressFlashMemory.BLOCK_SIZE, buffer))
+                if (flash.ReadPages(_64kBlock * FlashMemory.BLOCK_SIZE, FlashMemory.BLOCK_SIZE, buffer))
                 {
                     var resultString = PerformanceHelper.AsciiBufferToString(buffer.ToArray());
-                    ph.AddByte(CypressFlashMemory.BLOCK_SIZE);
+                    ph.AddByte(FlashMemory.BLOCK_SIZE);
                     var result = false;
                     if (_64kBlock == 11)
                     {

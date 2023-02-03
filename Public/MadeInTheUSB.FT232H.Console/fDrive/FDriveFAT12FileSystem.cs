@@ -7,16 +7,16 @@ using static MadeInTheUSB.FT232H.Console.FDriveDirectoryEntry;
 
 namespace MadeInTheUSB.FT232H.Console
 {
-    public class FDriveFileSystem
+    public class FDriveFAT12FileSystem
     {
         public const string BLANK_SECTOR_COMMAND = @"#blank_sector";
-        public CypressFlashMemory _flash { get; }
+        public FlashMemory _flash { get; }
         FDriveDirectory _directory;
 
         int _bootSector = 0;
         int _startSector = 2;
 
-        public FDriveFileSystem(CypressFlashMemory flash)
+        public FDriveFAT12FileSystem(FlashMemory flash)
         {
             _flash = flash;
         }
@@ -49,22 +49,24 @@ namespace MadeInTheUSB.FT232H.Console
             WriteEntireDiskToFile(fileNameOnly, buffer);
         }
 
-        public void WriteFiles(List<string> files)
+        public void WriteFiles(List<string> files, string volumeName, bool updateFlash)
         {
             Trace($"Initializing FLASH with {files.Count} files");
             _directory = new FDriveDirectory();
             var currentSector = _startSector;
 
-            _directory.Add(new FDriveDirectoryEntry { FileAttribute = FILE_ATTRIBUTE.FA_VOLUME_LABEL, FileName = "fDrive--", Extention = "v01", LocalFileName = null  });
+            _directory.Add(new FDriveDirectoryEntry { FileAttribute = FILE_ATTRIBUTE.FA_VOLUME_LABEL, 
+                FileName = Path.GetFileNameWithoutExtension(volumeName), 
+                Extention = Path.GetExtension(volumeName), LocalFileName = null  });
 
             foreach (var file in files)
             {
-                if (file == FDriveFileSystem.BLANK_SECTOR_COMMAND)
+                if (file == FDriveFAT12FileSystem.BLANK_SECTOR_COMMAND)
                 {
                     Trace($"Write command:{file}");
                     var directoryEntry = new FDriveDirectoryEntry
                     {
-                        FileName = FDriveFileSystem.BLANK_SECTOR_COMMAND,
+                        FileName = FDriveFAT12FileSystem.BLANK_SECTOR_COMMAND,
                         Extention = null,
                         FirstLogicalSector = (ushort)currentSector,
                         FileSize = FDriveDirectory.SECTOR_SIZE,
@@ -105,7 +107,10 @@ namespace MadeInTheUSB.FT232H.Console
             fat12Buffer.AddRange(filesDataBuffer);
 
             WriteEntireDiskToFile("fat12.bin", fat12Buffer);
-            WriteEntireDiskToFlash(fat12Buffer);
+            if(updateFlash)
+            {
+                WriteEntireDiskToFlash(fat12Buffer);
+            }
         }
 
         private bool WriteEntireDiskToFlash(List<byte> buffer)

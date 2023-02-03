@@ -30,7 +30,7 @@ namespace MadeInTheUSB.FT232H.Console
 
         public void WriteDataFile(BinaryWriter writer)
         {
-            if (this.FileName == FDriveFileSystem.BLANK_SECTOR_COMMAND)
+            if (this.FileName == FDriveFAT12FileSystem.BLANK_SECTOR_COMMAND)
             {
                 var tmpBuffer = BufferUtils.MakeBuffer(FDriveDirectory.SECTOR_SIZE, 0);
                 BufferUtils.WriteBuffer(writer, tmpBuffer);
