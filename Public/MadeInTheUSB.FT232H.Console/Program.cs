@@ -37,9 +37,20 @@ namespace MadeInTheUSB.FT232H.Console
             //GpioSample(gpios, true);
             // CheetahBoosterDemo(gpios, false);
 
-            // CypressFlashMemorySample(spi);
-            FlashMemoryWriteFDriveFileSystem(spi);
+            const int fatLinkedListSectorCount = 10;
+            const string volumeName = "fDrive.v01";
+            var files = new List<string> {
+                @"C:\DVT\LILYGO T-Display-S3 ESP32-S3\mass storage\Files\README.TXT",
+                @"C:\DVT\LILYGO T-Display-S3 ESP32-S3\mass storage\Files\WRITEME.TXT",
+                @"C:\DVT\LILYGO T-Display-S3 ESP32-S3\mass storage\Files\MASTER.TXT",
+                FDriveFAT12FileSystem.BLANK_SECTOR_COMMAND,
+                @"C:\DVT\LILYGO T-Display-S3 ESP32-S3\mass storage\Files\VIEWME.JPG",
+            };
+            FlashMemoryWriteFDriveFileSystem(spi, files, fatLinkedListSectorCount, volumeName, updateFlash: false);
+
             // FlashMemoryWriteFlashContentToLocalFile(spi);
+
+            // CypressFlashMemorySample(spi);
 
             //Api102RgbLedSample(spi);
             // ADC_MCP3008Demo(spi);

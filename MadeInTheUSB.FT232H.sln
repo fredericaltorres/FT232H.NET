@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27130.2010
+# Visual Studio Version 17
+VisualStudioVersion = 17.2.32616.157
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MadeInTheUSB.FT232H.Console", "Public\MadeInTheUSB.FT232H.Console\MadeInTheUSB.FT232H.Console.csproj", "{4BAAF81E-23FD-48C0-B199-78B634C6D0B5}"
 EndProject
@@ -19,6 +19,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MadeInTheUSB.FT232H.MatrixConsole", "Public\MadeInTheUSB.FT232H.MatrixConsole\MadeInTheUSB.FT232H.MatrixConsole.csproj", "{34B37341-E125-4849-ABE2-D37275374F61}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MadeInTheUSB.FT232H.Flash.WinApp", "MadeInTheUSB.FT232H.Flash.WinApp\MadeInTheUSB.FT232H.Flash.WinApp.csproj", "{11D0C9F8-119C-44B2-BCB2-906F7E4305B9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -42,6 +44,10 @@ Global
 		{34B37341-E125-4849-ABE2-D37275374F61}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{34B37341-E125-4849-ABE2-D37275374F61}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{34B37341-E125-4849-ABE2-D37275374F61}.Release|Any CPU.Build.0 = Release|Any CPU
+		{11D0C9F8-119C-44B2-BCB2-906F7E4305B9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{11D0C9F8-119C-44B2-BCB2-906F7E4305B9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{11D0C9F8-119C-44B2-BCB2-906F7E4305B9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{11D0C9F8-119C-44B2-BCB2-906F7E4305B9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

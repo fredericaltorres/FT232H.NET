@@ -24,23 +24,15 @@ namespace MadeInTheUSB.FT232H.Console
             var fDriveFS = new FDriveFAT12FileSystem(flash);
             fDriveFS.WriteFlashContentToLocalFile("flash.fat12.bin");
         }
-        static void FlashMemoryWriteFDriveFileSystem(ISPI spi, bool updateFlash)
+        static void FlashMemoryWriteFDriveFileSystem(ISPI spi, List<string> files, int fatLinkedListSectorCount, string volumeName, bool updateFlash)
         {
             var flash = new FlashMemory(spi);
             flash.ReadIdentification();
             System.Console.WriteLine(flash.GetDeviceInfo());
 
             var fDriveFS = new FDriveFAT12FileSystem(flash);
-            fDriveFS.WriteFiles(new List<string> {
-                @"C:\DVT\LILYGO T-Display-S3 ESP32-S3\mass storage\Files\README.TXT",
-                @"C:\DVT\LILYGO T-Display-S3 ESP32-S3\mass storage\Files\WRITEME.TXT",
-                @"C:\DVT\LILYGO T-Display-S3 ESP32-S3\mass storage\Files\MASTER.TXT",
-                FDriveFAT12FileSystem.BLANK_SECTOR_COMMAND,
-                @"C:\DVT\LILYGO T-Display-S3 ESP32-S3\mass storage\Files\VIEWME.JPG",
-            }, 
-            volumeName: "fDrive.v01", updateFlash);
+            fDriveFS.WriteFiles(files, volumeName, fatLinkedListSectorCount, updateFlash);
         }
-
 
         static void CypressFlashMemorySample(ISPI spi)
         {

@@ -32,12 +32,13 @@ namespace MadeInTheUSB.FT232H.Console
             return d;
         }
 
-        private void WriteEntireDiskToFile(string fileName, List<byte> buffer)
+        private string WriteEntireDiskToFile(string fileName, List<byte> buffer)
         {
             fileName = Path.Combine(GetTempDirectory(), fileName);
             if (File.Exists(fileName))
                 File.Delete(fileName);
             File.WriteAllBytes(fileName, buffer.ToArray());
+            return fileName;
         }
 
         private void Trace(string s)
@@ -52,7 +53,7 @@ namespace MadeInTheUSB.FT232H.Console
             WriteEntireDiskToFile(fileNameOnly, buffer);
         }
 
-        public void WriteFiles(List<string> files, string volumeName, int fatLinkedListSectorCount, bool updateFlash)
+        public string WriteFiles(List<string> files, string volumeName, int fatLinkedListSectorCount, bool updateFlash)
         {
             Trace($"Initializing FLASH with {files.Count} files");
             _directory = new FDriveDirectory();
@@ -109,11 +110,12 @@ namespace MadeInTheUSB.FT232H.Console
             var filesDataBuffer = _directory.GenerateFilesDataBuffer();
             fat12Buffer.AddRange(filesDataBuffer);
 
-            WriteEntireDiskToFile("fat12.bin", fat12Buffer);
+            var r = WriteEntireDiskToFile("fat12.bin", fat12Buffer);
             if(updateFlash)
             {
                 WriteEntireDiskToFlash(fat12Buffer);
             }
+            return r;
         }
 
         private bool WriteEntireDiskToFlash(List<byte> buffer)
