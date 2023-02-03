@@ -13,7 +13,6 @@ namespace MadeInTheUSB.FT232H.Console
 {
     partial class Program
     {
-
         static void Main(string[] args)
         {
             var ft232Device = FT232HDetector.Detect();
@@ -47,11 +46,8 @@ namespace MadeInTheUSB.FT232H.Console
                 @"C:\DVT\LILYGO T-Display-S3 ESP32-S3\mass storage\Files\VIEWME.JPG",
             };
             FlashMemoryWriteFDriveFileSystem(spi, files, fatLinkedListSectorCount, volumeName, updateFlash: false);
-
-            // FlashMemoryWriteFlashContentToLocalFile(spi);
-
+            FlashMemoryWriteFlashContentToLocalFile(spi);
             // CypressFlashMemorySample(spi);
-
             //Api102RgbLedSample(spi);
             // ADC_MCP3008Demo(spi);
             //GpioSample(gpios, true);

@@ -124,11 +124,7 @@ namespace MadeInTheUSB.FT232H.Flash.WinApp
             this.txtOutput.Text = "";
         }
 
-        private void fat12ReadDiskToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            DetectIfNeeded();
-
-        }
+        
 
         private void fat12WriteDiskToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -158,6 +154,18 @@ namespace MadeInTheUSB.FT232H.Flash.WinApp
             var fDriveFS = new FDriveFAT12FileSystem(flash);
             var outputFileName = fDriveFS.WriteFiles(files, volumeName, fatLinkedListSectorCount, updateFlash);
             this.ShowUser($"FAT12 Disk Created Filename: {outputFileName}");
+        }
+        string FlashMemoryWriteFlashContentToLocalFile(ISPI spi)
+        {
+            var fDriveFS = new FDriveFAT12FileSystem(_flash);
+            var fileName = fDriveFS.WriteFlashContentToLocalFile("flash.fat12.bin");
+            return fileName;
+        }
+        private void fat12ReadDiskToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            DetectIfNeeded();
+            var fileName = FlashMemoryWriteFlashContentToLocalFile(_spi);
+            this.ShowUser($"Flash Content Saved FileName: {fileName}");
         }
     }
 }

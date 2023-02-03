@@ -46,11 +46,11 @@ namespace MadeInTheUSB.FT232H.Console
             System.Console.WriteLine($"{s}");
         }
 
-        public void WriteFlashContentToLocalFile(string fileNameOnly)
+        public string WriteFlashContentToLocalFile(string fileNameOnly)
         {
             var buffer = new List<byte>();
             _flash.ReadPages(_bootSector, 16*1024, buffer);
-            WriteEntireDiskToFile(fileNameOnly, buffer);
+            return WriteEntireDiskToFile(fileNameOnly, buffer);
         }
 
         public string WriteFiles(List<string> files, string volumeName, int fatLinkedListSectorCount, bool updateFlash)
