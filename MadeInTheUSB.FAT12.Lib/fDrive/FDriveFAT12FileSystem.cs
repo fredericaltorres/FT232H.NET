@@ -1,26 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using MadeInTheUSB.FT232H.Components;
-using System.IO;
-using static MadeInTheUSB.FT232H.Console.FDriveDirectoryEntry;
 
-namespace MadeInTheUSB.FT232H.Console
+using System.IO;
+using static MadeInTheUSB.FAT12.FDriveDirectoryEntry;
+
+namespace MadeInTheUSB.FAT12
 {
     public class FDriveFAT12FileSystem
     {
         public const string BLANK_SECTOR_COMMAND = @"#blank_sector";
-        public FlashMemory _flash { get; }
+        
         public string _tempFolder { get; }
 
         FDriveDirectory _directory;
 
-        int _bootSector = 0;
+        public int _bootSector = 0;
         int _startSector = 2;
 
-        public FDriveFAT12FileSystem(FlashMemory flash, string tempFolder = @"c:\temp")
+        public FDriveFAT12FileSystem(string tempFolder = @"c:\temp")
         {
-            _flash      = flash;
             _tempFolder = tempFolder;
         }
 
@@ -46,14 +45,12 @@ namespace MadeInTheUSB.FT232H.Console
             System.Console.WriteLine($"{s}");
         }
 
-        public string WriteFlashContentToLocalFile(string fileNameOnly)
+        public string WriteFlashContentToLocalFile(string fileNameOnly, List<byte> buffer)
         {
-            var buffer = new List<byte>();
-            _flash.ReadPages(_bootSector, 16*1024, buffer);
             return WriteEntireDiskToFile(fileNameOnly, buffer);
         }
 
-        public string WriteFiles(List<string> files, string volumeName, int fatLinkedListSectorCount, bool updateFlash)
+        public string WriteFiles(List<string> files, string volumeName, int fatLinkedListSectorCount)
         {
             Trace($"Initializing FLASH with {files.Count} files");
             _directory = new FDriveDirectory();
@@ -111,21 +108,9 @@ namespace MadeInTheUSB.FT232H.Console
             fat12Buffer.AddRange(filesDataBuffer);
 
             var r = WriteEntireDiskToFile("fat12.bin", fat12Buffer);
-            if(updateFlash)
-            {
-                WriteEntireDiskToFlash(fat12Buffer);
-            }
+            
             return r;
         }
 
-        private bool WriteEntireDiskToFlash(List<byte> buffer)
-        {
-            return WriteSector512(_bootSector, buffer);
-        }
-        
-        private bool WriteSector512(int addr, List<byte> buffer)
-        {
-            return _flash.WritePages(addr, buffer, verify: true, format: true);
-        }
     }
 }

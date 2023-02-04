@@ -22,6 +22,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MadeInTheUSB.FT232H.MatrixC
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MadeInTheUSB.FT232H.Flash.WinApp", "MadeInTheUSB.FT232H.Flash.WinApp\MadeInTheUSB.FT232H.Flash.WinApp.csproj", "{11D0C9F8-119C-44B2-BCB2-906F7E4305B9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MadeInTheUSB.FAT12.Lib", "MadeInTheUSB.FAT12.Lib\MadeInTheUSB.FAT12.Lib.csproj", "{948C50F0-2A2E-4D6F-A11E-ADD1D419AAAA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -48,6 +50,10 @@ Global
 		{11D0C9F8-119C-44B2-BCB2-906F7E4305B9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{11D0C9F8-119C-44B2-BCB2-906F7E4305B9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{11D0C9F8-119C-44B2-BCB2-906F7E4305B9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{948C50F0-2A2E-4D6F-A11E-ADD1D419AAAA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{948C50F0-2A2E-4D6F-A11E-ADD1D419AAAA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{948C50F0-2A2E-4D6F-A11E-ADD1D419AAAA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{948C50F0-2A2E-4D6F-A11E-ADD1D419AAAA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -2,7 +2,7 @@
 using System.IO;
 using System.Linq;
 
-namespace MadeInTheUSB.FT232H.Console
+namespace MadeInTheUSB.FAT12
 {
     public class BufferUtils
     {

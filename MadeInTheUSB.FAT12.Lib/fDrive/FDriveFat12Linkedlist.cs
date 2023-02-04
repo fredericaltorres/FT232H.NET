@@ -2,7 +2,7 @@
 using System.Linq;
 using System.IO;
 
-namespace MadeInTheUSB.FT232H.Console
+namespace MadeInTheUSB.FAT12
 {
     public class FDriveFat12Linkedlist
     {
@@ -69,7 +69,7 @@ namespace MadeInTheUSB.FT232H.Console
         {
             var b1 = BufferUtils.GenerateBuffer(_dataSector1);
             var b2 = BufferUtils.GenerateBuffer(_blankSector);
-            for (var x=0; x<this.SectorCount-1-1; x++)
+            for (var x=0; x<this.SectorCount-1; x++)
             {
                 b1.AddRange(b2);
             }

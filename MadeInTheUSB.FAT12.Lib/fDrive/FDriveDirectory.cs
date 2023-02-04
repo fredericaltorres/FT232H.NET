@@ -2,7 +2,7 @@
 using System.Linq;
 using System.IO;
 
-namespace MadeInTheUSB.FT232H.Console
+namespace MadeInTheUSB.FAT12
 {
 
     public class FDriveDirectory : List<FDriveDirectoryEntry>

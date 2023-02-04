@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.IO;
+using System;
 
-namespace MadeInTheUSB.FT232H.Console
+namespace MadeInTheUSB.FAT12
 {
     public class FDriveFat12BootSector  
     {

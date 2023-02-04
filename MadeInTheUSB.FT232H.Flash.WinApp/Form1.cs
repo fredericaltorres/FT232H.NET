@@ -1,10 +1,12 @@
-﻿using MadeInTheUSB.FT232H.Components;
-using MadeInTheUSB.FT232H.Console;
+﻿using fLogViewer.PlugIns.FileProviders.BinaryFileProvider;
+using MadeInTheUSB.FAT12;
+using MadeInTheUSB.FT232H.Components;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -52,8 +54,7 @@ namespace MadeInTheUSB.FT232H.Flash.WinApp
             {
                 this.ShowUser($"FT232H:{_ft232Device}");
                 // MCP3088 and MAX7219 is limited to 10Mhz
-                var clockSpeed = MpsseSpiConfig._30Mhz;
-                // clockSpeed = MpsseSpiConfig._10Mhz;
+                var clockSpeed =  this.rbMhz30.Checked ? MpsseSpiConfig._30Mhz : MpsseSpiConfig._10Mhz;
                 _gpioSpiDevice = new GpioSpiDevice(MpsseSpiConfig.Make(clockSpeed));
                 _gpios = _gpioSpiDevice.GPIO;
                 _spi = _gpioSpiDevice.SPI;
@@ -70,8 +71,8 @@ namespace MadeInTheUSB.FT232H.Flash.WinApp
 
         private void Form1_Resize(object sender, EventArgs e)
         {
-            this.txtOutput.Top = 32;
-            this.txtOutput.Height = this.Height - 64-16;
+            this.txtOutput.Top = 32+64;
+            this.txtOutput.Height = this.Height - 64-16 - 64;
             this.txtOutput.Left = 8;
             this.txtOutput.Width = this.Width - 32;
 
@@ -90,12 +91,7 @@ namespace MadeInTheUSB.FT232H.Flash.WinApp
         private void flashInfo_Click(object sender, EventArgs e)
         {
             DetectIfNeeded();
-
-            if (this.HardwareDetected)
-            {
-                
-                
-            }
+            DetectFlashIfNeeded();
         }
 
         private void DetectIfNeeded()
@@ -103,14 +99,17 @@ namespace MadeInTheUSB.FT232H.Flash.WinApp
             if (!this.HardwareDetected)
             {
                 this._spi = DetectFT232H();
+            }
+        }
 
-                if (this.HardwareDetected)
-                {
-                    _flash = new FlashMemory(_spi);
-                    _flash.ReadIdentification();
-                    this.ShowUser($"");
-                    this.ShowUser($"FLASH: {_flash.GetDeviceInfo()}");
-                }
+        private void DetectFlashIfNeeded()
+        {
+            if (_flash == null)
+            {
+                _flash = new FlashMemory(_spi);
+                _flash.ReadIdentification();
+                this.ShowUser($"");
+                this.ShowUser($"FLASH: {_flash.GetDeviceInfo()}");
             }
         }
 
@@ -129,9 +128,7 @@ namespace MadeInTheUSB.FT232H.Flash.WinApp
         private void fat12WriteDiskToolStripMenuItem_Click(object sender, EventArgs e)
         {
             DetectIfNeeded();
-
-            //GpioSample(gpios, true);
-            // CheetahBoosterDemo(gpios, false);
+            DetectFlashIfNeeded();
 
             const int fatLinkedListSectorCount = 10;
             const string volumeName = "fDrive.v01";
@@ -142,30 +139,41 @@ namespace MadeInTheUSB.FT232H.Flash.WinApp
                 FDriveFAT12FileSystem.BLANK_SECTOR_COMMAND,
                 @"C:\DVT\LILYGO T-Display-S3 ESP32-S3\mass storage\Files\VIEWME.JPG",
             };
-            FlashMemoryWriteFDriveFileSystem(_spi, files, fatLinkedListSectorCount, volumeName, updateFlash: false);
-        }
 
-        void FlashMemoryWriteFDriveFileSystem(ISPI spi, List<string> files, int fatLinkedListSectorCount, string volumeName, bool updateFlash)
-        {
-            var flash = new FlashMemory(spi);
-            flash.ReadIdentification();
-            System.Console.WriteLine(flash.GetDeviceInfo());
+            var fDriveFS = new FDriveFAT12FileSystem();
+            var fileName = fDriveFS.WriteFiles(files, volumeName, fatLinkedListSectorCount);
 
-            var fDriveFS = new FDriveFAT12FileSystem(flash);
-            var outputFileName = fDriveFS.WriteFiles(files, volumeName, fatLinkedListSectorCount, updateFlash);
-            this.ShowUser($"FAT12 Disk Created Filename: {outputFileName}");
+            if (this.chkUpdateFlash.Checked)
+            {
+                var buffer = File.ReadAllBytes(fileName).ToList();
+                _flash.WritePages(fDriveFS._bootSector, buffer, verify: true, format: true);
+            }
+
+            this.ShowUser($"FAT12 Disk Created Filename: {fileName}");
+
+            ShowBinary(fileName);
         }
-        string FlashMemoryWriteFlashContentToLocalFile(ISPI spi)
-        {
-            var fDriveFS = new FDriveFAT12FileSystem(_flash);
-            var fileName = fDriveFS.WriteFlashContentToLocalFile("flash.fat12.bin");
-            return fileName;
-        }
+       
         private void fat12ReadDiskToolStripMenuItem_Click(object sender, EventArgs e)
         {
             DetectIfNeeded();
-            var fileName = FlashMemoryWriteFlashContentToLocalFile(_spi);
+            DetectFlashIfNeeded();
+            var fDriveFS = new FDriveFAT12FileSystem();
+
+            var buffer = new List<byte>();
+            _flash.ReadPages(fDriveFS._bootSector, 16 * 1024, buffer);
+
+            var fileName = fDriveFS.WriteFlashContentToLocalFile("flash.fat12.bin", buffer);
             this.ShowUser($"Flash Content Saved FileName: {fileName}");
+
+            ShowBinary(fileName);
+        }
+
+        private void ShowBinary(string fileName)
+        {
+            var bg = new BinaryToTextGenerator(fileName);
+            var bgOptions = new BinaryViewerOption { };
+            this.ShowUser(bg.Generate(bgOptions));
         }
     }
 }

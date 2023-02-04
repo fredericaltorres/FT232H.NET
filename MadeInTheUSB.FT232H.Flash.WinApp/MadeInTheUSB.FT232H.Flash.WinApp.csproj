@@ -46,12 +46,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="fDrive\BufferUtils.cs" />
-    <Compile Include="fDrive\FDriveDirectory.cs" />
-    <Compile Include="fDrive\FDriveDirectoryEntry.cs" />
-    <Compile Include="fDrive\FDriveFat12BootSector.cs" />
-    <Compile Include="fDrive\FDriveFAT12FileSystem.cs" />
-    <Compile Include="fDrive\FDriveFat12Linkedlist.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -86,6 +80,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\MadeInTheUSB.FAT12.Lib\MadeInTheUSB.FAT12.Lib.csproj">
+      <Project>{948c50f0-2a2e-4d6f-a11e-add1d419aaaa}</Project>
+      <Name>MadeInTheUSB.FAT12.Lib</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Private\MadeInTheUSB.FT232H.Lib\MadeInTheUSB.FT232H.Lib.csproj">
       <Project>{d2610e23-15f7-4817-9111-d6870443882c}</Project>
       <Name>MadeInTheUSB.FT232H.Lib</Name>
