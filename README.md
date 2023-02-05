@@ -22,6 +22,8 @@ for the FTDI chip FT232H using the([Adafruit Breakout FT232H](https://www.adafru
 # 2023 Update
 * I created the library in 2017 and in 2023 I am going to update and extend it, as I am going to need way to write and read FLASH Chip for my USB Mass Storage experimentation.
 
+* As Adafruit improved their breakout, I want to add the support I2C.
+
 ## Samples
 
 ### GPIOs
