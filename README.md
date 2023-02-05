@@ -19,7 +19,7 @@ for the FTDI chip FT232H using the ([Adafruit Breakout FT232H](https://www.adafr
 # 2023 Update
 * I created the library in 2017 and in 2023 I am going to update and extend it, as I am going to need ways to write and read FLASH Chip for my USB Mass Storage/FAT12 experimentations.
 	* [FredT232H.Board Schematic](https://github.com/fredericaltorres/Fred.PCB/tree/main/2023/FredT232H.Board)
-	* ![FredT232H.Board image](https://github.com/fredericaltorres/Fred.PCB/blob/main/2023/FredT232H.Board/FredT232H.Board.png?raw=true)
+	* [FredT232H.Board image](https://github.com/fredericaltorres/Fred.PCB/blob/main/2023/FredT232H.Board/FredT232H.Board.png?raw=true)
 * As Adafruit improved their breakout, I want to add the support I2C and add more example using Adafruit's I2C devices
 
 # FTDI DLLs
