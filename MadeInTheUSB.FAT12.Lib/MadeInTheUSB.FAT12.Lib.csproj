@@ -44,9 +44,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="fDrive\BinaryToTextGenerator.cs" />
-    <Compile Include="fDrive\BinaryViewerOption.cs" />
-    <Compile Include="fDrive\BufferUtils.cs" />
     <Compile Include="fDrive\FDriveDirectory.cs" />
     <Compile Include="fDrive\FDriveDirectoryEntry.cs" />
     <Compile Include="fDrive\FDriveFat12BootSector.cs" />

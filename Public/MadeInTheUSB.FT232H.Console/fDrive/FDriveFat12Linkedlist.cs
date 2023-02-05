@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.IO;
+using BufferUtil;
 
 namespace MadeInTheUSB.FT232H.Console
 {
@@ -67,8 +68,8 @@ namespace MadeInTheUSB.FT232H.Console
 
         public List<byte> GenerateBuffer()
         {
-            var b1 = BufferUtils.GenerateBuffer(_dataSector1);
-            var b2 = BufferUtils.GenerateBuffer(_blankSector);
+            var b1 = BufferUtils.GenerateSectorBuffer(_dataSector1);
+            var b2 = BufferUtils.GenerateSectorBuffer(_blankSector);
             for (var x=0; x<this.SectorCount-1-1; x++)
             {
                 b1.AddRange(b2);

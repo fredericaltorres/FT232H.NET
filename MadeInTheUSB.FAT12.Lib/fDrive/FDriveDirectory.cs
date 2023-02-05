@@ -1,7 +1,10 @@
-﻿using System.Collections.Generic;
+﻿
+using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 using BufferUtil;
+
+
 
 namespace MadeInTheUSB.FAT12
 {
