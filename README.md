@@ -16,6 +16,8 @@ for the FTDI chip FT232H using the([Adafruit Breakout FT232H](https://www.adafru
 
 ![64 x 8 matrix](https://raw.githubusercontent.com/fredericaltorres/FT232H.NET/main/photos/Nusbio2_FT232H_SPI_4_MAX7219_Chained_8x8LedMatrix.jpg)
 
+<img src="https://raw.githubusercontent.com/fredericaltorres/FT232H.NET/main/photos/Nusbio2_FT232H_SPI_4_MAX7219_Chained_8x8LedMatrix.jpg"/>
+
 ## Samples
 
 ### GPIOs
