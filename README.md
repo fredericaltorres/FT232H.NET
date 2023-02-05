@@ -91,10 +91,13 @@ static void Main(string[] args)
 	* This breakout IO are 3.3V
 	* This break out is only $3 more expensive than the Chinese one.
 
+Experimenting on a bread board with LED and EEPROM.
 	![Adafruit FT232H with 4x4 matrix](https://raw.githubusercontent.com/fredericaltorres/FT232H.NET/main/photos/Nusbio2_FT232H_SPI_EEPROM_25AA256_00.jpg)
 
-The Adafruit breakout plugged in my own adapter
+The Adafruit breakout plugged in my own adapter.
 	![Adafruit FT232H, My Adapter, Cypress 16Mb Flash Chip](https://raw.githubusercontent.com/fredericaltorres/FT232H.NET/main/photos/FT232_Adafruit_PlusFredAdapterAndFlash.jpg)
+
+Programming with C# and Visual Studio.
 	![Programming in Visual Studio](https://raw.githubusercontent.com/fredericaltorres/FT232H.NET/main/photos/Nusbio2_FT232H_SPI_EEPROM_25AA256_02_VisualStudio.jpg)
 	
 
