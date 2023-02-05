@@ -5,13 +5,13 @@ The .NET/Windows library FT232H.NET provides an abstraction to program
 * The I2C protocol (Not yet supported)
 * The GPIOs
 
-for the FTDI chip FT232H using the ([Adafruit Breakout FT232H](https://www.adafruit.com/product/2264))
+for the FTDI chip FT232H using the([Adafruit Breakout FT232H](https://www.adafruit.com/product/2264)) or any other compatible breakout.
 
 # External components supported or Chip
 
 * RGB LED strip of type `APA102` are supported with examples
 * 8x8, 32x8 and 64x8 LED matrix based on the `MAX7219` chip are supported with examples
-* Any EPPROM and NOR and NAND Flash memory using the SPI protocol
+* Any EPPROM and NOR and NAND Flash memory using the SPI protocol are supported with examples
 * ADC MCP3008 and MCP3004 are supported with examples
 
 ![64 x 8 matrix](https://raw.githubusercontent.com/fredericaltorres/FT232H.NET/main/photos/Nusbio2_FT232H_SPI_4_MAX7219_Chained_8x8LedMatrix.jpg)
@@ -23,17 +23,17 @@ for the FTDI chip FT232H using the ([Adafruit Breakout FT232H](https://www.adafr
 ```csharp
 static void GpioSample(IDigitalWriteRead gpios, bool oneLoopOnly = false)
 {
-	var waitTime = 100;
-	for(var i=0; i < gpios.MaxGpio; i++)
-	{
-		gpios.DigitalWrite(i, PinState.High);
-	}
-	Thread.Sleep(waitTime);
-	for(var i=0; i < gpios.MaxGpio; i++)
-	{
-		gpios.DigitalWrite(i, PinState.Low);
-	}
-	Thread.Sleep(waitTime);
+  var waitTime = 100;
+  for(var i=0; i < gpios.MaxGpio; i++)
+  {
+    gpios.DigitalWrite(i, PinState.High);
+  }
+  Thread.Sleep(waitTime);
+  for(var i=0; i < gpios.MaxGpio; i++)
+  {
+    gpios.DigitalWrite(i, PinState.Low);
+  }
+  Thread.Sleep(waitTime);
 }
 
 static void Main(string[] args)
