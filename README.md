@@ -108,8 +108,8 @@ static void Main(string[] args)
  * The Adafruit breakout: [Adafruit FT232H Breakout](https://www.adafruit.com/product/2264) General Purpose USB to GPIO+SPI+I2C
 	* This breakout does contain an EEPROM therefore it is possible to program the device id, description or hardware properties.
 	* This breakout does contains a switch to switch the device in I2C mode and a Stemma QT I2C adapter
-	* This breakout IO are 3.3V
-	* This break out is only $3 more expensive than the Chinese one.
+	* This breakout IO are 3.3V (I think)
+	* This breakout is only $3 more expensive than the Chinese one.
 
 Experimenting on a bread board with LED and EEPROM.
 	
