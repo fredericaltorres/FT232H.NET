@@ -49,23 +49,37 @@ namespace MadeInTheUSB.FT232H.Flash.WinApp
             Application.DoEvents();
         }
 
+        public void ShowState(string text = null)
+        {
+            this.statusBar.Items[0].Text = text;
+            Application.DoEvents();
+        }
+
         public ISPI DetectFT232H()
         {
-            _ft232Device = FT232HDetector.Detect();
-            if (_ft232Device.Ok)
+            if (_ft232Device == null)
             {
-                this.ShowUser($"FT232H:{_ft232Device}");
-                // MCP3088 and MAX7219 is limited to 10Mhz
-                var clockSpeed =  this.rbMhz30.Checked ? MpsseSpiConfig._30Mhz : MpsseSpiConfig._10Mhz;
-                _gpioSpiDevice = new GpioSpiDevice(MpsseSpiConfig.Make(clockSpeed));
-                _gpios = _gpioSpiDevice.GPIO;
-                _spi = _gpioSpiDevice.SPI;
-                return _gpioSpiDevice.SPI;
+                _ft232Device = FT232HDetector.Detect();
+                if (_ft232Device.Ok)
+                {
+                    this.ShowUser($"FT232H:{_ft232Device}");
+                    // MCP3088 and MAX7219 is limited to 10Mhz
+                    var clockSpeed = this.rbMhz30.Checked ? MpsseSpiConfig._30Mhz : MpsseSpiConfig._10Mhz;
+                    _gpioSpiDevice = new GpioSpiDevice(MpsseSpiConfig.Make(clockSpeed));
+                    _gpios = _gpioSpiDevice.GPIO;
+                    _spi = _gpioSpiDevice.SPI;
+                    return _gpioSpiDevice.SPI;
+                }
+                else
+                {
+                    this.ShowUser("FT232H not detected");
+                    return null;
+                }
             }
             else
             {
-                this.ShowUser("FT232H not detected");
-                return null;
+                this.ShowUser($"FT232H:{_ft232Device}");
+                return _spi;
             }
         }
 
@@ -74,7 +88,7 @@ namespace MadeInTheUSB.FT232H.Flash.WinApp
         private void Form1_Resize(object sender, EventArgs e)
         {
             this.txtOutput.Top = 32+64;
-            this.txtOutput.Height = this.Height - 64-16 - 64;
+            this.txtOutput.Height = this.Height - 64-16 - 64 - 64;
             this.txtOutput.Left = 8;
             this.txtOutput.Width = this.Width - 32;
 
@@ -195,7 +209,7 @@ namespace MadeInTheUSB.FT232H.Flash.WinApp
             for (var p = 0; p < _flash.MaxPage; p++)
             {
                 if(p % 10 == 0)
-                    this.ShowUser($"Writing page {p} {p * (int)_flash.PageSize/1024}/{_flash.MaxPage* (int)_flash.PageSize / 1024}");
+                    this.ShowState($"Writing page {p} {p * (int)_flash.PageSize/1024}/{_flash.MaxPage* (int)_flash.PageSize / 1024}");
                 _flash.WritePages(p * (int)_flash.PageSize, BufferUtil.BufferUtils.MakeBuffer(256, asciValue));
                 asciValue += 1;
                 if(asciValue >= 128)
@@ -209,22 +223,26 @@ namespace MadeInTheUSB.FT232H.Flash.WinApp
             var asciValue = 64;
             var allBuffer = new List<byte>();
             this.ShowUser($"EEPROM Test - About to Read {_flash.MaxPage} pages");
-            for (var p = 0; p < _flash.MaxPage; p++)
+            const int pageBatch = 10;
+            for (var p = 0; p < _flash.MaxPage; p+= pageBatch)
             {
                 if (p % 10 == 0)
-                    this.ShowUser($"Page {p}");
+                    this.ShowState($"Page {p}");
                 var b = new List<byte>();
-                _flash.ReadPages(p * (int)_flash.PageSize, (int)_flash.PageSize, b);
+                _flash.ReadPages(p * (int)_flash.PageSize, (int)_flash.PageSize* pageBatch, b);
                 allBuffer.AddRange(b);
             }
 
             var tmpFileName = Path.Combine(Path.GetTempPath(), Path.GetTempFileName());
             File.WriteAllBytes(tmpFileName, allBuffer.ToArray());
+            this.ShowState($"Generating view...");
 
             clearToolStripMenuItem_Click(null, null);
 
             var bg = new BinaryToTextGenerator(tmpFileName);
             this.ShowUser(bg.Generate(new BinaryViewerOption { ShowSector = true, SectorSize = (int)_flash.PageSize }));
+
+            this.ShowState();
         }
 
         private void readTestToolStripMenuItem_Click(object sender, EventArgs e)

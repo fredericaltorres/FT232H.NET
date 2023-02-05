@@ -19,7 +19,7 @@ Not supported yet:
 * Any EPPROM and NOR and NAND Flash memory using the SPI protocol should be supported
 * ADC MCP3008 and MCP3004 are supported with examples
 
-![FT232H with 64x8 LED Matrix](https://github.com/madeintheusb/FT232H.NET/blob/master/FT232H_64x8%20LED%20Matrix.jpg?raw=true)
+![FT232H with 64x8 LED Matrix](https://raw.githubusercontent.com/fredericaltorres/FT232H.NET/main/FT232H_64x8%20LED%20Matrix.jpg)
 
 ## Samples
 
