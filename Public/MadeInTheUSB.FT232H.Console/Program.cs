@@ -45,9 +45,9 @@ namespace MadeInTheUSB.FT232H.Console
                 FDriveFAT12FileSystem.BLANK_SECTOR_COMMAND,
                 @"C:\DVT\LILYGO T-Display-S3 ESP32-S3\mass storage\Files\VIEWME.JPG",
             };
-            FlashMemoryWriteFDriveFileSystem(spi, files, fatLinkedListSectorCount, volumeName, updateFlash: false);
-            FlashMemoryWriteFlashContentToLocalFile(spi);
-            // CypressFlashMemorySample(spi);
+            //FlashMemoryWriteFDriveFileSystem(spi, files, fatLinkedListSectorCount, volumeName, updateFlash: false);
+            //FlashMemoryWriteFlashContentToLocalFile(spi);
+            CypressFlashMemorySample(spi);
             //Api102RgbLedSample(spi);
             // ADC_MCP3008Demo(spi);
             //GpioSample(gpios, true);

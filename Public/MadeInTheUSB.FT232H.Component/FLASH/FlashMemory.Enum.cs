@@ -14,16 +14,35 @@ namespace MadeInTheUSB.FT232H.Components
         {
             Unknown = 0,
             Cypress = 1,
+            Microchip = 2, // This may not be the right id
         }
-        public enum CYPRESS_S25FLXXX_DEVICE_ID
+        public enum FLASH_DEVICE_ID
         {
             Undefined      = 0,
             S25FL116K_2Mb  = 0x14,
             S25FL132K_4Mb  = 0x15,
             S25FL164K_8Mb  = 0x16,
-            S25FL127S_16MB = 8216 // http://www.cypress.com/file/177961/download
+            S25FL127S_16MB = 8216, // http://www.cypress.com/file/177961/download
+
+            EEPROM_25AA1024_128Kb  = -2, //SERIAL EEPROM 1MBIT 2 https://ww1.microchip.com/downloads/en/DeviceDoc/1-Mbit-SPI-Bus-Serial-EEPROM-Data-Sheet-20001836K.pdf
         }
-        public CYPRESS_S25FLXXX_DEVICE_ID DeviceID;
+
+        public FLASH_DEVICE_ID DeviceID;
+
+        public FLASH_PAGE_SIZE PageSize = FLASH_PAGE_SIZE._512;
+
+        public enum FLASH_PAGE_SIZE {
+            _256 = 256,
+            _512 = 512
+        };
+
+        public enum FLASH_ADDR_SIZE
+        {
+            _2_Bytes = 2,
+            _3_Bytes = 3,
+        };
+
+        public FLASH_ADDR_SIZE AddressSize = FLASH_ADDR_SIZE._3_Bytes;
 
         public enum CYPRESS_SECTOR_ARCHITECTURE
         {

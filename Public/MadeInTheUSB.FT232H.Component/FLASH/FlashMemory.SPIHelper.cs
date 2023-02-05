@@ -31,9 +31,6 @@ namespace MadeInTheUSB.FT232H.Components
 
         private bool SPISend(List<byte> buffer)
         {
-            //int byteSent = 0;
-            //var ec = base.Write(buffer.ToArray(), buffer.Count, out byteSent, FtSpiTransferOptions.ToogleChipSelect);
-            //return (ec == FtdiMpsseSPIResult.Ok);
             return this._spi.Write(buffer.ToArray()) == FtdiMpsseSPIResult.Ok;
         }
 
@@ -52,36 +49,28 @@ namespace MadeInTheUSB.FT232H.Components
                 return true;
             }
             return false;
-            //var value = 0;
-            //int byteSent = 0;
-            //var spiBufferWrite = new byte[1];
-            //spiBufferWrite[0] = api;
-            //var ec = base.Write(spiBufferWrite, spiBufferWrite.Length, out byteSent, FtSpiTransferOptions.ChipselectEnable);
-
-            //if (ec == FtdiMpsseSPIResult.Ok)
-            //{
-            //    var spiBufferRead = GetEepromApiDataBuffer(answerLen);
-            //    ec = base.Read(spiBufferRead, spiBufferRead.Length, out byteSent, FtSpiTransferOptions.ChipselectDisable);
-            //    if (ec == FtdiMpsseSPIResult.Ok)
-            //    {
-            //        buffer.AddRange(spiBufferRead);
-            //        return true;
-            //    }
-            //}
-            //return false;
         }
 
         private byte[] GetEepromApiReadBuffer(int addr)
         {
-            var tmpBuffer = new byte[] { EEPROM_READ, (byte)(addr >> 16), (byte)(addr >> 8), (byte)(addr & 0xFF) };
-            return tmpBuffer;
+            if(this.AddressSize == FLASH_ADDR_SIZE._3_Bytes)
+                return new byte[] { EEPROM_READ, (byte)(addr >> 16), (byte)(addr >> 8), (byte)(addr & 0xFF) };
+            else
+                return new byte[] { EEPROM_READ, (byte)(addr >> 8), (byte)(addr & 0xFF) };
         }
 
         private byte[] GetEepromApiWriteBuffer(int addr, List<byte> data = null)
         {
-            var buffer = new List<byte>() { EEPROM_WRITE, (byte)(addr >> 16), (byte)(addr >> 8), (byte)(addr & 0xFF) };
+            List<byte> buffer = null;
+
+            if (this.AddressSize == FLASH_ADDR_SIZE._3_Bytes)
+                buffer = new List<byte>() { EEPROM_WRITE_PAGE_PROGRAM_PP, (byte)(addr >> 16), (byte)(addr >> 8), (byte)(addr & 0xFF) };
+            else
+                buffer = new List<byte>() { EEPROM_WRITE_PAGE_PROGRAM_PP,  (byte)(addr >> 8), (byte)(addr & 0xFF) };
+
             if (data != null)
                 buffer.AddRange(data);
+
             return buffer.ToArray();
         }
 
@@ -92,7 +81,6 @@ namespace MadeInTheUSB.FT232H.Components
 
         private bool SendCommand(byte cmd)
         {
-            int byteSent = 0;
             var spiBufferWrite = new byte[] { cmd };
             return this._spi.Write(spiBufferWrite) == FtdiMpsseSPIResult.Ok;
         }

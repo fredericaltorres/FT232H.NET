@@ -43,9 +43,14 @@
             this.fat12WriteDiskToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.txtOutput = new System.Windows.Forms.TextBox();
             this.grpSettings = new System.Windows.Forms.GroupBox();
-            this.rbMhz10 = new System.Windows.Forms.RadioButton();
-            this.rbMhz30 = new System.Windows.Forms.RadioButton();
             this.chkUpdateFlash = new System.Windows.Forms.CheckBox();
+            this.rbMhz30 = new System.Windows.Forms.RadioButton();
+            this.rbMhz10 = new System.Windows.Forms.RadioButton();
+            this.eEPROMToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.writeTestToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.readTestToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.detectToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.eEPROM25AA1024ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.grpSettings.SuspendLayout();
             this.SuspendLayout();
@@ -56,7 +61,8 @@
             this.fileToolStripMenuItem,
             this.viewToolStripMenuItem,
             this.fT232HToolStripMenuItem1,
-            this.fLASHToolStripMenuItem});
+            this.fLASHToolStripMenuItem,
+            this.eEPROMToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(1152, 28);
@@ -74,7 +80,8 @@
             // quitToolStripMenuItem
             // 
             this.quitToolStripMenuItem.Name = "quitToolStripMenuItem";
-            this.quitToolStripMenuItem.Size = new System.Drawing.Size(106, 24);
+            this.quitToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Q)));
+            this.quitToolStripMenuItem.Size = new System.Drawing.Size(159, 24);
             this.quitToolStripMenuItem.Text = "Quit";
             this.quitToolStripMenuItem.Click += new System.EventHandler(this.quitToolStripMenuItem_Click);
             // 
@@ -130,7 +137,7 @@
             // flashInfo
             // 
             this.flashInfo.Name = "flashInfo";
-            this.flashInfo.Size = new System.Drawing.Size(117, 24);
+            this.flashInfo.Size = new System.Drawing.Size(180, 24);
             this.flashInfo.Text = "Info";
             this.flashInfo.Click += new System.EventHandler(this.flashInfo_Click);
             // 
@@ -140,20 +147,20 @@
             this.fat12ReadDiskToolStripMenuItem,
             this.fat12WriteDiskToolStripMenuItem});
             this.fAT12ToolStripMenuItem.Name = "fAT12ToolStripMenuItem";
-            this.fAT12ToolStripMenuItem.Size = new System.Drawing.Size(117, 24);
+            this.fAT12ToolStripMenuItem.Size = new System.Drawing.Size(180, 24);
             this.fAT12ToolStripMenuItem.Text = "FAT12";
             // 
             // fat12ReadDiskToolStripMenuItem
             // 
             this.fat12ReadDiskToolStripMenuItem.Name = "fat12ReadDiskToolStripMenuItem";
-            this.fat12ReadDiskToolStripMenuItem.Size = new System.Drawing.Size(146, 24);
+            this.fat12ReadDiskToolStripMenuItem.Size = new System.Drawing.Size(180, 24);
             this.fat12ReadDiskToolStripMenuItem.Text = "Read Disk";
             this.fat12ReadDiskToolStripMenuItem.Click += new System.EventHandler(this.fat12ReadDiskToolStripMenuItem_Click);
             // 
             // fat12WriteDiskToolStripMenuItem
             // 
             this.fat12WriteDiskToolStripMenuItem.Name = "fat12WriteDiskToolStripMenuItem";
-            this.fat12WriteDiskToolStripMenuItem.Size = new System.Drawing.Size(146, 24);
+            this.fat12WriteDiskToolStripMenuItem.Size = new System.Drawing.Size(180, 24);
             this.fat12WriteDiskToolStripMenuItem.Text = "Write Disk";
             this.fat12WriteDiskToolStripMenuItem.Click += new System.EventHandler(this.fat12WriteDiskToolStripMenuItem_Click);
             // 
@@ -182,28 +189,6 @@
             this.grpSettings.TabStop = false;
             this.grpSettings.Text = "Settings";
             // 
-            // rbMhz10
-            // 
-            this.rbMhz10.AutoSize = true;
-            this.rbMhz10.Location = new System.Drawing.Point(30, 20);
-            this.rbMhz10.Name = "rbMhz10";
-            this.rbMhz10.Size = new System.Drawing.Size(60, 17);
-            this.rbMhz10.TabIndex = 0;
-            this.rbMhz10.Text = "10 Mhz";
-            this.rbMhz10.UseVisualStyleBackColor = true;
-            // 
-            // rbMhz30
-            // 
-            this.rbMhz30.AutoSize = true;
-            this.rbMhz30.Checked = true;
-            this.rbMhz30.Location = new System.Drawing.Point(96, 19);
-            this.rbMhz30.Name = "rbMhz30";
-            this.rbMhz30.Size = new System.Drawing.Size(60, 17);
-            this.rbMhz30.TabIndex = 1;
-            this.rbMhz30.TabStop = true;
-            this.rbMhz30.Text = "30 Mhz";
-            this.rbMhz30.UseVisualStyleBackColor = true;
-            // 
             // chkUpdateFlash
             // 
             this.chkUpdateFlash.AutoSize = true;
@@ -213,6 +198,67 @@
             this.chkUpdateFlash.TabIndex = 2;
             this.chkUpdateFlash.Text = "Update FLASH";
             this.chkUpdateFlash.UseVisualStyleBackColor = true;
+            // 
+            // rbMhz30
+            // 
+            this.rbMhz30.AutoSize = true;
+            this.rbMhz30.Location = new System.Drawing.Point(96, 19);
+            this.rbMhz30.Name = "rbMhz30";
+            this.rbMhz30.Size = new System.Drawing.Size(60, 17);
+            this.rbMhz30.TabIndex = 1;
+            this.rbMhz30.Text = "30 Mhz";
+            this.rbMhz30.UseVisualStyleBackColor = true;
+            // 
+            // rbMhz10
+            // 
+            this.rbMhz10.AutoSize = true;
+            this.rbMhz10.Checked = true;
+            this.rbMhz10.Location = new System.Drawing.Point(30, 20);
+            this.rbMhz10.Name = "rbMhz10";
+            this.rbMhz10.Size = new System.Drawing.Size(60, 17);
+            this.rbMhz10.TabIndex = 0;
+            this.rbMhz10.TabStop = true;
+            this.rbMhz10.Text = "10 Mhz";
+            this.rbMhz10.UseVisualStyleBackColor = true;
+            // 
+            // eEPROMToolStripMenuItem
+            // 
+            this.eEPROMToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.detectToolStripMenuItem,
+            this.writeTestToolStripMenuItem,
+            this.readTestToolStripMenuItem});
+            this.eEPROMToolStripMenuItem.Name = "eEPROMToolStripMenuItem";
+            this.eEPROMToolStripMenuItem.Size = new System.Drawing.Size(78, 24);
+            this.eEPROMToolStripMenuItem.Text = "EEPROM";
+            // 
+            // writeTestToolStripMenuItem
+            // 
+            this.writeTestToolStripMenuItem.Name = "writeTestToolStripMenuItem";
+            this.writeTestToolStripMenuItem.Size = new System.Drawing.Size(180, 24);
+            this.writeTestToolStripMenuItem.Text = "Write Test";
+            this.writeTestToolStripMenuItem.Click += new System.EventHandler(this.writeTestToolStripMenuItem_Click);
+            // 
+            // readTestToolStripMenuItem
+            // 
+            this.readTestToolStripMenuItem.Name = "readTestToolStripMenuItem";
+            this.readTestToolStripMenuItem.Size = new System.Drawing.Size(180, 24);
+            this.readTestToolStripMenuItem.Text = "Read Test";
+            this.readTestToolStripMenuItem.Click += new System.EventHandler(this.readTestToolStripMenuItem_Click);
+            // 
+            // detectToolStripMenuItem
+            // 
+            this.detectToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.eEPROM25AA1024ToolStripMenuItem});
+            this.detectToolStripMenuItem.Name = "detectToolStripMenuItem";
+            this.detectToolStripMenuItem.Size = new System.Drawing.Size(180, 24);
+            this.detectToolStripMenuItem.Text = "Detect";
+            // 
+            // eEPROM25AA1024ToolStripMenuItem
+            // 
+            this.eEPROM25AA1024ToolStripMenuItem.Name = "eEPROM25AA1024ToolStripMenuItem";
+            this.eEPROM25AA1024ToolStripMenuItem.Size = new System.Drawing.Size(209, 24);
+            this.eEPROM25AA1024ToolStripMenuItem.Text = "EEPROM_25AA1024";
+            this.eEPROM25AA1024ToolStripMenuItem.Click += new System.EventHandler(this.eEPROM25AA1024ToolStripMenuItem_Click);
             // 
             // Form1
             // 
@@ -257,6 +303,11 @@
         private System.Windows.Forms.RadioButton rbMhz30;
         private System.Windows.Forms.RadioButton rbMhz10;
         private System.Windows.Forms.CheckBox chkUpdateFlash;
+        private System.Windows.Forms.ToolStripMenuItem eEPROMToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem writeTestToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem readTestToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem detectToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem eEPROM25AA1024ToolStripMenuItem;
     }
 }
 

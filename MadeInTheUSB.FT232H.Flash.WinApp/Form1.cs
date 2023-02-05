@@ -1,4 +1,5 @@
-﻿using fLogViewer.PlugIns.FileProviders.BinaryFileProvider;
+﻿
+using BufferUtil;
 using MadeInTheUSB.FAT12;
 using MadeInTheUSB.FT232H.Components;
 using System;
@@ -45,6 +46,7 @@ namespace MadeInTheUSB.FT232H.Flash.WinApp
             this.txtOutput.Text += text + Environment.NewLine;
             this.txtOutput.SelectionStart = this.txtOutput.TextLength;
             this.txtOutput.ScrollToCaret();
+            Application.DoEvents();
         }
 
         public ISPI DetectFT232H()
@@ -107,7 +109,7 @@ namespace MadeInTheUSB.FT232H.Flash.WinApp
             if (_flash == null)
             {
                 _flash = new FlashMemory(_spi);
-                _flash.ReadIdentification();
+                _flash.ReadIdentification( );
                 this.ShowUser($"");
                 this.ShowUser($"FLASH: {_flash.GetDeviceInfo()}");
             }
@@ -161,7 +163,12 @@ namespace MadeInTheUSB.FT232H.Flash.WinApp
             var fDriveFS = new FDriveFAT12FileSystem();
 
             var buffer = new List<byte>();
-            _flash.ReadPages(fDriveFS._bootSector, 16 * 1024, buffer);
+
+            var fileSize = 52224;
+            var sectorToRead = (fileSize / 512) + 1;
+
+
+            _flash.ReadPages(fDriveFS._bootSector, sectorToRead*512, buffer);
 
             var fileName = fDriveFS.WriteFlashContentToLocalFile("flash.fat12.bin", buffer);
             this.ShowUser($"Flash Content Saved FileName: {fileName}");
@@ -174,6 +181,65 @@ namespace MadeInTheUSB.FT232H.Flash.WinApp
             var bg = new BinaryToTextGenerator(fileName);
             var bgOptions = new BinaryViewerOption { };
             this.ShowUser(bg.Generate(bgOptions));
+        }
+
+        private void writeTestToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            EEPROM_WriteTest();
+        }
+
+        private void EEPROM_WriteTest()
+        {
+            byte asciValue = 65;
+            this.ShowUser($"EEPROM Test - About to write {_flash.MaxPage} pages");
+            for (var p = 0; p < _flash.MaxPage; p++)
+            {
+                if(p % 10 == 0)
+                    this.ShowUser($"Writing page {p} {p * (int)_flash.PageSize/1024}/{_flash.MaxPage* (int)_flash.PageSize / 1024}");
+                _flash.WritePages(p * (int)_flash.PageSize, BufferUtil.BufferUtils.MakeBuffer(256, asciValue));
+                asciValue += 1;
+                if(asciValue >= 128)
+                    asciValue = 65;
+            }
+            this.ShowUser($"done");
+        }
+
+        private void EEPROM_ReadTest()
+        {
+            var asciValue = 64;
+            var allBuffer = new List<byte>();
+            this.ShowUser($"EEPROM Test - About to Read {_flash.MaxPage} pages");
+            for (var p = 0; p < _flash.MaxPage; p++)
+            {
+                if (p % 10 == 0)
+                    this.ShowUser($"Page {p}");
+                var b = new List<byte>();
+                _flash.ReadPages(p * (int)_flash.PageSize, (int)_flash.PageSize, b);
+                allBuffer.AddRange(b);
+            }
+
+            var tmpFileName = Path.Combine(Path.GetTempPath(), Path.GetTempFileName());
+            File.WriteAllBytes(tmpFileName, allBuffer.ToArray());
+
+            clearToolStripMenuItem_Click(null, null);
+
+            var bg = new BinaryToTextGenerator(tmpFileName);
+            this.ShowUser(bg.Generate(new BinaryViewerOption { ShowSector = true, SectorSize = (int)_flash.PageSize }));
+        }
+
+        private void readTestToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            EEPROM_ReadTest();
+        }
+
+        private void eEPROM25AA1024ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            DetectIfNeeded();
+            _flash = new FlashMemory(_spi);
+            _flash.ReadIdentification(FlashMemory.FLASH_DEVICE_ID.EEPROM_25AA1024_128Kb);
+            this.ShowUser($"");
+            this.ShowUser($"EEPROM: {_flash.GetDeviceInfo()}");
+            
         }
     }
 }

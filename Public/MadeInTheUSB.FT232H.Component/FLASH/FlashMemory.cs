@@ -45,7 +45,7 @@ namespace MadeInTheUSB.FT232H.Components
 
         public int MaxPage
         {
-            get { return this.SizeInByte / PAGE_SIZE; }
+            get { return this.SizeInByte / (int)this.PageSize; }
         }
 
         public int MaxBlock
@@ -73,7 +73,7 @@ namespace MadeInTheUSB.FT232H.Components
         public int ReadRegister1()
         {
             var buffer = new List<byte>();
-            if (this.SPIQuery(EEPROM_READ_STATUS_REGISTER_1, 1, buffer))
+            if (this.SPIQuery(EEPROM_READ_STATUS_REGISTER_RDSR, 1, buffer))
                 return buffer[0];
             else
                 return -1;
@@ -131,25 +131,36 @@ namespace MadeInTheUSB.FT232H.Components
             }
         }
 
-        public void ReadIdentification()
+        public void ReadIdentification(FLASH_DEVICE_ID deviceId = FLASH_DEVICE_ID.Undefined)
         {
-            var buffer = new List<byte>();
-            if (this.SPIQuery(EEPROM_READ_IDENTIFICATION, 18, buffer))
+            if (deviceId != FLASH_DEVICE_ID.Undefined)
             {
-                this.Manufacturer = (Manufacturers)buffer[0];
-                this.DeviceID = (CYPRESS_S25FLXXX_DEVICE_ID)((buffer[1] << 8) + buffer[2]);
-
-                this.SectorArchitecture = (CYPRESS_SECTOR_ARCHITECTURE)buffer[4];
-                this.FamilyID = (CYPRESS_FAMILIY_ID)buffer[5];
-                this.PackageModel = string.Empty;
-                this.PackageModel += ((char)buffer[6]).ToString();
-                this.PackageModel += ((char)buffer[7]).ToString();
-
-                switch(this.DeviceID)
+                this.DeviceID = FLASH_DEVICE_ID.EEPROM_25AA1024_128Kb;
+                this.PageSize = FLASH_PAGE_SIZE._256;
+                this.AddressSize = FLASH_ADDR_SIZE._3_Bytes;
+                this.SizeInByte = 1024 * 1024 / 8;
+                this.Manufacturer = Manufacturers.Microchip;
+            }
+            else
+            {
+                var buffer = new List<byte>();
+                if (this.SPIQuery(EEPROM_READ_IDENTIFICATION, 18, buffer))
                 {
-                    case CYPRESS_S25FLXXX_DEVICE_ID.S25FL127S_16MB:
-                        this.SizeInByte = 16 * 1024 * 1024;
-                        break;
+                    this.Manufacturer = (Manufacturers)buffer[0];
+                    this.DeviceID = (FLASH_DEVICE_ID)((buffer[1] << 8) + buffer[2]);
+
+                    this.SectorArchitecture = (CYPRESS_SECTOR_ARCHITECTURE)buffer[4];
+                    this.FamilyID = (CYPRESS_FAMILIY_ID)buffer[5];
+                    this.PackageModel = string.Empty;
+                    this.PackageModel += ((char)buffer[6]).ToString();
+                    this.PackageModel += ((char)buffer[7]).ToString();
+
+                    switch (this.DeviceID)
+                    {
+                        case FLASH_DEVICE_ID.S25FL127S_16MB:
+                            this.SizeInByte = 16 * 1024 * 1024;
+                            break;
+                    }
                 }
             }
         }
@@ -159,16 +170,28 @@ namespace MadeInTheUSB.FT232H.Components
             return SizeInByte / 1024 / 1024;
         }
 
+        public int GetDeviceSizeInKb()
+        {
+            return SizeInByte / 1024;
+        }
+
         public string GetDeviceInfo()
         {
-            return $@"DeviceID:{this.DeviceID}, Size:{this.GetDeviceSizeInMb()} Mb, Manufacturer:{this.Manufacturer}, MaxPage:{this.MaxPage}, Page Size:{PAGE_SIZE}, Page Size Write:{this.GetProgramWritePageSize()}, MaxBlock:{this.MaxBlock}, BlockSize:{FlashMemory.BLOCK_SIZE}";
+            var sizeUnit = "Mb";
+            var size = this.GetDeviceSizeInMb();
+            if (size == 0) {
+                size = this.GetDeviceSizeInKb();
+                sizeUnit = "Kb";
+            }
+
+            return $@"DeviceID:{this.DeviceID}, Size:{size} {sizeUnit}, Manufacturer:{this.Manufacturer}, MaxPage:{this.MaxPage}, Page Size:{this.PageSize}, MaxBlock:{this.MaxBlock}, BlockSize:{FlashMemory.BLOCK_SIZE}";
         }
 
         private bool SetWriteRegisterEnable(bool checkStatus = true)
         {
             var result = false;
 
-            if (!this.SendCommand(EEPROM_WRITE_ENABLE_CMD))
+            if (!this.SendCommand(EEPROM_WRITE_ENABLE_LATCH_WREN))
                 return result;
 
             this.WaitForOperation(5, 5, "w");
@@ -188,7 +211,7 @@ namespace MadeInTheUSB.FT232H.Components
 
         private bool SetWriteRegisterDisable()
         {
-            return this.SendCommand(EEPROM_WRITE_DISABLE_CMD);
+            return this.SendCommand(EEPROM_RESET_WRITE_ENABLE_LATCH_WRDI);
         }
 
         /// <summary>
@@ -214,13 +237,14 @@ namespace MadeInTheUSB.FT232H.Components
                 if(setUserHardwareInterfaceState)
                     this.SetUserHardwareInterfaceState(DeviceState.Writing);
 
-                if (buffer.Count % PAGE_SIZE == 0)
+                var pageSize = ((int)this.PageSize);
+                if (buffer.Count % pageSize == 0)
                 {
-                    var howManyPage = buffer.Count / PAGE_SIZE;
+                    var howManyPage = buffer.Count / pageSize;
                     for (var p = 0; p < howManyPage; p++)
                     {
-                        var address = addr + (p * PAGE_SIZE);
-                        var buffer2 = buffer.GetRange(p * PAGE_SIZE, PAGE_SIZE);
+                        var address = addr + (p * pageSize);
+                        var buffer2 = buffer.GetRange(p * pageSize, pageSize);
                         if (!this.__WriteOnePage(address, buffer2))
                             return false;
                     }
@@ -259,6 +283,10 @@ namespace MadeInTheUSB.FT232H.Components
 
             this.WaitForOperation(30, 7, "w");
 
+            // Added for the EEPROM, Not needed for CYPRESS - FRED TODO
+            if(!SetWriteRegisterDisable())
+                return false;
+
             return r1;
         }
 
@@ -272,7 +300,7 @@ namespace MadeInTheUSB.FT232H.Components
             return r;
         }
 
-        private bool ErasePage(int addr)
+        private bool EraseSector(int addr)
         {
             this.Trace($"ErasePage addr:{addr}");
 
@@ -293,7 +321,7 @@ namespace MadeInTheUSB.FT232H.Components
         {
             this.Trace($"Erase4K addr:{addr}");
 
-            if ((addr % (PAGE_SIZE)) != 0)
+            if ((addr % ((int)this.PageSize)) != 0)
                 throw new ArgumentException(string.Format("Address {0} must be a multiple of {1}", addr, this.GetProgramWritePageSize()));
             var b = EraseCommand(addr, EEPROM_BLOCKERASE_4K);
             this.WaitForOperation(100, 20, "!"); // Seems slower
@@ -305,7 +333,7 @@ namespace MadeInTheUSB.FT232H.Components
         {
             this.Trace($"Erase64K addr:{addr}");
 
-            if ((addr % (PAGE_SIZE)) != 0)
+            if ((addr % ((int)this.PageSize)) != 0)
                 throw new ArgumentException(string.Format("Address {0} must be a multiple of {1}", addr, this.GetProgramWritePageSize()));
             var b = EraseCommand(addr, EEPROM_BLOCKERASE_64K);
             if(addr == 0)

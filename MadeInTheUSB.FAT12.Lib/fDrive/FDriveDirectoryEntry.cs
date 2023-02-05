@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BufferUtil;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -8,12 +9,13 @@ namespace MadeInTheUSB.FAT12
     public class FDriveDirectoryEntry
     {
         public enum FILE_ATTRIBUTE {
-            FA_READ_ONLY      =0x01,
-            FA_HIDDEN         =0x02,
-            FA_SYSTEM         =0x04,
-            FA_VOLUME_LABEL   =0x08,
-            FA_SUB_DIRECTORY  =0x10,
-            FA_FILE_ARCHIVE   =0x20,
+
+            FA_READ_ONLY      = 0x01,
+            FA_HIDDEN         = 0x02,
+            FA_SYSTEM         = 0x04,
+            FA_VOLUME_LABEL   = 0x08,
+            FA_SUB_DIRECTORY  = 0x10,
+            FA_FILE_ARCHIVE   = 0x20,
         }
 
         const int MAX_FILENAME_LEN = 8;

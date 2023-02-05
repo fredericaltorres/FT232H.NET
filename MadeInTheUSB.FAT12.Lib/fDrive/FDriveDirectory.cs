@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.IO;
+using BufferUtil;
 
 namespace MadeInTheUSB.FAT12
 {
@@ -20,21 +21,20 @@ namespace MadeInTheUSB.FAT12
 
         public List<byte> GenerateFilesDataBuffer()
         {
-            using (MemoryStream stream = new MemoryStream())
+            using (MemoryStream memStream = new MemoryStream())
             {
-                using (BinaryWriter writer = new BinaryWriter(stream))
+                using (BinaryWriter writer = new BinaryWriter(memStream))
                 {
                     foreach (var d in this)
                     {
                         d.WriteDataFile(writer);
                     }
+                    memStream.Flush();
+                    var count   = (int)memStream.Length;
+                    var buffer  = memStream.GetBuffer().ToList();
+                    buffer      = buffer.Take(count).ToList();
+                    return buffer;
                 }
-                stream.Flush();
-
-                // This buffer can be bigger than 512 and the count must be a multiple of 512
-                var buffer = stream.GetBuffer().ToList();
-
-                return buffer;
             }
         }
 
