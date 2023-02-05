@@ -98,8 +98,7 @@ static void Main(string[] args)
 
 Experimenting on a bread board with LED and EEPROM.
 	
-	
-<img width="384" src="https://raw.githubusercontent.com/fredericaltorres/FT232H.NET/main/photos/Nusbio2_FT232H_SPI_4_MAX7219_Chained_8x8LedMatrix.jpg"/>
+
 
 <img width="384" src="https://raw.githubusercontent.com/fredericaltorres/FT232H.NET/main/photos/Nusbio2_FT232H_SPI_EEPROM_25AA256_00.jpg"/>
 
@@ -109,10 +108,13 @@ Experimenting on a bread board with LED and EEPROM.
 	
 
 The Adafruit breakout plugged in my own adapter.
-	![Adafruit FT232H, My Adapter, Cypress 16Mb Flash Chip](https://raw.githubusercontent.com/fredericaltorres/FT232H.NET/main/photos/FT232_Adafruit_PlusFredAdapterAndFlash.jpg)
+
+<img width="384" src="https://raw.githubusercontent.com/fredericaltorres/FT232H.NET/main/photos/FT232_Adafruit_PlusFredAdapterAndFlash.jpg"/>
 
 Programming with C# and Visual Studio.
-	![Programming in Visual Studio](https://raw.githubusercontent.com/fredericaltorres/FT232H.NET/main/photos/Nusbio2_FT232H_SPI_EEPROM_25AA256_02_VisualStudio.jpg)
+
+
+<img width="384" src="https://raw.githubusercontent.com/fredericaltorres/FT232H.NET/main/photos/Nusbio2_FT232H_SPI_EEPROM_25AA256_02_VisualStudio.jpg"/>
 	
 
 	
