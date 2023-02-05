@@ -19,7 +19,8 @@ for the FTDI chip FT232H using the([Adafruit Breakout FT232H](https://www.adafru
 * Any EPPROM and NOR and NAND Flash memory using the SPI protocol are supported with examples
 * ADC MCP3008 and MCP3004 are supported with examples
 
-
+# 2023 Update
+* I created the library in 2017 and in 2023 I am going to update and extend it, as I am going to need way to write and read FLASH Chip for my USB Mass Storage experimentation.
 
 ## Samples
 
