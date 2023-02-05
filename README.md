@@ -5,7 +5,7 @@ The .NET/Windows library MadeInTheUSB.FT232H.NET provides an abstraction to prog
 * The I2C protocol (Not yet supported)
 * The GPIOs
 
-for FTDI chip FT232H using the ([Adafruit Breakout FT232H](https://www.adafruit.com/product/2264))
+for the FTDI chip FT232H using the ([Adafruit Breakout FT232H](https://www.adafruit.com/product/2264))
 
 # External components supported or Chip
 
@@ -87,10 +87,10 @@ static void Main(string[] args)
  
  * The Adafruit breakout: 
  [Adafruit FT232H Breakout](https://www.adafruit.com/product/2264) General Purpose USB to GPIO+SPI+I2C
- 	- This breakout does contains an EEPROM therefore it is possible to program the device id or description.
-	- This breakout does contains a switch to switch the device in I2C mode and a Stemma QT I2C adapter
-	- This breakout IO are 3.3V
-	- This break out is only $3 more expensive than the Chinese one.
+- This breakout does contains an EEPROM therefore it is possible to program the device id or description.
+- This breakout does contains a switch to switch the device in I2C mode and a Stemma QT I2C adapter
+- This breakout IO are 3.3V
+- This break out is only $3 more expensive than the Chinese one.
 
 	- Images
 
