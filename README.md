@@ -101,14 +101,9 @@ static void Main(string[] args)
 
 Experimenting on a bread board with LED and EEPROM.
 	
-
-
 <img width="384" src="https://raw.githubusercontent.com/fredericaltorres/FT232H.NET/main/photos/Nusbio2_FT232H_SPI_EEPROM_25AA256_00.jpg"/>
+<img width="384" src="https://raw.githubusercontent.com/fredericaltorres/FT232H.NET/main/photos/Adafruit 8x8.jpg"/>
 
-	
-	
-	
-	
 
 The Adafruit breakout plugged in my own adapter.
 
@@ -128,6 +123,7 @@ Programming with C# and Visual Studio.
 	
 	
 <img width="384" src="https://raw.githubusercontent.com/fredericaltorres/FT232H.NET/main/FT232H_64x8%20LED%20Matrix.jpg"/>
+<img width="384" src="Chinese FT232 Gpios APA102.jpg"/>
   
  ## References Links
 
