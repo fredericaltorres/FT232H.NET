@@ -1,20 +1,25 @@
-# FT232H NET Library
+# FT232H.NET Library
 
 The .NET/Windows library FT232H.NET provides an abstraction to program
 * The SPI protocol
 * The I2C protocol (Not yet supported)
 * The GPIOs
+ 
+for the FTDI chip FT232H using the([Adafruit Breakout FT232H](https://www.adafruit.com/product/2264)) or any other compatible breakout.
 
-for the FTDI chip FT232H using the ([Adafruit Breakout FT232H](https://www.adafruit.com/product/2264))
+<img width="384" src="https://raw.githubusercontent.com/fredericaltorres/FT232H.NET/main/photos/Nusbio2_FT232H_SPI_4_MAX7219_Chained_8x8LedMatrix.jpg"/>
 
 # External components supported or Chip
 
 * RGB LED strip of type `APA102` are supported with examples
 * 8x8, 32x8 and 64x8 LED matrix based on the `MAX7219` chip are supported with examples
-* Any EPPROM and NOR and NAND Flash memory using the SPI protocol
+* Any EPPROM and NOR and NAND Flash memory using the SPI protocol are supported with examples
 * ADC MCP3008 and MCP3004 are supported with examples
 
-![64 x 8 matrix](https://raw.githubusercontent.com/fredericaltorres/FT232H.NET/main/photos/Nusbio2_FT232H_SPI_4_MAX7219_Chained_8x8LedMatrix.jpg)
+# 2023 Update
+* I created the library in 2017 and in 2023 I am going to update and extend it, as I am going to need ways to write and read FLASH Chip for my USB Mass Storage/FAT12 experimentations.
+
+* As Adafruit improved their breakout, I want to add the support I2C and add more example using Adafruit's I2C devices
 
 ## Samples
 
@@ -23,28 +28,28 @@ for the FTDI chip FT232H using the ([Adafruit Breakout FT232H](https://www.adafr
 ```csharp
 static void GpioSample(IDigitalWriteRead gpios, bool oneLoopOnly = false)
 {
-	var waitTime = 100;
-	for(var i=0; i < gpios.MaxGpio; i++)
-	{
-		gpios.DigitalWrite(i, PinState.High);
-	}
-	Thread.Sleep(waitTime);
-	for(var i=0; i < gpios.MaxGpio; i++)
-	{
-		gpios.DigitalWrite(i, PinState.Low);
-	}
-	Thread.Sleep(waitTime);
+    var waitTime = 100;
+    for(var i=0; i < gpios.MaxGpio; i++)
+    {
+        gpios.DigitalWrite(i, PinState.High);
+    }
+    Thread.Sleep(waitTime);
+    for(var i=0; i < gpios.MaxGpio; i++)
+    {
+        gpios.DigitalWrite(i, PinState.Low);
+    }
+    Thread.Sleep(waitTime);
 }
 
 static void Main(string[] args)
 {
-	var ft232Device = FT232HDetector.Detect();
-	if(ft232Device.Ok)
-		System.Console.WriteLine(ft232Device.ToString());
+    var ft232Device = FT232HDetector.Detect();
+    if(ft232Device.Ok)
+        System.Console.WriteLine(ft232Device.ToString());
 
-	var ft232hGpioSpiDevice = new GpioSpiDevice(MpsseSpiConfig.GetDefault());
-	var gpios               = ft232hGpioSpiDevice.GPIO;
-	GpioSample(gpios, true);
+    var ft232hGpioSpiDevice = new GpioSpiDevice(MpsseSpiConfig.GetDefault());
+    var gpios               = ft232hGpioSpiDevice.GPIO;
+    GpioSample(gpios, true);
 }
 ```
 
@@ -53,47 +58,58 @@ static void Main(string[] args)
 ```csharp
 static void CypressFlashMemorySample(ISPI spi)
 {
-	const int EEPROM_READ_IDENTIFICATION = 0x9F;
-	byte [] buffer = new byte [18];
+    const int EEPROM_READ_IDENTIFICATION = 0x9F;
+    byte [] buffer = new byte [18];
 
-	if(spi.Ok(spi.Query(new byte [] { EEPROM_READ_IDENTIFICATION },  buffer))) {
+    if(spi.Ok(spi.Query(new byte [] { EEPROM_READ_IDENTIFICATION },  buffer))) {
 
-		var manufacturer       = (Manufacturers)buffer[0];
-		var deviceID           = (CYPRESS_S25FLXXX_DEVICE_ID)((buffer[1] << 8) + buffer[2]);
-		var sectorArchitecture = (CYPRESS_SECTOR_ARCHITECTURE)buffer[4];
-		var familyID           = (CYPRESS_FAMILIY_ID)buffer[5];
-		var packageModel       = string.Empty;
-		packageModel          += ((char)buffer[6]).ToString();
-		packageModel          += ((char)buffer[7]).ToString();
+        var manufacturer       = (Manufacturers)buffer[0];
+    	var deviceID           = (CYPRESS_S25FLXXX_DEVICE_ID)((buffer[1] << 8) + buffer[2]);
+        var sectorArchitecture = (CYPRESS_SECTOR_ARCHITECTURE)buffer[4];
+        var familyID           = (CYPRESS_FAMILIY_ID)buffer[5];
+        var packageModel       = string.Empty;
+        packageModel          += ((char)buffer[6]).ToString();
+        packageModel          += ((char)buffer[7]).ToString();
 
-		System.Console.WriteLine($"FLASH Memory manufacturer:{manufacturer}, deviceID:{deviceID}, sectorArchitecture:{sectorArchitecture}, familyID:{familyID}, packageModel:{packageModel}");
+        System.Console.WriteLine($"FLASH Memory manufacturer:{manufacturer}, deviceID:{deviceID}, sectorArchitecture:{sectorArchitecture}, familyID:{familyID}, packageModel:{packageModel}");
 	}
 }
 
 static void Main(string[] args)
 {
-	var ft232Device = FT232HDetector.Detect();
-	if(ft232Device.Ok)
-		System.Console.WriteLine(ft232Device.ToString());
+    var ft232Device = FT232HDetector.Detect();
+    if(ft232Device.Ok)
+        System.Console.WriteLine(ft232Device.ToString());
 
-	var ft232hGpioSpiDevice = new GpioSpiDevice(MpsseSpiConfig.GetDefault());
-	var spi = ft232hGpioSpiDevice.SPI;
+    var ft232hGpioSpiDevice = new GpioSpiDevice(MpsseSpiConfig.GetDefault());
+    var spi = ft232hGpioSpiDevice.SPI;
 
-	CypressFlashMemorySample(spi);
+    CypressFlashMemorySample(spi);
 }
 ```
  
 ## Breakouts available
  
  * The Adafruit breakout: [Adafruit FT232H Breakout](https://www.adafruit.com/product/2264) General Purpose USB to GPIO+SPI+I2C
-	* This breakout does contains an EEPROM therefore it is possible to program the device id or description.
+	* This breakout does contain an EEPROM therefore it is possible to program the device id, description or hardware properties.
 	* This breakout does contains a switch to switch the device in I2C mode and a Stemma QT I2C adapter
 	* This breakout IO are 3.3V
 	* This break out is only $3 more expensive than the Chinese one.
 
-	![Adafruit FT232H with 4x4 matrix](https://raw.githubusercontent.com/fredericaltorres/FT232H.NET/main/photos/Nusbio2_FT232H_SPI_EEPROM_25AA256_00.jpg)
-	![Adafruit FT232H, My Adapter, Cypress 16Mb Flash Chip](https://raw.githubusercontent.com/fredericaltorres/FT232H.NET/main/photos/FT232_Adafruit_PlusFredAdapterAndFlash.jpg)
-	![Programming in Visual Studio](https://raw.githubusercontent.com/fredericaltorres/FT232H.NET/main/photos/Nusbio2_FT232H_SPI_EEPROM_25AA256_02_VisualStudio.jpg)
+Experimenting on a bread board with LED and EEPROM.
+	
+<img width="384" src="https://raw.githubusercontent.com/fredericaltorres/FT232H.NET/main/photos/Nusbio2_FT232H_SPI_EEPROM_25AA256_00.jpg"/>
+
+<img width="384" src="https://raw.githubusercontent.com/fredericaltorres/FT232H.NET/main/photos/Adafruit 8x8.jpg"/>
+
+The Adafruit breakout plugged in my own adapter.
+
+<img width="384" src="https://raw.githubusercontent.com/fredericaltorres/FT232H.NET/main/photos/FT232_Adafruit_PlusFredAdapterAndFlash.jpg"/>
+
+Programming with C# and Visual Studio.
+
+
+<img width="384" src="https://raw.githubusercontent.com/fredericaltorres/FT232H.NET/main/photos/Nusbio2_FT232H_SPI_EEPROM_25AA256_02_VisualStudio.jpg"/>
 	
 
 	
@@ -102,7 +118,9 @@ static void Main(string[] args)
  	- This breakout does ***not*** contains an EEPROM therefore it is ***not*** possible to program the device id or description.
 	- SPI and GPIOs are working fine.
 	
-	![FT232H with 64x8 LED Matrix](https://raw.githubusercontent.com/fredericaltorres/FT232H.NET/main/FT232H_64x8%20LED%20Matrix.jpg)
+	
+<img width="384" src="https://raw.githubusercontent.com/fredericaltorres/FT232H.NET/main/FT232H_64x8%20LED%20Matrix.jpg"/>
+<img width="384" src="Chinese FT232 Gpios APA102.jpg"/>
   
  ## References Links
 
