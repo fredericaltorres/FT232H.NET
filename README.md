@@ -123,7 +123,8 @@ Programming with C# and Visual Studio.
  	- This breakout does ***not*** contains an EEPROM therefore it is ***not*** possible to program the device id or description.
 	- SPI and GPIOs are working fine.
 	
-	![FT232H with 64x8 LED Matrix](https://raw.githubusercontent.com/fredericaltorres/FT232H.NET/main/FT232H_64x8%20LED%20Matrix.jpg)
+	
+<img width="384" src="https://raw.githubusercontent.com/fredericaltorres/FT232H.NET/main/FT232H_64x8%20LED%20Matrix.jpg"/>
   
  ## References Links
 
