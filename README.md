@@ -93,8 +93,6 @@ static void Main(string[] args)
 	* This break out is only $3 more expensive than the Chinese one.
 
 	- Images
-
-	![FT232H with 64x8 LED Matrix](https://raw.githubusercontent.com/fredericaltorres/FT232H.NET/main/FT232H_64x8%20LED%20Matrix.jpg)
 	![Adafruit FT232 with 4x4 matrix](https://raw.githubusercontent.com/fredericaltorres/FT232H.NET/main/photos/Nusbio2_FT232H_SPI_EEPROM_25AA256_00.jpg)
 	![Programming in Visual Studio](https://raw.githubusercontent.com/fredericaltorres/FT232H.NET/main/photos/Nusbio2_FT232H_SPI_EEPROM_25AA256_02_VisualStudio.jpg)
 
@@ -104,6 +102,8 @@ static void Main(string[] args)
 	- SPI and GPIOs are working fine.
 	- Images
 		* Chinese FT232H Breakout with 8 GPIOs and 1 APA 102 RGB LED connected -> https://bit.ly/2RhpmZA
+
+	![FT232H with 64x8 LED Matrix](https://raw.githubusercontent.com/fredericaltorres/FT232H.NET/main/FT232H_64x8%20LED%20Matrix.jpg)
  
  * [Chinese/eBay FT 2 232H breakout](https://www.ebay.com/itm/1-pcs-USB-to-UART-FIFO-SPI-I2C-JTAG-RS232-module-FT2232HL-D1L2/253767822756?epid=14010988565&hash=item3b15bdada4)
 	- I never tested this breakout, but seems interesting
