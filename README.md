@@ -93,10 +93,17 @@ static void Main(string[] args)
  * The Adafruit breakout: 
  [Adafruit FT232H Breakout](https://www.adafruit.com/product/2264) General Purpose USB to GPIO+SPI+I2C
  	- This breakout does contains an EEPROM therefore it is possible to program the device id or description.
+	- This breakout does contains a switch to switch the device in I2C mode and a Stemma QT I2C adapter
+	- This breakout IO are 3.3V
+	- This break out is only $3 more expensive than the Chinese one.
 
 	- Images
-		* Adafruit FT232 with 16x4 matrix -> https://bit.ly/2RgmvAl
-		* Adafruit FT232 with 4x4 matrix -> https://bit.ly/2DYEkRd
+		* Adafruit FT232 with 16x4 matrix -> AAAAAAAAAAAAAA
+		https://madeintheusbstorage00.blob.core.windows.net/nusbio-photos/Adafruit_FT232H_Twitt/Nusbio2_FT232H_SPI_4_MAX7219_Chained_8x8LedMatrix.jpg
+
+		* Adafruit FT232 with 4x4 matrix -> AAAAAAAAAAAAAAA
+		https://madeintheusbstorage00.blob.core.windows.net/nusbio-photos/FT232H/ft232H_i2c_AdaFruit8x8LedMatrix/ft232H_i2c_AdaFruit8x8LedMatrix_Breadboard.jpg
+
 
  * [Chinese/eBay FT232H breakout](https://www.ebay.com/sch/i.html?_from=R40&_trksid=p2380057.m570.l1313.TR12.TRC2.A0.H0.Xft232H.TRS0&_nkw=ft232H&_sacat=0)
  	- This breakout does ***not*** contains an EEPROM therefore it is ***not*** possible to program the device id or description.
