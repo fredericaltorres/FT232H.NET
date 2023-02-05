@@ -1,4 +1,4 @@
-# FT232H NET Library
+# FT232H.NET Library
 
 The .NET/Windows library FT232H.NET provides an abstraction to program
 * The SPI protocol
