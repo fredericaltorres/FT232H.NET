@@ -1,6 +1,6 @@
-# MadeInTheUSB FT232H NET Library
+# FT232H NET Library
 
-The .NET/Windows library MadeInTheUSB.FT232H.NET provides an abstraction to program
+The .NET/Windows library FT232H.NET provides an abstraction to program
 * The SPI protocol
 * The I2C protocol (Not yet supported)
 * The GPIOs
