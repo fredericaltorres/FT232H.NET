@@ -19,7 +19,9 @@ Not supported yet:
 * Any EPPROM and NOR and NAND Flash memory using the SPI protocol should be supported
 * ADC MCP3008 and MCP3004 are supported with examples
 
-![FT232H with 64x8 LED Matrix](https://raw.githubusercontent.com/fredericaltorres/FT232H.NET/main/FT232H_64x8%20LED%20Matrix.jpg)
++++
+(https://raw.githubusercontent.com/fredericaltorres/FT232H.NET/main/photos/Nusbio2_FT232H_SPI_4_MAX7219_Chained_8x8LedMatrix.jpg)
+
 
 ## Samples
 
@@ -97,8 +99,8 @@ static void Main(string[] args)
 	- This breakout IO are 3.3V
 	- This break out is only $3 more expensive than the Chinese one.
 
-	- Images
-		* Adafruit FT232 with 16x4 matrix -> https://raw.githubusercontent.com/fredericaltorres/FT232H.NET/main/photos/Nusbio2_FT232H_SPI_4_MAX7219_Chained_8x8LedMatrix.jpg
+	- Images +++
+		* [FT232H with 64x8 LED Matrix](https://raw.githubusercontent.com/fredericaltorres/FT232H.NET/main/FT232H_64x8%20LED%20Matrix.jpg)
 		* Adafruit FT232 with 4x4 matrix -> https://raw.githubusercontent.com/fredericaltorres/FT232H.NET/main/photos/Nusbio2_FT232H_SPI_EEPROM_25AA256_00.jpg
 		* Programming in Visual Studio -> https://raw.githubusercontent.com/fredericaltorres/FT232H.NET/main/photos/Nusbio2_FT232H_SPI_EEPROM_25AA256_02_VisualStudio.jpg
 
