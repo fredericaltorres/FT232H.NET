@@ -1,22 +1,17 @@
 # MadeInTheUSB FT232H NET Library
 
-The .NET/Windows library MadeInTheUSB.FT232H provides an abstraction to program
+The .NET/Windows library MadeInTheUSB.FT232H.NET provides an abstraction to program
 * The SPI protocol
+* The I2C protocol (Not yet supported)
 * The GPIOs
 
-for break out based on the FTDI chip FT232H.
-
-Not supported yet:
-- I2C
-	* With the FT232H it is not possible to used I2C and SPI at the same time, because the 2 protocols
-	use the same clock and data pins.
-	* To support I2C and SPI at the same time you can use the FT2232H or the FT4222H.
+for FTDI chip FT232H using the ([Adafruit Breakout FT232H](https://www.adafruit.com/product/2264))
 
 # External components supported or Chip
 
 * RGB LED strip of type `APA102` are supported with examples
 * 8x8, 32x8 and 64x8 LED matrix based on the `MAX7219` chip are supported with examples
-* Any EPPROM and NOR and NAND Flash memory using the SPI protocol should be supported
+* Any EPPROM and NOR and NAND Flash memory using the SPI protocol
 * ADC MCP3008 and MCP3004 are supported with examples
 
 ![64 x 8 matrix](https://raw.githubusercontent.com/fredericaltorres/FT232H.NET/main/photos/Nusbio2_FT232H_SPI_4_MAX7219_Chained_8x8LedMatrix.jpg)
