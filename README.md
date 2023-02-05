@@ -97,10 +97,11 @@ static void Main(string[] args)
 	- This breakout IO are 3.3V
 	- This break out is only $3 more expensive than the Chinese one.
 
-	- Images +++
-		* [FT232H with 64x8 LED Matrix](https://raw.githubusercontent.com/fredericaltorres/FT232H.NET/main/FT232H_64x8%20LED%20Matrix.jpg)
-		* Adafruit FT232 with 4x4 matrix -> https://raw.githubusercontent.com/fredericaltorres/FT232H.NET/main/photos/Nusbio2_FT232H_SPI_EEPROM_25AA256_00.jpg
-		* Programming in Visual Studio -> https://raw.githubusercontent.com/fredericaltorres/FT232H.NET/main/photos/Nusbio2_FT232H_SPI_EEPROM_25AA256_02_VisualStudio.jpg
+	- Images
+
+	![FT232H with 64x8 LED Matrix](https://raw.githubusercontent.com/fredericaltorres/FT232H.NET/main/FT232H_64x8%20LED%20Matrix.jpg)
+	![Adafruit FT232 with 4x4 matrix](https://raw.githubusercontent.com/fredericaltorres/FT232H.NET/main/photos/Nusbio2_FT232H_SPI_EEPROM_25AA256_00.jpg)
+	![Programming in Visual Studio](https://raw.githubusercontent.com/fredericaltorres/FT232H.NET/main/photos/Nusbio2_FT232H_SPI_EEPROM_25AA256_02_VisualStudio.jpg)
 
 
  * [Chinese/eBay FT232H breakout](https://www.ebay.com/sch/i.html?_from=R40&_trksid=p2380057.m570.l1313.TR12.TRC2.A0.H0.Xft232H.TRS0&_nkw=ft232H&_sacat=0)
