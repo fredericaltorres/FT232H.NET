@@ -58,21 +58,28 @@ static void Main(string[] args)
 ```csharp
 static void CypressFlashMemorySample(ISPI spi)
 {
-    const int EEPROM_READ_IDENTIFICATION = 0x9F;
-    byte [] buffer = new byte [18];
+    var flash = new FlashMemory(spi);
+    flash.ReadIdentification();
+    System.Console.WriteLine(flash.GetDeviceInfo());
 
-    if(spi.Ok(spi.Query(new byte [] { EEPROM_READ_IDENTIFICATION },  buffer))) {
+    for (var _64kBlock = 0; _64kBlock < flash.MaxBlock; _64kBlock++)
+    {
+        System.Console.WriteLine($"Writing block:{_64kBlock}/{flash.MaxBlock}, {_64kBlock * 100.0 / flash.MaxBlock:0}%");
+        var r = flash.WritePages(_64kBlock * FlashMemory.BLOCK_SIZE, _64k0123Buffer, format: true);
+        if (!r)
+            System.Console.WriteLine($"Error writing block:{_64kBlock}");
+    }
 
-        var manufacturer       = (Manufacturers)buffer[0];
-    	var deviceID           = (CYPRESS_S25FLXXX_DEVICE_ID)((buffer[1] << 8) + buffer[2]);
-        var sectorArchitecture = (CYPRESS_SECTOR_ARCHITECTURE)buffer[4];
-        var familyID           = (CYPRESS_FAMILIY_ID)buffer[5];
-        var packageModel       = string.Empty;
-        packageModel          += ((char)buffer[6]).ToString();
-        packageModel          += ((char)buffer[7]).ToString();
-
-        System.Console.WriteLine($"FLASH Memory manufacturer:{manufacturer}, deviceID:{deviceID}, sectorArchitecture:{sectorArchitecture}, familyID:{familyID}, packageModel:{packageModel}");
-	}
+    for (var _64kBlock = 0; _64kBlock < flash.MaxBlock; _64kBlock++)
+    {
+        System.Console.WriteLine($"Reading block:{_64kBlock}/{flash.MaxBlock}, {_64kBlock * 100.0 / flash.MaxBlock:0}%");
+        var buffer = new List<byte>();
+        if (flash.ReadPages(_64kBlock * FlashMemory.BLOCK_SIZE, FlashMemory.BLOCK_SIZE, buffer))
+        {
+            var resultString = PerformanceHelper.AsciiBufferToString(buffer.ToArray());
+            System.Console.WriteLine(resultString);
+        }
+    }
 }
 
 static void Main(string[] args)
@@ -81,11 +88,15 @@ static void Main(string[] args)
     if(ft232Device.Ok)
         System.Console.WriteLine(ft232Device.ToString());
 
-    var ft232hGpioSpiDevice = new GpioSpiDevice(MpsseSpiConfig.GetDefault());
-    var spi = ft232hGpioSpiDevice.SPI;
+    var clockSpeed = MpsseSpiConfig._30Mhz; // clockSpeed = MpsseSpiConfig._10Mhz;
+    var ft232hGpioSpiDevice = new GpioSpiDevice(MpsseSpiConfig.Make(clockSpeed));
+    var spi                 = ft232hGpioSpiDevice.SPI;
+    var gpios               = ft232hGpioSpiDevice.GPIO;
 
     CypressFlashMemorySample(spi);
 }
+
+
 ```
  
 ## Breakouts available
