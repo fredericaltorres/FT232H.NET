@@ -18,13 +18,12 @@ for the FTDI chip FT232H using the ([Adafruit Breakout FT232H](https://www.adafr
 
 # 2023 Update
 * I created the library in 2017 and in 2023 I am going to update and extend it, as I am going to need ways to write and read FLASH Chip for my USB Mass Storage/FAT12 experimentations.
+* As Adafruit improved their breakout, I want to add the support I2C and add more example using Adafruit's I2C devices
 
-# FTDI DLL
+# FTDI DLLs
 * The library uses the dll libMPSSE.dll
 * The library uses the dll C:\Windows\System32\FTD2XX.DLL
 	* This DLL should get installed automatically by Windows as part the installation of the FTDI driver
-
-* As Adafruit improved their breakout, I want to add the support I2C and add more example using Adafruit's I2C devices
 
 ## Samples
 
