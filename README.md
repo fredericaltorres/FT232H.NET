@@ -85,29 +85,25 @@ static void Main(string[] args)
  
 ## Breakouts available
  
- * The Adafruit breakout: 
-- [Adafruit FT232H Breakout](https://www.adafruit.com/product/2264) General Purpose USB to GPIO+SPI+I2C
+ * The Adafruit breakout: [Adafruit FT232H Breakout](https://www.adafruit.com/product/2264) General Purpose USB to GPIO+SPI+I2C
 	* This breakout does contains an EEPROM therefore it is possible to program the device id or description.
 	* This breakout does contains a switch to switch the device in I2C mode and a Stemma QT I2C adapter
 	* This breakout IO are 3.3V
 	* This break out is only $3 more expensive than the Chinese one.
 
-	- Images
-	![Adafruit FT232 with 4x4 matrix](https://raw.githubusercontent.com/fredericaltorres/FT232H.NET/main/photos/Nusbio2_FT232H_SPI_EEPROM_25AA256_00.jpg)
+	![Adafruit FT232H with 4x4 matrix](https://raw.githubusercontent.com/fredericaltorres/FT232H.NET/main/photos/Nusbio2_FT232H_SPI_EEPROM_25AA256_00.jpg)
+	![Adafruit FT232H, My Adapter, Cypress 16Mb Flash Chip](https://raw.githubusercontent.com/fredericaltorres/FT232H.NET/main/photos/FT232_Adafruit_PlusFredAdapterAndFlash.jpg)
 	![Programming in Visual Studio](https://raw.githubusercontent.com/fredericaltorres/FT232H.NET/main/photos/Nusbio2_FT232H_SPI_EEPROM_25AA256_02_VisualStudio.jpg)
+	
 
+	
 
  * [Chinese/eBay FT232H breakout](https://www.ebay.com/sch/i.html?_from=R40&_trksid=p2380057.m570.l1313.TR12.TRC2.A0.H0.Xft232H.TRS0&_nkw=ft232H&_sacat=0)
  	- This breakout does ***not*** contains an EEPROM therefore it is ***not*** possible to program the device id or description.
 	- SPI and GPIOs are working fine.
-	- Images
-		* Chinese FT232H Breakout with 8 GPIOs and 1 APA 102 RGB LED connected -> https://bit.ly/2RhpmZA
-
+	
 	![FT232H with 64x8 LED Matrix](https://raw.githubusercontent.com/fredericaltorres/FT232H.NET/main/FT232H_64x8%20LED%20Matrix.jpg)
- 
- * [Chinese/eBay FT 2 232H breakout](https://www.ebay.com/itm/1-pcs-USB-to-UART-FIFO-SPI-I2C-JTAG-RS232-module-FT2232HL-D1L2/253767822756?epid=14010988565&hash=item3b15bdada4)
-	- I never tested this breakout, but seems interesting
-
+  
  ## References Links
 
 - [FT232H Datasheet](https://www.ftdichip.com/Support/Documents/DataSheets/ICs/DS_FT232H.pdf)
