@@ -86,12 +86,14 @@ static void Main(string[] args)
 ## Breakouts available
  
  * The Adafruit breakout: [Adafruit FT232H Breakout](https://www.adafruit.com/product/2264) General Purpose USB to GPIO+SPI+I2C
-	* This breakout does contains an EEPROM therefore it is possible to program the device id or description.
+	* This breakout does contain an EEPROM therefore it is possible to program the device id, description or hardware properties.
 	* This breakout does contains a switch to switch the device in I2C mode and a Stemma QT I2C adapter
 	* This breakout IO are 3.3V
 	* This break out is only $3 more expensive than the Chinese one.
 
 	![Adafruit FT232H with 4x4 matrix](https://raw.githubusercontent.com/fredericaltorres/FT232H.NET/main/photos/Nusbio2_FT232H_SPI_EEPROM_25AA256_00.jpg)
+
+The Adafruit breakout plugged in my own adapter
 	![Adafruit FT232H, My Adapter, Cypress 16Mb Flash Chip](https://raw.githubusercontent.com/fredericaltorres/FT232H.NET/main/photos/FT232_Adafruit_PlusFredAdapterAndFlash.jpg)
 	![Programming in Visual Studio](https://raw.githubusercontent.com/fredericaltorres/FT232H.NET/main/photos/Nusbio2_FT232H_SPI_EEPROM_25AA256_02_VisualStudio.jpg)
 	
