@@ -19,8 +19,8 @@ Not supported yet:
 * Any EPPROM and NOR and NAND Flash memory using the SPI protocol should be supported
 * ADC MCP3008 and MCP3004 are supported with examples
 
-+++
-(https://raw.githubusercontent.com/fredericaltorres/FT232H.NET/main/photos/Nusbio2_FT232H_SPI_4_MAX7219_Chained_8x8LedMatrix.jpg)
+
+[64 x 8 matrix](https://raw.githubusercontent.com/fredericaltorres/FT232H.NET/main/photos/Nusbio2_FT232H_SPI_4_MAX7219_Chained_8x8LedMatrix.jpg)
 
 
 ## Samples
