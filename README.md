@@ -23,28 +23,28 @@ for the FTDI chip FT232H using the([Adafruit Breakout FT232H](https://www.adafru
 ```csharp
 static void GpioSample(IDigitalWriteRead gpios, bool oneLoopOnly = false)
 {
-  var waitTime = 100;
-  for(var i=0; i < gpios.MaxGpio; i++)
-  {
-    gpios.DigitalWrite(i, PinState.High);
-  }
-  Thread.Sleep(waitTime);
-  for(var i=0; i < gpios.MaxGpio; i++)
-  {
-    gpios.DigitalWrite(i, PinState.Low);
-  }
-  Thread.Sleep(waitTime);
+    var waitTime = 100;
+    for(var i=0; i < gpios.MaxGpio; i++)
+    {
+        gpios.DigitalWrite(i, PinState.High);
+    }
+    Thread.Sleep(waitTime);
+    for(var i=0; i < gpios.MaxGpio; i++)
+    {
+        gpios.DigitalWrite(i, PinState.Low);
+    }
+    Thread.Sleep(waitTime);
 }
 
 static void Main(string[] args)
 {
-	var ft232Device = FT232HDetector.Detect();
-	if(ft232Device.Ok)
-		System.Console.WriteLine(ft232Device.ToString());
+    var ft232Device = FT232HDetector.Detect();
+    if(ft232Device.Ok)
+        System.Console.WriteLine(ft232Device.ToString());
 
-	var ft232hGpioSpiDevice = new GpioSpiDevice(MpsseSpiConfig.GetDefault());
-	var gpios               = ft232hGpioSpiDevice.GPIO;
-	GpioSample(gpios, true);
+    var ft232hGpioSpiDevice = new GpioSpiDevice(MpsseSpiConfig.GetDefault());
+    var gpios               = ft232hGpioSpiDevice.GPIO;
+    GpioSample(gpios, true);
 }
 ```
 
@@ -53,33 +53,33 @@ static void Main(string[] args)
 ```csharp
 static void CypressFlashMemorySample(ISPI spi)
 {
-	const int EEPROM_READ_IDENTIFICATION = 0x9F;
-	byte [] buffer = new byte [18];
+    const int EEPROM_READ_IDENTIFICATION = 0x9F;
+    byte [] buffer = new byte [18];
 
-	if(spi.Ok(spi.Query(new byte [] { EEPROM_READ_IDENTIFICATION },  buffer))) {
+    if(spi.Ok(spi.Query(new byte [] { EEPROM_READ_IDENTIFICATION },  buffer))) {
 
-		var manufacturer       = (Manufacturers)buffer[0];
-		var deviceID           = (CYPRESS_S25FLXXX_DEVICE_ID)((buffer[1] << 8) + buffer[2]);
-		var sectorArchitecture = (CYPRESS_SECTOR_ARCHITECTURE)buffer[4];
-		var familyID           = (CYPRESS_FAMILIY_ID)buffer[5];
-		var packageModel       = string.Empty;
-		packageModel          += ((char)buffer[6]).ToString();
-		packageModel          += ((char)buffer[7]).ToString();
+        var manufacturer       = (Manufacturers)buffer[0];
+    	var deviceID           = (CYPRESS_S25FLXXX_DEVICE_ID)((buffer[1] << 8) + buffer[2]);
+        var sectorArchitecture = (CYPRESS_SECTOR_ARCHITECTURE)buffer[4];
+        var familyID           = (CYPRESS_FAMILIY_ID)buffer[5];
+        var packageModel       = string.Empty;
+        packageModel          += ((char)buffer[6]).ToString();
+        packageModel          += ((char)buffer[7]).ToString();
 
-		System.Console.WriteLine($"FLASH Memory manufacturer:{manufacturer}, deviceID:{deviceID}, sectorArchitecture:{sectorArchitecture}, familyID:{familyID}, packageModel:{packageModel}");
+        System.Console.WriteLine($"FLASH Memory manufacturer:{manufacturer}, deviceID:{deviceID}, sectorArchitecture:{sectorArchitecture}, familyID:{familyID}, packageModel:{packageModel}");
 	}
 }
 
 static void Main(string[] args)
 {
-	var ft232Device = FT232HDetector.Detect();
-	if(ft232Device.Ok)
-		System.Console.WriteLine(ft232Device.ToString());
+    var ft232Device = FT232HDetector.Detect();
+    if(ft232Device.Ok)
+        System.Console.WriteLine(ft232Device.ToString());
 
-	var ft232hGpioSpiDevice = new GpioSpiDevice(MpsseSpiConfig.GetDefault());
-	var spi = ft232hGpioSpiDevice.SPI;
+    var ft232hGpioSpiDevice = new GpioSpiDevice(MpsseSpiConfig.GetDefault());
+    var spi = ft232hGpioSpiDevice.SPI;
 
-	CypressFlashMemorySample(spi);
+    CypressFlashMemorySample(spi);
 }
 ```
  
