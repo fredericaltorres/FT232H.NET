@@ -49,7 +49,7 @@ namespace MadeInTheUSB.FT232H.Console
             var _64k0123String = PerformanceHelper.Get64kString0123();
             var _64k0123Buffer = PerformanceHelper.GetAsciiBuffer(_64k0123String).ToList();
             var ph = new PerformanceHelper();
-            var WRITE_FLASH = true;
+            var WRITE_FLASH = !true;
 
             if (WRITE_FLASH)
             {
@@ -108,14 +108,14 @@ namespace MadeInTheUSB.FT232H.Console
                         result = (resultString == _64kFredString);
                         PerformanceHelper.AssertString(resultString, _64kFredString);
                         System.Console.WriteLine($"Reading block:{_64kBlock}, Status:{result}");
-                        //if (!result && Debugger.IsAttached) Debugger.Break();
+                        if (!result && Debugger.IsAttached) Debugger.Break();
                     }
                     else
                     {
                         result = (resultString == _64kAbdcString);
                         PerformanceHelper.AssertString(resultString, _64kAbdcString);
                         System.Console.WriteLine($"Reading block:{_64kBlock}, Status:{result}");
-                        //if (!result && Debugger.IsAttached) Debugger.Break();
+                        if (!result && Debugger.IsAttached) Debugger.Break();
                     }
                 }
             }

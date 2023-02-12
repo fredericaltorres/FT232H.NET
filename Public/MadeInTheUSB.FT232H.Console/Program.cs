@@ -47,10 +47,10 @@ namespace MadeInTheUSB.FT232H.Console
             };
             //FlashMemoryWriteFDriveFileSystem(spi, files, fatLinkedListSectorCount, volumeName, updateFlash: false);
             //FlashMemoryWriteFlashContentToLocalFile(spi);
-            CypressFlashMemorySample(spi);
+            //CypressFlashMemorySample(spi);
             //Api102RgbLedSample(spi);
             // ADC_MCP3008Demo(spi);
-            //GpioSample(gpios, true);
+            GpioSample(gpios, false);
         }
     }
 }

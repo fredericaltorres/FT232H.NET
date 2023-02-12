@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using static FTD2XX_NET.FTDI;
 using MadeInTheUSB.FT232H.Components.APA102;
+using DynamicSugar;
 
 namespace MadeInTheUSB.FT232H.Console
 {
@@ -16,21 +17,22 @@ namespace MadeInTheUSB.FT232H.Console
         {
             var goOn           = true;
             const int waitTime = 65;
+            var gpioIndexes = DS.Range(0, gpios.MaxGpio, 1);
 
-            while(goOn) {
+            while (goOn) {
 
-                for(var i=0; i < gpios.MaxGpio; i++)
-                {
-                    gpios.DigitalWrite(i, PinState.High);
+                gpioIndexes.ForEach((gpioIndex) => {
+                    gpios.DigitalWrite(gpioIndex, PinState.High);
                     Thread.Sleep(waitTime);
-                }
+                });
                 Thread.Sleep(waitTime);
-                for(var i=0; i < gpios.MaxGpio; i++)
-                {
-                    gpios.DigitalWrite(i, PinState.Low);
+
+                gpioIndexes.ForEach((gpioIndex) => {
+                    gpios.DigitalWrite(gpioIndex, PinState.Low);
                     Thread.Sleep(waitTime);
-                }
+                });
                 Thread.Sleep(waitTime);
+
                 if(System.Console.KeyAvailable)
                 {
                     var k = System.Console.ReadKey();
