@@ -15,16 +15,30 @@ namespace MadeInTheUSB.FT232H.Components
             Unknown = 0,
             Cypress = 1,
             Microchip = 2, // This may not be the right id
+            Winbond  = 0xEF,
         }
         public enum FLASH_DEVICE_ID
         {
             Undefined      = 0,
-            S25FL116K_2Mb  = 0x14,
-            S25FL132K_4Mb  = 0x15,
-            S25FL164K_8Mb  = 0x16,
-            S25FL127S_16MB = 8216, // http://www.cypress.com/file/177961/download
+            CYPRESS_S25FL116K_2Mb  = 0x14,
+            CYPRESS_S25FL132K_4Mb  = 0x15,
+            CYPRESS_S25FL164K_8Mb  = 0x16,
+            CYPRESS_S25FL127S_16MB = 8216, // http://www.cypress.com/file/177961/download
 
             EEPROM_25AA1024_128Kb  = -2, //SERIAL EEPROM 1MBIT 2 https://ww1.microchip.com/downloads/en/DeviceDoc/1-Mbit-SPI-Bus-Serial-EEPROM-Data-Sheet-20001836K.pdf
+
+            // https://github.com/adafruit/nvm.toml/tree/main/flash/winbond
+            // https://www.adafruit.com/product/5634
+            // datasheet https://www.winbond.com/hq/product/code-storage-flash-memory/serial-nor-flash/?__locale=en&partNo=W25Q128JV
+            // datasheet https://www.winbond.com/hq/support/documentation/levelOne.jsp?__locale=en&DocNo=DA00-W25Q128JV
+            //W25Q128JVSSIQ_16MB = 16408,
+            WINBOND_25Q128JV_IN_IQ_JQ_16MB = 0x4018,
+            WINBOND_25Q128JV_IM_JM = 0x7018,
+        }
+
+        public enum WINBOND_FLASH_DEVICE_ID
+        {
+            WINBOND_25Q128JV_16MB = 0x17,
         }
 
         public FLASH_DEVICE_ID DeviceID;

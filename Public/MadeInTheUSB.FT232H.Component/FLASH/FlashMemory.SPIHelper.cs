@@ -51,22 +51,33 @@ namespace MadeInTheUSB.FT232H.Components
             return false;
         }
 
-        private byte[] GetEepromApiReadBuffer(int addr)
+        public byte[] GenerateBuffer(byte command, int addr)
         {
-            if(this.AddressSize == FLASH_ADDR_SIZE._3_Bytes)
-                return new byte[] { EEPROM_READ, (byte)(addr >> 16), (byte)(addr >> 8), (byte)(addr & 0xFF) };
+            if (this.AddressSize == FLASH_ADDR_SIZE._3_Bytes)
+                return new byte[] { command, (byte)(addr >> 16), (byte)(addr >> 8), (byte)(addr & 0xFF) };
             else
-                return new byte[] { EEPROM_READ, (byte)(addr >> 8), (byte)(addr & 0xFF) };
+                return new byte[] { command, (byte)(addr >> 8), (byte)(addr & 0xFF) };
         }
 
-        private byte[] GetEepromApiWriteBuffer(int addr, List<byte> data = null)
+        public byte[] GetEepromApiReadBuffer(int addr)
+        {
+            return GenerateBuffer(EEPROM_READ, addr);
+            //if (this.AddressSize == FLASH_ADDR_SIZE._3_Bytes)
+            //    return new byte[] { EEPROM_READ, (byte)(addr >> 16), (byte)(addr >> 8), (byte)(addr & 0xFF) };
+            //else
+            //    return new byte[] { EEPROM_READ, (byte)(addr >> 8), (byte)(addr & 0xFF) };
+        }
+
+        public byte[] GetEepromApiWriteBuffer(int addr, List<byte> data = null)
         {
             List<byte> buffer = null;
 
-            if (this.AddressSize == FLASH_ADDR_SIZE._3_Bytes)
-                buffer = new List<byte>() { EEPROM_WRITE_PAGE_PROGRAM_PP, (byte)(addr >> 16), (byte)(addr >> 8), (byte)(addr & 0xFF) };
-            else
-                buffer = new List<byte>() { EEPROM_WRITE_PAGE_PROGRAM_PP,  (byte)(addr >> 8), (byte)(addr & 0xFF) };
+            buffer = GenerateBuffer(EEPROM_WRITE_PAGE_PROGRAM_PP, addr).ToList();
+
+            //if (this.AddressSize == FLASH_ADDR_SIZE._3_Bytes)
+            //    buffer = new List<byte>() { EEPROM_WRITE_PAGE_PROGRAM_PP, (byte)(addr >> 16), (byte)(addr >> 8), (byte)(addr & 0xFF) };
+            //else
+            //    buffer = new List<byte>() { EEPROM_WRITE_PAGE_PROGRAM_PP,  (byte)(addr >> 8), (byte)(addr & 0xFF) };
 
             if (data != null)
                 buffer.AddRange(data);

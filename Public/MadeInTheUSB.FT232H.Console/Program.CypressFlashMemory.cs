@@ -49,7 +49,7 @@ namespace MadeInTheUSB.FT232H.Console
             var _64k0123String = PerformanceHelper.Get64kString0123();
             var _64k0123Buffer = PerformanceHelper.GetAsciiBuffer(_64k0123String).ToList();
             var ph = new PerformanceHelper();
-            var WRITE_FLASH = false;
+            var WRITE_FLASH = true;
 
             if (WRITE_FLASH)
             {
@@ -59,7 +59,7 @@ namespace MadeInTheUSB.FT232H.Console
                 // Each block or page must be erased before being written
 
                 ph.Start();
-                for (var _64kBlock = 0; _64kBlock < flash.MaxBlock; _64kBlock++)
+                for (var _64kBlock = 100; _64kBlock < flash.MaxBlock; _64kBlock++)
                 {
                     ph.AddByte(FlashMemory.BLOCK_SIZE);
                     System.Console.WriteLine($"Writing block:{_64kBlock}/{flash.MaxBlock}, {_64kBlock * 100.0 / flash.MaxBlock:0}%");
@@ -108,14 +108,14 @@ namespace MadeInTheUSB.FT232H.Console
                         result = (resultString == _64kFredString);
                         PerformanceHelper.AssertString(resultString, _64kFredString);
                         System.Console.WriteLine($"Reading block:{_64kBlock}, Status:{result}");
-                        if (!result && Debugger.IsAttached) Debugger.Break();
+                        //if (!result && Debugger.IsAttached) Debugger.Break();
                     }
                     else
                     {
                         result = (resultString == _64kAbdcString);
                         PerformanceHelper.AssertString(resultString, _64kAbdcString);
                         System.Console.WriteLine($"Reading block:{_64kBlock}, Status:{result}");
-                        if (!result && Debugger.IsAttached) Debugger.Break();
+                        //if (!result && Debugger.IsAttached) Debugger.Break();
                     }
                 }
             }

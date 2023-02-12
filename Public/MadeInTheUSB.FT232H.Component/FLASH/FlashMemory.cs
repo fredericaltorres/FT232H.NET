@@ -147,17 +147,38 @@ namespace MadeInTheUSB.FT232H.Components
                 if (this.SPIQuery(EEPROM_READ_IDENTIFICATION, 18, buffer))
                 {
                     this.Manufacturer = (Manufacturers)buffer[0];
-                    this.DeviceID = (FLASH_DEVICE_ID)((buffer[1] << 8) + buffer[2]);
+                    var deviceIdValue = (buffer[1] << 8) + buffer[2];
+                    this.DeviceID = (FLASH_DEVICE_ID)deviceIdValue;
 
-                    this.SectorArchitecture = (CYPRESS_SECTOR_ARCHITECTURE)buffer[4];
-                    this.FamilyID = (CYPRESS_FAMILIY_ID)buffer[5];
-                    this.PackageModel = string.Empty;
-                    this.PackageModel += ((char)buffer[6]).ToString();
-                    this.PackageModel += ((char)buffer[7]).ToString();
-
-                    switch (this.DeviceID)
+                    if (this.Manufacturer == Manufacturers.Cypress)
                     {
-                        case FLASH_DEVICE_ID.S25FL127S_16MB:
+                        this.SectorArchitecture = (CYPRESS_SECTOR_ARCHITECTURE)buffer[4];
+                        this.FamilyID = (CYPRESS_FAMILIY_ID)buffer[5];
+                        this.PackageModel = string.Empty;
+                        this.PackageModel += ((char)buffer[6]).ToString();
+                        this.PackageModel += ((char)buffer[7]).ToString();
+                    }
+
+                    if (this.Manufacturer == Manufacturers.Winbond)
+                    {
+                        // Winbond specific
+                        var spiBufferWrite = this.GenerateBuffer(0x90, 0);
+                        var spiBufferRead = GetEepromApiDataBuffer(2);
+
+                        if (this._spi.Query(spiBufferWrite, spiBufferRead) == FtdiMpsseSPIResult.Ok)
+                        {
+                            var isWinbond = (Manufacturers)(spiBufferRead[0]) == Manufacturers.Winbond;
+                            var winBondDeviceId = (WINBOND_FLASH_DEVICE_ID)spiBufferRead[1];
+                        }
+                    }
+
+                        switch (this.DeviceID)
+                    {
+                        case FLASH_DEVICE_ID.WINBOND_25Q128JV_IN_IQ_JQ_16MB:
+                            this.SizeInByte = 16 * 1024 * 1024;
+                            this.PageSize = FLASH_PAGE_SIZE._256;
+                            break;
+                        case FLASH_DEVICE_ID.CYPRESS_S25FL127S_16MB:
                             this.SizeInByte = 16 * 1024 * 1024;
                             break;
                     }
@@ -247,6 +268,7 @@ namespace MadeInTheUSB.FT232H.Components
                         var buffer2 = buffer.GetRange(p * pageSize, pageSize);
                         if (!this.__WriteOnePage(address, buffer2))
                             return false;
+                        Console.Write(".");
                     }
 
                     if (verify && buffer.Count <= BLOCK_SIZE)

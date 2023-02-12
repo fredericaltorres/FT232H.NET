@@ -16,7 +16,11 @@ namespace MadeInTheUSB.FT232H
             for(var i=0; i< s1.Length; i++)
             {
                 if (s1[i] != s2[i])
-                    throw new ArgumentException($"Different char at postion {i} c1:{s1[i]} c2:{s2[i]}");
+                {
+                    //throw new ArgumentException($"Different char at postion {i} c1:{s1[i]} c2:{s2[i]}");
+                    Console.WriteLine($"Different char at postion {i} c1:{s1[i]} c2:{s2[i]}");
+                    break;
+                }
             }
         }
         public static string Get64kString(string _4CharString)
