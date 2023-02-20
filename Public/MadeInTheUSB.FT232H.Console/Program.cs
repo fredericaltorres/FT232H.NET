@@ -19,10 +19,8 @@ namespace MadeInTheUSB.FT232H.Console
             if(ft232Device.Ok)
             {
                 System.Console.WriteLine(ft232Device.ToString());
-                foreach(var p in ft232Device.Properties)
-                {
-                    System.Console.WriteLine($"{p.Key}: {p.Value}");
-                }
+                //foreach(var p in ft232Device.Properties)
+                //    System.Console.WriteLine($"{p.Key}: {p.Value}");
             }
 
             // MCP3088 and MAX7219 is limited to 10Mhz
@@ -47,10 +45,10 @@ namespace MadeInTheUSB.FT232H.Console
             };
             //FlashMemoryWriteFDriveFileSystem(spi, files, fatLinkedListSectorCount, volumeName, updateFlash: false);
             //FlashMemoryWriteFlashContentToLocalFile(spi);
-            //CypressFlashMemorySample(spi);
+            FlashMemorySample(spi);
             //Api102RgbLedSample(spi);
             // ADC_MCP3008Demo(spi);
-            GpioSample(gpios, false);
+            // GpioSample(gpios, false);
         }
     }
 }

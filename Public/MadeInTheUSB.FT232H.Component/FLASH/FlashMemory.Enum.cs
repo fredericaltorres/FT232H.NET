@@ -9,14 +9,18 @@ namespace MadeInTheUSB.FT232H.Components
 {
     public partial class FlashMemory // : GpioSpiDeviceBaseClass
     {
-        public Manufacturers Manufacturer = Manufacturers.Unknown;
+        public const int DEFAULT_PAGE_SIZE = 512;
+
         public enum Manufacturers : int
         {
             Unknown = 0,
             Cypress = 1,
             Microchip = 2, // This may not be the right id
-            Winbond  = 0xEF,
+            Winbond = 0xEF,
         }
+
+        public Manufacturers Manufacturer = Manufacturers.Unknown;
+        
         public enum FLASH_DEVICE_ID
         {
             Undefined      = 0,
@@ -36,27 +40,22 @@ namespace MadeInTheUSB.FT232H.Components
             WINBOND_25Q128JV_IM_JM = 0x7018,
         }
 
+        public FLASH_DEVICE_ID DeviceID;
+
         public enum WINBOND_FLASH_DEVICE_ID
         {
             WINBOND_25Q128JV_16MB = 0x17,
         }
 
-        public FLASH_DEVICE_ID DeviceID;
-
-        public FLASH_PAGE_SIZE PageSize = FLASH_PAGE_SIZE._512;
-
-        public enum FLASH_PAGE_SIZE {
-            _256 = 256,
-            _512 = 512
-        };
+        public int PageSize = DEFAULT_PAGE_SIZE;
 
         public enum FLASH_ADDR_SIZE
         {
-            _2_Bytes = 2,
-            _3_Bytes = 3,
+            TwoBytes    = 2,
+            ThreeBytes  = 3,
         };
 
-        public FLASH_ADDR_SIZE AddressSize = FLASH_ADDR_SIZE._3_Bytes;
+        public FLASH_ADDR_SIZE AddressSize = FLASH_ADDR_SIZE.ThreeBytes;
 
         public enum CYPRESS_SECTOR_ARCHITECTURE
         {

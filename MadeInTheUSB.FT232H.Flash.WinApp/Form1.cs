@@ -179,8 +179,7 @@ namespace MadeInTheUSB.FT232H.Flash.WinApp
             var buffer = new List<byte>();
 
             var fileSize = 52224;
-            var sectorToRead = (fileSize / 512) + 1;
-
+            var sectorToRead = 20;
 
             _flash.ReadPages(fDriveFS._bootSector, sectorToRead*512, buffer);
 
@@ -193,7 +192,7 @@ namespace MadeInTheUSB.FT232H.Flash.WinApp
         private void ShowBinary(string fileName)
         {
             var bg = new BinaryToTextGenerator(fileName);
-            var bgOptions = new BinaryViewerOption { };
+            var bgOptions = new BinaryViewerOption { ShowSector = true };
             this.ShowUser(bg.Generate(bgOptions));
         }
 
@@ -258,6 +257,66 @@ namespace MadeInTheUSB.FT232H.Flash.WinApp
             this.ShowUser($"");
             this.ShowUser($"EEPROM: {_flash.GetDeviceInfo()}");
             
+        }
+
+        private void readToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            DetectIfNeeded();
+            DetectFlashIfNeeded();
+            var buffer = new List<byte>();
+            this.ShowUser($"About to Read {_flash.MaxPage} pages");
+
+            var maxPage = Math.Min(30, _flash.MaxPage);
+
+            for (var p = 0; p < maxPage; p++)
+            {
+                if (p % 10 == 0)
+                    this.ShowState($"Page {p}");
+                var tmpBuffer = new List<byte>();
+                _flash.ReadPages(p * _flash.PageSize, _flash.PageSize, tmpBuffer);
+                buffer.AddRange(tmpBuffer);
+            }
+
+            for (var p = 256; p < 256+maxPage; p++)
+            {
+                if (p % 10 == 0)
+                    this.ShowState($"Page {p}");
+                var tmpBuffer = new List<byte>();
+                _flash.ReadPages(p * _flash.PageSize, _flash.PageSize, tmpBuffer);
+                buffer.AddRange(tmpBuffer);
+            }
+
+            var tmpFileName = Path.Combine(Path.GetTempPath(), Path.GetTempFileName());
+            File.WriteAllBytes(tmpFileName, buffer.ToArray());
+            this.ShowState($"Generating view...");
+
+            clearToolStripMenuItem_Click(null, null);
+
+            var bg = new BinaryToTextGenerator(tmpFileName);
+            this.ShowUser(bg.Generate(new BinaryViewerOption { ShowSector = true, SectorSize = _flash.PageSize }));
+
+            this.ShowState();
+        }
+
+        private void writeToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            DetectIfNeeded();
+            DetectFlashIfNeeded();
+            byte asciValue = 65;
+            this.ShowUser($"About to write {_flash.MaxPage} pages");
+            var maxPage = Math.Min(30, _flash.MaxPage);
+            for (var p = 0; p < maxPage; p++)
+            {
+                var totalWritten = p * _flash.PageSize;
+                if (p % 10 == 0)
+                    this.ShowState($"Writing page {p} {totalWritten / 1024} / {_flash.SizeInByte}");
+
+                _flash.WritePages(p * _flash.PageSize, BufferUtils.MakeBuffer(_flash.PageSize, asciValue) );
+                asciValue += 1;
+                if (asciValue >= 128)
+                    asciValue = 65;
+            }
+            this.ShowUser($"done");
         }
     }
 }

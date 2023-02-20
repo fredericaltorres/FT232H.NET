@@ -53,7 +53,7 @@ namespace MadeInTheUSB.FT232H.Components
 
         public byte[] GenerateBuffer(byte command, int addr)
         {
-            if (this.AddressSize == FLASH_ADDR_SIZE._3_Bytes)
+            if (this.AddressSize == FLASH_ADDR_SIZE.ThreeBytes)
                 return new byte[] { command, (byte)(addr >> 16), (byte)(addr >> 8), (byte)(addr & 0xFF) };
             else
                 return new byte[] { command, (byte)(addr >> 8), (byte)(addr & 0xFF) };

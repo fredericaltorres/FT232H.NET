@@ -34,7 +34,7 @@ namespace MadeInTheUSB.FT232H.Console
             fDriveFS.WriteFiles(files, volumeName, fatLinkedListSectorCount, updateFlash);
         }
 
-        static void CypressFlashMemorySample(ISPI spi)
+        static void FlashMemorySample(ISPI spi)
         {
             var flash = new FlashMemory(spi);
             flash.ReadIdentification();
@@ -49,7 +49,7 @@ namespace MadeInTheUSB.FT232H.Console
             var _64k0123String = PerformanceHelper.Get64kString0123();
             var _64k0123Buffer = PerformanceHelper.GetAsciiBuffer(_64k0123String).ToList();
             var ph = new PerformanceHelper();
-            var WRITE_FLASH = !true;
+            var WRITE_FLASH = true;
 
             if (WRITE_FLASH)
             {
@@ -59,7 +59,7 @@ namespace MadeInTheUSB.FT232H.Console
                 // Each block or page must be erased before being written
 
                 ph.Start();
-                for (var _64kBlock = 100; _64kBlock < flash.MaxBlock; _64kBlock++)
+                for (var _64kBlock = 0; _64kBlock < flash.MaxBlock; _64kBlock++)
                 {
                     ph.AddByte(FlashMemory.BLOCK_SIZE);
                     System.Console.WriteLine($"Writing block:{_64kBlock}/{flash.MaxBlock}, {_64kBlock * 100.0 / flash.MaxBlock:0}%");
