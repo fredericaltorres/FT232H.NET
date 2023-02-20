@@ -278,14 +278,14 @@ namespace MadeInTheUSB.FT232H.Flash.WinApp
             }
 
 
-            for (var p = 256; p < 256+maxPage; p++)
-            {
-                if (p % 10 == 0)
-                    this.ShowState($"Page {p}");
-                var tmpBuffer = new List<byte>();
-                _flash.ReadPages(p * _flash.PageSize, _flash.PageSize, tmpBuffer);
-                buffer.AddRange(tmpBuffer);
-            }
+            //for (var p = 256; p < 256+maxPage; p++)
+            //{
+            //    if (p % 10 == 0)
+            //        this.ShowState($"Page {p}");
+            //    var tmpBuffer = new List<byte>();
+            //    _flash.ReadPages(p * _flash.PageSize, _flash.PageSize, tmpBuffer);
+            //    buffer.AddRange(tmpBuffer);
+            //}
 
             var tmpFileName = Path.Combine(Path.GetTempPath(), Path.GetTempFileName());
             File.WriteAllBytes(tmpFileName, buffer.ToArray());
