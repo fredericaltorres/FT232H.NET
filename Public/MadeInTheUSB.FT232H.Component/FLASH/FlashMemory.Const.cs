@@ -29,20 +29,12 @@ namespace MadeInTheUSB.FT232H.Components
             BLOCK_4K    = 0x20,   // erase one 4K block of flash memory
             BLOCK_32K   = 0x52,   // erase one 32K block of flash memory
             BLOCK_64K   = 0xD8,   // erase one 64K block of flash memory
+            CHIP_ERASE  = 0x60    // chip erase (may take several seconds depending on size)
         }
+        
+        public const int MAX_BLOCK_SIZE      = 64 * 1024;
 
-        const int EEPROM_CHIP_ERASE             = 0x60; // chip erase (may take several seconds depending on size)
-        const int EEPROM_STATUSWRITE_REG        = 0x01;
-        const int EEPROM_STATUS_CLEAR_REG       = 0x30;
-
-        // const int EEPROM_PAGE_PROGRAM_PP        = 0x02;
-
-        const int EEPROM_MAX_BLOCK_READ_LEN      = 64 * 1024;
         const int EEPROM_DEFAULT_PAGE_SIZE_WRITE = 512;
-
-        public const int BLOCK_SIZE             = 64 * 1024;
-        //public const int PAGE_SIZE                  = 512;
-
-        const int MAX_TRY = 32;
+        const int MAX_TRY = 8;
     }
 }

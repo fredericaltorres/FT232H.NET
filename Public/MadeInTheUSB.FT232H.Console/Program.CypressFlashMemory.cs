@@ -61,20 +61,20 @@ namespace MadeInTheUSB.FT232H.Console
                 ph.Start();
                 for (var _64kBlock = 0; _64kBlock < flash.MaxBlock; _64kBlock++)
                 {
-                    ph.AddByte(FlashMemory.BLOCK_SIZE);
+                    ph.AddByte(FlashMemory.MAX_BLOCK_SIZE);
                     System.Console.WriteLine($"Writing block:{_64kBlock}/{flash.MaxBlock}, {_64kBlock * 100.0 / flash.MaxBlock:0}%");
                     var r = false;
 
                     if (_64kBlock == 11)
                     {
-                        r = flash.WritePages(_64kBlock * FlashMemory.BLOCK_SIZE, _64k0123Buffer, format: true);
+                        r = flash.WritePages(_64kBlock * FlashMemory.MAX_BLOCK_SIZE, _64k0123Buffer, format: true);
                     }
                     else
                     {
                         if (_64kBlock % 3 == 0)
-                            r = flash.WritePages(_64kBlock * FlashMemory.BLOCK_SIZE, _64kFredBuffer, format: true);
+                            r = flash.WritePages(_64kBlock * FlashMemory.MAX_BLOCK_SIZE, _64kFredBuffer, format: true);
                         else
-                            r = flash.WritePages(_64kBlock * FlashMemory.BLOCK_SIZE, _64kAbdcBuffer, format: true);
+                            r = flash.WritePages(_64kBlock * FlashMemory.MAX_BLOCK_SIZE, _64kAbdcBuffer, format: true);
 
                     }
                     if (!r)
@@ -92,10 +92,10 @@ namespace MadeInTheUSB.FT232H.Console
             {
                 System.Console.WriteLine($"Reading block:{_64kBlock}/{flash.MaxBlock}, {_64kBlock * 100.0 / flash.MaxBlock:0}%");
                 var buffer = new List<byte>();
-                if (flash.ReadPages(_64kBlock * FlashMemory.BLOCK_SIZE, FlashMemory.BLOCK_SIZE, buffer))
+                if (flash.ReadPages(_64kBlock * FlashMemory.MAX_BLOCK_SIZE, FlashMemory.MAX_BLOCK_SIZE, buffer))
                 {
                     var resultString = PerformanceHelper.AsciiBufferToString(buffer.ToArray());
-                    ph.AddByte(FlashMemory.BLOCK_SIZE);
+                    ph.AddByte(FlashMemory.MAX_BLOCK_SIZE);
                     var result = false;
                     if (_64kBlock == 11)
                     {

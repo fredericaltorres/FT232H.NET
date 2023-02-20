@@ -53,7 +53,7 @@ namespace MadeInTheUSB.FT232H.Components
 
         public int MaxBlock
         {
-            get { return this.SizeInByte / FlashMemory.BLOCK_SIZE; }
+            get { return this.SizeInByte / FlashMemory.MAX_BLOCK_SIZE; }
         }
 
         private void Trace(string m)
@@ -206,7 +206,7 @@ namespace MadeInTheUSB.FT232H.Components
                 sizeUnit = "Kb";
             }
 
-            return $@"DeviceID:{this.DeviceID}, Size:{size} {sizeUnit}, Manufacturer:{this.Manufacturer}, MaxPage:{this.MaxPage}, Page Size:{this.PageSize}, MaxBlock:{this.MaxBlock}, BlockSize:{FlashMemory.BLOCK_SIZE}";
+            return $@"DeviceID:{this.DeviceID}, Size:{size} {sizeUnit}, Manufacturer:{this.Manufacturer}, MaxPage:{this.MaxPage}, Page Size:{this.PageSize}, MaxBlock:{this.MaxBlock}, BlockSize:{FlashMemory.MAX_BLOCK_SIZE}";
         }
 
         private bool SetWriteRegisterEnable(bool checkStatus = true)
@@ -287,7 +287,7 @@ namespace MadeInTheUSB.FT232H.Components
                     Console.Write(".");
                 }
 
-                if (verify && buffer.Count <= BLOCK_SIZE)
+                if (verify && buffer.Count <= MAX_BLOCK_SIZE)
                 {
                     var buffer3 = new List<byte>();
                     this.ReadPages(addr, buffer.Count, buffer3);
@@ -326,9 +326,11 @@ namespace MadeInTheUSB.FT232H.Components
         {
             if (!this.SetWriteRegisterEnable())
                 return false;
-            var buffer = new List<byte>() { (byte)sectorSizeCmd, (byte)(addr >> 16), (byte)(addr >> 8), (byte)(addr & 0xFF) };
+
+            var buffer = new List<byte>() { (byte)sectorSizeCmd }; // , (byte)(addr >> 16), (byte)(addr >> 8), (byte)(addr & 0xFF)
             var r = this.SPISend(buffer);
 
+            
             return r;
         }
 
@@ -351,32 +353,24 @@ namespace MadeInTheUSB.FT232H.Components
 
             if ((addr % ((int)this.PageSize)) != 0)
                 throw new ArgumentException(string.Format("Address {0} must be a multiple of {1}", addr, this.GetProgramWritePageSize()));
+
             var b = EraseCommand(addr, (int)blockSize);
             if(addr == 0)
                 this.WaitForOperation(500, 1000, "!"); // For some reason sector 0 is way longer to erase
             else
                 this.WaitForOperation(50, 25, "!");
 
+            if (!this.SetWriteRegisterDisable())
+                return false;
+
+
             return b;
         }
 
 
-        public bool FormatFlash(Action<int> notify, int notifyEvery = 8, int blockCount = -1)
+        public bool EraseFlash()
         {
-            if (blockCount == -1)
-                blockCount = this.MaxBlock;
-
-            this.Trace($"FormatFlash blockCount:{blockCount}");
-
-            for (var b = 0; b < blockCount; b++)
-            {
-                if(b != 0 && b % notifyEvery == 0 && notify != null)
-                    notify(b);
-                if (!this.ErasePage(b * FlashMemory.BLOCK_SIZE, ERASE_BLOCK_SIZE.BLOCK_64K))
-                    return false;
-            }
-
-            return true;
+            return this.ErasePage(0, ERASE_BLOCK_SIZE.CHIP_ERASE);
         }
 
         public bool ReadPages(int address, int size, List<byte> buffer)
@@ -384,7 +378,7 @@ namespace MadeInTheUSB.FT232H.Components
             try
             {
                 var tmpBuffer = new List<byte>();
-                var sizeToRead = Math.Min(size, EEPROM_MAX_BLOCK_READ_LEN);
+                var sizeToRead = Math.Min(size, MAX_BLOCK_SIZE);
                 if (this.ReadBuffer(address, sizeToRead, tmpBuffer))
                 {
                     buffer.AddRange(tmpBuffer);
@@ -407,7 +401,7 @@ namespace MadeInTheUSB.FT232H.Components
         private bool ReadBuffer(int address, int size, List<byte> buffer)
         {
             this.Trace($"ReadPages addr:{address}, sieze:{size}");
-            if (size > EEPROM_MAX_BLOCK_READ_LEN)
+            if (size > MAX_BLOCK_SIZE)
                 throw new ArgumentException($"ReadPage cannot read buffer size:{size}");
 
             int byteSent = 0;

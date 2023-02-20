@@ -277,6 +277,7 @@ namespace MadeInTheUSB.FT232H.Flash.WinApp
                 buffer.AddRange(tmpBuffer);
             }
 
+
             for (var p = 256; p < 256+maxPage; p++)
             {
                 if (p % 10 == 0)
@@ -317,6 +318,14 @@ namespace MadeInTheUSB.FT232H.Flash.WinApp
                     asciValue = 65;
             }
             this.ShowUser($"done");
+        }
+
+        private void eraseAllToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            DetectIfNeeded();
+            DetectFlashIfNeeded();
+            this.ShowUser($"About to erase chip ");
+            _flash.EraseFlash();
         }
     }
 }

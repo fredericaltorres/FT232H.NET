@@ -41,6 +41,9 @@
             this.fAT12ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.fat12ReadDiskToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.fat12WriteDiskToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.sectorsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.readToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.writeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.eEPROMToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.detectToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.eEPROM25AA1024ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -53,9 +56,7 @@
             this.rbMhz10 = new System.Windows.Forms.RadioButton();
             this.statusBar = new System.Windows.Forms.StatusStrip();
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
-            this.sectorsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.readToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.writeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.eraseAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.grpSettings.SuspendLayout();
             this.statusBar.SuspendLayout();
@@ -120,14 +121,14 @@
             // 
             this.ft232HDetect.Name = "ft232HDetect";
             this.ft232HDetect.ShortcutKeys = System.Windows.Forms.Keys.F5;
-            this.ft232HDetect.Size = new System.Drawing.Size(180, 24);
+            this.ft232HDetect.Size = new System.Drawing.Size(146, 24);
             this.ft232HDetect.Text = "Detect";
             this.ft232HDetect.Click += new System.EventHandler(this.ft232HDetect_Click);
             // 
             // ft232HInfoClick
             // 
             this.ft232HInfoClick.Name = "ft232HInfoClick";
-            this.ft232HInfoClick.Size = new System.Drawing.Size(180, 24);
+            this.ft232HInfoClick.Size = new System.Drawing.Size(146, 24);
             this.ft232HInfoClick.Text = "Info";
             this.ft232HInfoClick.Click += new System.EventHandler(this.ft232HInfoClick_Click);
             // 
@@ -160,16 +161,40 @@
             // fat12ReadDiskToolStripMenuItem
             // 
             this.fat12ReadDiskToolStripMenuItem.Name = "fat12ReadDiskToolStripMenuItem";
-            this.fat12ReadDiskToolStripMenuItem.Size = new System.Drawing.Size(180, 24);
+            this.fat12ReadDiskToolStripMenuItem.Size = new System.Drawing.Size(146, 24);
             this.fat12ReadDiskToolStripMenuItem.Text = "Read Disk";
             this.fat12ReadDiskToolStripMenuItem.Click += new System.EventHandler(this.fat12ReadDiskToolStripMenuItem_Click);
             // 
             // fat12WriteDiskToolStripMenuItem
             // 
             this.fat12WriteDiskToolStripMenuItem.Name = "fat12WriteDiskToolStripMenuItem";
-            this.fat12WriteDiskToolStripMenuItem.Size = new System.Drawing.Size(180, 24);
+            this.fat12WriteDiskToolStripMenuItem.Size = new System.Drawing.Size(146, 24);
             this.fat12WriteDiskToolStripMenuItem.Text = "Write Disk";
             this.fat12WriteDiskToolStripMenuItem.Click += new System.EventHandler(this.fat12WriteDiskToolStripMenuItem_Click);
+            // 
+            // sectorsToolStripMenuItem
+            // 
+            this.sectorsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.readToolStripMenuItem,
+            this.writeToolStripMenuItem,
+            this.eraseAllToolStripMenuItem});
+            this.sectorsToolStripMenuItem.Name = "sectorsToolStripMenuItem";
+            this.sectorsToolStripMenuItem.Size = new System.Drawing.Size(180, 24);
+            this.sectorsToolStripMenuItem.Text = "Sectors";
+            // 
+            // readToolStripMenuItem
+            // 
+            this.readToolStripMenuItem.Name = "readToolStripMenuItem";
+            this.readToolStripMenuItem.Size = new System.Drawing.Size(180, 24);
+            this.readToolStripMenuItem.Text = "Read";
+            this.readToolStripMenuItem.Click += new System.EventHandler(this.readToolStripMenuItem_Click);
+            // 
+            // writeToolStripMenuItem
+            // 
+            this.writeToolStripMenuItem.Name = "writeToolStripMenuItem";
+            this.writeToolStripMenuItem.Size = new System.Drawing.Size(180, 24);
+            this.writeToolStripMenuItem.Text = "Write";
+            this.writeToolStripMenuItem.Click += new System.EventHandler(this.writeToolStripMenuItem_Click);
             // 
             // eEPROMToolStripMenuItem
             // 
@@ -284,28 +309,12 @@
             this.toolStripStatusLabel1.Size = new System.Drawing.Size(90, 22);
             this.toolStripStatusLabel1.Text = "Ready...";
             // 
-            // sectorsToolStripMenuItem
+            // eraseAllToolStripMenuItem
             // 
-            this.sectorsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.readToolStripMenuItem,
-            this.writeToolStripMenuItem});
-            this.sectorsToolStripMenuItem.Name = "sectorsToolStripMenuItem";
-            this.sectorsToolStripMenuItem.Size = new System.Drawing.Size(180, 24);
-            this.sectorsToolStripMenuItem.Text = "Sectors";
-            // 
-            // readToolStripMenuItem
-            // 
-            this.readToolStripMenuItem.Name = "readToolStripMenuItem";
-            this.readToolStripMenuItem.Size = new System.Drawing.Size(180, 24);
-            this.readToolStripMenuItem.Text = "Read";
-            this.readToolStripMenuItem.Click += new System.EventHandler(this.readToolStripMenuItem_Click);
-            // 
-            // writeToolStripMenuItem
-            // 
-            this.writeToolStripMenuItem.Name = "writeToolStripMenuItem";
-            this.writeToolStripMenuItem.Size = new System.Drawing.Size(180, 24);
-            this.writeToolStripMenuItem.Text = "Write";
-            this.writeToolStripMenuItem.Click += new System.EventHandler(this.writeToolStripMenuItem_Click);
+            this.eraseAllToolStripMenuItem.Name = "eraseAllToolStripMenuItem";
+            this.eraseAllToolStripMenuItem.Size = new System.Drawing.Size(180, 24);
+            this.eraseAllToolStripMenuItem.Text = "Erase All";
+            this.eraseAllToolStripMenuItem.Click += new System.EventHandler(this.eraseAllToolStripMenuItem_Click);
             // 
             // Form1
             // 
@@ -363,6 +372,7 @@
         private System.Windows.Forms.ToolStripMenuItem sectorsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem readToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem writeToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem eraseAllToolStripMenuItem;
     }
 }
 
