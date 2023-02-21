@@ -44,6 +44,7 @@
             this.sectorsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.readToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.writeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.eraseAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.eEPROMToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.detectToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.eEPROM25AA1024ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -56,10 +57,14 @@
             this.rbMhz10 = new System.Windows.Forms.RadioButton();
             this.statusBar = new System.Windows.Forms.StatusStrip();
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
-            this.eraseAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.writeFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.rbDisplaySector512 = new System.Windows.Forms.RadioButton();
+            this.rbDisplaySector256 = new System.Windows.Forms.RadioButton();
             this.menuStrip1.SuspendLayout();
             this.grpSettings.SuspendLayout();
             this.statusBar.SuspendLayout();
+            this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
             // menuStrip1
@@ -177,6 +182,7 @@
             this.sectorsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.readToolStripMenuItem,
             this.writeToolStripMenuItem,
+            this.writeFileToolStripMenuItem,
             this.eraseAllToolStripMenuItem});
             this.sectorsToolStripMenuItem.Name = "sectorsToolStripMenuItem";
             this.sectorsToolStripMenuItem.Size = new System.Drawing.Size(180, 24);
@@ -196,6 +202,13 @@
             this.writeToolStripMenuItem.Text = "Write";
             this.writeToolStripMenuItem.Click += new System.EventHandler(this.writeToolStripMenuItem_Click);
             // 
+            // eraseAllToolStripMenuItem
+            // 
+            this.eraseAllToolStripMenuItem.Name = "eraseAllToolStripMenuItem";
+            this.eraseAllToolStripMenuItem.Size = new System.Drawing.Size(180, 24);
+            this.eraseAllToolStripMenuItem.Text = "Erase All";
+            this.eraseAllToolStripMenuItem.Click += new System.EventHandler(this.eraseAllToolStripMenuItem_Click);
+            // 
             // eEPROMToolStripMenuItem
             // 
             this.eEPROMToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -211,7 +224,7 @@
             this.detectToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.eEPROM25AA1024ToolStripMenuItem});
             this.detectToolStripMenuItem.Name = "detectToolStripMenuItem";
-            this.detectToolStripMenuItem.Size = new System.Drawing.Size(180, 24);
+            this.detectToolStripMenuItem.Size = new System.Drawing.Size(144, 24);
             this.detectToolStripMenuItem.Text = "Detect";
             // 
             // eEPROM25AA1024ToolStripMenuItem
@@ -224,14 +237,14 @@
             // writeTestToolStripMenuItem
             // 
             this.writeTestToolStripMenuItem.Name = "writeTestToolStripMenuItem";
-            this.writeTestToolStripMenuItem.Size = new System.Drawing.Size(180, 24);
+            this.writeTestToolStripMenuItem.Size = new System.Drawing.Size(144, 24);
             this.writeTestToolStripMenuItem.Text = "Write Test";
             this.writeTestToolStripMenuItem.Click += new System.EventHandler(this.writeTestToolStripMenuItem_Click);
             // 
             // readTestToolStripMenuItem
             // 
             this.readTestToolStripMenuItem.Name = "readTestToolStripMenuItem";
-            this.readTestToolStripMenuItem.Size = new System.Drawing.Size(180, 24);
+            this.readTestToolStripMenuItem.Size = new System.Drawing.Size(144, 24);
             this.readTestToolStripMenuItem.Text = "Read Test";
             this.readTestToolStripMenuItem.Click += new System.EventHandler(this.readTestToolStripMenuItem_Click);
             // 
@@ -255,7 +268,7 @@
             this.grpSettings.Controls.Add(this.rbMhz10);
             this.grpSettings.Location = new System.Drawing.Point(7, 40);
             this.grpSettings.Name = "grpSettings";
-            this.grpSettings.Size = new System.Drawing.Size(1128, 47);
+            this.grpSettings.Size = new System.Drawing.Size(337, 47);
             this.grpSettings.TabIndex = 3;
             this.grpSettings.TabStop = false;
             this.grpSettings.Text = "Settings";
@@ -263,7 +276,7 @@
             // chkUpdateFlash
             // 
             this.chkUpdateFlash.AutoSize = true;
-            this.chkUpdateFlash.Location = new System.Drawing.Point(239, 23);
+            this.chkUpdateFlash.Location = new System.Drawing.Point(180, 19);
             this.chkUpdateFlash.Name = "chkUpdateFlash";
             this.chkUpdateFlash.Size = new System.Drawing.Size(98, 17);
             this.chkUpdateFlash.TabIndex = 2;
@@ -309,18 +322,55 @@
             this.toolStripStatusLabel1.Size = new System.Drawing.Size(90, 22);
             this.toolStripStatusLabel1.Text = "Ready...";
             // 
-            // eraseAllToolStripMenuItem
+            // writeFileToolStripMenuItem
             // 
-            this.eraseAllToolStripMenuItem.Name = "eraseAllToolStripMenuItem";
-            this.eraseAllToolStripMenuItem.Size = new System.Drawing.Size(180, 24);
-            this.eraseAllToolStripMenuItem.Text = "Erase All";
-            this.eraseAllToolStripMenuItem.Click += new System.EventHandler(this.eraseAllToolStripMenuItem_Click);
+            this.writeFileToolStripMenuItem.Name = "writeFileToolStripMenuItem";
+            this.writeFileToolStripMenuItem.Size = new System.Drawing.Size(180, 24);
+            this.writeFileToolStripMenuItem.Text = "Write File";
+            this.writeFileToolStripMenuItem.Click += new System.EventHandler(this.writeFileToolStripMenuItem_Click);
+            // 
+            // groupBox1
+            // 
+            this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox1.Controls.Add(this.rbDisplaySector512);
+            this.groupBox1.Controls.Add(this.rbDisplaySector256);
+            this.groupBox1.Location = new System.Drawing.Point(350, 40);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(337, 47);
+            this.groupBox1.TabIndex = 5;
+            this.groupBox1.TabStop = false;
+            this.groupBox1.Text = "Settings";
+            // 
+            // rbDisplaySector512
+            // 
+            this.rbDisplaySector512.AutoSize = true;
+            this.rbDisplaySector512.CheckAlign = System.Drawing.ContentAlignment.TopLeft;
+            this.rbDisplaySector512.Checked = true;
+            this.rbDisplaySector512.Location = new System.Drawing.Point(96, 19);
+            this.rbDisplaySector512.Name = "rbDisplaySector512";
+            this.rbDisplaySector512.Size = new System.Drawing.Size(43, 17);
+            this.rbDisplaySector512.TabIndex = 1;
+            this.rbDisplaySector512.TabStop = true;
+            this.rbDisplaySector512.Text = "512";
+            this.rbDisplaySector512.UseVisualStyleBackColor = true;
+            // 
+            // rbDisplaySector256
+            // 
+            this.rbDisplaySector256.AutoSize = true;
+            this.rbDisplaySector256.Location = new System.Drawing.Point(30, 20);
+            this.rbDisplaySector256.Name = "rbDisplaySector256";
+            this.rbDisplaySector256.Size = new System.Drawing.Size(43, 17);
+            this.rbDisplaySector256.TabIndex = 0;
+            this.rbDisplaySector256.Text = "256";
+            this.rbDisplaySector256.UseVisualStyleBackColor = true;
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1152, 736);
+            this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.statusBar);
             this.Controls.Add(this.grpSettings);
             this.Controls.Add(this.txtOutput);
@@ -337,6 +387,8 @@
             this.grpSettings.PerformLayout();
             this.statusBar.ResumeLayout(false);
             this.statusBar.PerformLayout();
+            this.groupBox1.ResumeLayout(false);
+            this.groupBox1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -373,6 +425,10 @@
         private System.Windows.Forms.ToolStripMenuItem readToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem writeToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem eraseAllToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem writeFileToolStripMenuItem;
+        private System.Windows.Forms.GroupBox groupBox1;
+        private System.Windows.Forms.RadioButton rbDisplaySector512;
+        private System.Windows.Forms.RadioButton rbDisplaySector256;
     }
 }
 

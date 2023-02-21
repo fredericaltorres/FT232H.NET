@@ -266,7 +266,7 @@ namespace MadeInTheUSB.FT232H.Flash.WinApp
             var buffer = new List<byte>();
             this.ShowUser($"About to Read {_flash.MaxPage} pages");
 
-            var maxPage = Math.Min(200, _flash.MaxPage);
+            var maxPage = Math.Min(204, _flash.MaxPage);
 
             for (var p = 0; p < maxPage; p++)
             {
@@ -284,9 +284,14 @@ namespace MadeInTheUSB.FT232H.Flash.WinApp
             clearToolStripMenuItem_Click(null, null);
 
             var bg = new BinaryToTextGenerator(tmpFileName);
-            this.ShowUser(bg.Generate(new BinaryViewerOption { ShowSector = true, SectorSize = _flash.PageSize }));
+            this.ShowUser(bg.Generate(new BinaryViewerOption { ShowSector = true, SectorSize = GetDisplaySectorSize() }));
 
             this.ShowState();
+        }
+
+        private int GetDisplaySectorSize()
+        {
+            return rbDisplaySector512.Checked ? 512 : 256;
         }
 
         private void writeToolStripMenuItem_Click(object sender, EventArgs e)
@@ -322,6 +327,57 @@ namespace MadeInTheUSB.FT232H.Flash.WinApp
                 this.ShowUser($"About to erase chip ");
                 _flash.EraseFlash();
             }
+        }
+
+        private void writeFileToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            const string FILE_FILTERS = "Binary Files|*.bin|All Files (*.*)|*.*";
+            //var fileName = GetUserOpenFile("", FILE_FILTERS, Path.GetDirectoryName(Application.ExecutablePath));
+            var fileName = @"C:\DVT\LILYGO T-Display-S3 ESP32-S3\mass storage\Files\FULL_FAT.bin";
+            if(fileName != null)
+            {
+                DetectIfNeeded();
+                DetectFlashIfNeeded();
+                var fi = new FileInfo(fileName);
+                
+                var fileBuffer = File.ReadAllBytes(fileName).ToList();
+                var maxPage = fileBuffer.Count / _flash.PageSize;
+                var pageSize = _flash.PageSize;
+
+                this.ShowUser($"About to write file:{fileName}, size:{fi.Length}, sectors:{maxPage}");
+
+                for (var p = 0; p < maxPage; p++)
+                {
+                    var pageBuffer = fileBuffer.Skip(p * pageSize).Take(pageSize).ToList();
+                    var totalWritten = p * pageSize;
+                    if (p % 10 == 0)
+                        this.ShowState($"Writing page {p}/{maxPage} -  {totalWritten / 1024} Kb written");
+
+                    _flash.WritePages(p * pageSize, BufferUtils.PadBuffer(pageBuffer, pageSize), verify: true, eraseBlock: true);
+                }
+                this.ShowUser($"done");
+            }
+        }
+
+        public static string GetUserOpenFile(string strTitle, string strMask, string initialDirectory)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.CheckPathExists = true;
+            openFileDialog.AddExtension = true;
+            openFileDialog.Filter = strMask;
+            openFileDialog.Title = strTitle;
+            openFileDialog.FilterIndex = 1;
+            openFileDialog.RestoreDirectory = true;
+
+            if (!string.IsNullOrEmpty(initialDirectory))
+            {
+                openFileDialog.InitialDirectory = initialDirectory;
+                //openFileDialog.FileName = selectedFileName;
+            }
+
+            if (openFileDialog.ShowDialog() != DialogResult.OK) return null;
+
+            return openFileDialog.FileName;
         }
     }
 }
