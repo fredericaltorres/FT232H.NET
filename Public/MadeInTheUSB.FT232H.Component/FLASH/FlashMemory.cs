@@ -13,38 +13,19 @@ namespace MadeInTheUSB.FT232H.Components
     public partial class FlashMemory //: GpioSpiDeviceBaseClass
     {
         public int SizeInByte;
-
         public int SizeInKByte => this.SizeInKByte / 1024;
         public int SizeInMByte => this.SizeInKByte / 1024 / 1024;
 
-        public enum DeviceState
-        {
-            Initializing,
-            Reading,
-            Writing,
-            Idle,
-            AllOff
-        }
+        
 
-        const int READ_GPIO     = 0;
-        const int WRITE_GPIO    = 1;
+        //const int READ_GPIO     = 0;
+        //const int WRITE_GPIO    = 1;
 
         public bool TraceOn { get; set; } = false;
 
         private readonly ISPI _spi;
 
-        public void SetUserHardwareInterfaceState(DeviceState state)
-        {
-            //this.DigitalWrite(PinState.Low, READ_GPIO, WRITE_GPIO);
-            //switch (state)
-            //{
-            //    case DeviceState.Initializing: this.DigitalWrite(PinState.High, READ_GPIO, WRITE_GPIO); break;
-            //    case DeviceState.Reading: this.DigitalWrite(PinState.High, READ_GPIO); break;
-            //    case DeviceState.Writing: this.DigitalWrite(PinState.High, WRITE_GPIO); break;
-            //    case DeviceState.Idle: break;
-            //    case DeviceState.AllOff: break;
-            //}
-        }
+   
 
         public int MaxPage
         {
@@ -64,7 +45,6 @@ namespace MadeInTheUSB.FT232H.Components
         
         public FlashMemory(ISPI spi) 
         {
-            this.SetUserHardwareInterfaceState(DeviceState.Initializing);
             this._spi = spi;
         }
                 
@@ -76,7 +56,7 @@ namespace MadeInTheUSB.FT232H.Components
         public int ReadRegister1()
         {
             var buffer = new List<byte>();
-            if (this.SPIQuery(EEPROM_READ_STATUS_REGISTER_RDSR, 1, buffer))
+            if (this.SPIQuery(FLASH_COMMAND.READ_STATUS_REGISTER_RDSR, 1, buffer))
                 return buffer[0];
             else
                 return -1;
@@ -90,7 +70,7 @@ namespace MadeInTheUSB.FT232H.Components
         public int ReadRegister2()
         {
             var buffer = new List<byte>();
-            if (this.SPIQuery(EEPROM_READ_STATUS_REGISTER_2, 1, buffer))
+            if (this.SPIQuery(FLASH_COMMAND.READ_STATUS_REGISTER_2, 1, buffer))
                 return buffer[0];
             else
                 return -1;
@@ -147,7 +127,7 @@ namespace MadeInTheUSB.FT232H.Components
             else
             {
                 var buffer = new List<byte>();
-                if (this.SPIQuery(EEPROM_READ_IDENTIFICATION, 18, buffer))
+                if (this.SPIQuery(FLASH_COMMAND.READ_IDENTIFICATION, 18, buffer))
                 {
                     this.Manufacturer = (Manufacturers)buffer[0];
                     var deviceIdValue = (buffer[1] << 8) + buffer[2];
@@ -164,7 +144,7 @@ namespace MadeInTheUSB.FT232H.Components
                     else if (this.Manufacturer == Manufacturers.Winbond)
                     {
                         // Winbond specific
-                        var spiBufferWrite = this.GenerateBuffer(0x90, 0);
+                        var spiBufferWrite = this.GenerateBuffer(FLASH_COMMAND.WINBOND_GET_INFO, 0);
                         var spiBufferRead = GetEepromApiDataBuffer(2);
                         if (this._spi.Query(spiBufferWrite, spiBufferRead) == FtdiMpsseSPIResult.Ok)
                         {
@@ -209,18 +189,23 @@ namespace MadeInTheUSB.FT232H.Components
             return $@"DeviceID:{this.DeviceID}, Size:{size} {sizeUnit}, Manufacturer:{this.Manufacturer}, MaxPage:{this.MaxPage}, Page Size:{this.PageSize}, MaxBlock:{this.MaxBlock}, BlockSize:{FlashMemory.MAX_BLOCK_SIZE}";
         }
 
+        private bool IsWriteRegisterEnable() 
+        {
+            var rr0 = this.ReadRegister1Enum();
+            return (rr0 & StatusRegister1Enum.WriteEnableLatch) == StatusRegister1Enum.WriteEnableLatch;
+        }
+
         private bool SetWriteRegisterEnable(bool checkStatus = true)
         {
             var result = false;
 
-            if (!this.SendCommand(EEPROM_WRITE_ENABLE_LATCH_WREN))
+            if (!this.SendCommand(FLASH_COMMAND.WRITE_ENABLE_LATCH_WREN))
                 return result;
 
             this.WaitForOperation(5, 5, "w");
             if (checkStatus)
             {
-                var rr0 = this.ReadRegister1Enum();
-                if ((rr0 & StatusRegister1Enum.WriteEnableLatch) == StatusRegister1Enum.WriteEnableLatch)
+                if (this.IsWriteRegisterEnable())
                     result = true;
                 else
                     if(Debugger.IsAttached) Debugger.Break();
@@ -233,7 +218,7 @@ namespace MadeInTheUSB.FT232H.Components
 
         private bool SetWriteRegisterDisable()
         {
-            return this.SendCommand(EEPROM_RESET_WRITE_ENABLE_LATCH_WRDI);
+            return this.SendCommand(FLASH_COMMAND.RESET_WRITE_ENABLE_LATCH_WRDI);
         }
 
         /// <summary>
@@ -243,11 +228,11 @@ namespace MadeInTheUSB.FT232H.Components
         /// <param name="buffer">The buffer to write</param>
         /// <param name="setUserHardwareInterfaceState">If true notify UI of write operation, not implemented</param>
         /// <param name="verify">If true verify the data written</param>
-        /// <param name="format">If true format the 64k starting at addr</param>
+        /// <param name="eraseBlock">If true format the 64k starting at addr</param>
         /// <returns></returns>
-        public bool WritePages(int addr, List<byte> buffer, bool verify = false, bool format = true)
+        public bool WritePages(int addr, List<byte> buffer, bool verify = false, bool eraseBlock = true)
         {
-            if(format)
+            if(eraseBlock)
             {
                 if(buffer.Count == 64 * 1024)
                 { 
@@ -259,14 +244,15 @@ namespace MadeInTheUSB.FT232H.Components
                 }
                 else if (buffer.Count == 4 * 1024)
                 {
-                    if (!this.ErasePage(addr, ERASE_BLOCK_SIZE.BLOCK_4K)) return false;
+                    if (!this.ErasePage(addr, ERASE_BLOCK_SIZE.SECTOR_ERASE)) return false;
                 }
                 else if (buffer.Count == this.PageSize)
                 {
                     // If the address is at a starting 4k block we have to call erase
                     if(addr % (4 * 1024) == 0)
                     {
-                        if (!this.ErasePage(addr, ERASE_BLOCK_SIZE.BLOCK_4K)) return false;
+                        if (!this.ErasePage(addr, ERASE_BLOCK_SIZE.SECTOR_ERASE)) return false;
+                        var r = this.IsWriteRegisterEnable();
                     }
                 }
                 else  throw new ArgumentException($"Cannot format flash length:{buffer.Count}, addr:{addr}");
@@ -285,6 +271,7 @@ namespace MadeInTheUSB.FT232H.Components
                     if (!this.__WriteOnePage(address, buffer2))
                         return false;
                     Console.Write(".");
+                    var r = this.IsWriteRegisterEnable();
                 }
 
                 if (verify && buffer.Count <= MAX_BLOCK_SIZE)
@@ -316,53 +303,38 @@ namespace MadeInTheUSB.FT232H.Components
             this.WaitForOperation(30, 7, "w");
 
             // Added for the EEPROM, Not needed for CYPRESS - FRED TODO
-            if(!SetWriteRegisterDisable())
-                return false;
+            //if(!SetWriteRegisterDisable())
+            //    return false;
 
             return r1;
         }
 
-        private bool EraseCommand(int addr, int sectorSizeCmd)
+        private bool EraseCommand(int addr, ERASE_BLOCK_SIZE sectorSizeCmd)
         {
             if (!this.SetWriteRegisterEnable())
                 return false;
 
-            var buffer = new List<byte>() { (byte)sectorSizeCmd }; // , (byte)(addr >> 16), (byte)(addr >> 8), (byte)(addr & 0xFF)
+            var buffer = GenerateBuffer((byte)sectorSizeCmd, addr).ToList();
             var r = this.SPISend(buffer);
-
             
             return r;
         }
 
-        //private bool EraseSector(int addr)
-        //{
-        //    this.Trace($"EraseSector addr:{addr}");
-
-        //    //if ((addr % (this.GetProgramWritePageSize())) != 0)
-        //    //    throw new ArgumentException(string.Format("Address {0} must be a multiple of {1}", addr, this.GetProgramWritePageSize()));
-
-        //    var b = EraseCommand(addr, (int)ERASE_BLOCK_SIZE.SECTOR);
-        //    this.WaitForOperation(200, 100, "!"); // Seems slower
-
-        //    return b;
-        //}
-
-        private bool ErasePage(int addr, ERASE_BLOCK_SIZE blockSize)
+        public bool ErasePage(int addr, ERASE_BLOCK_SIZE blockSize)
         {
             this.Trace($"ErasePage addr:{addr}, BlockSize:{blockSize}");
 
             if ((addr % ((int)this.PageSize)) != 0)
                 throw new ArgumentException(string.Format("Address {0} must be a multiple of {1}", addr, this.GetProgramWritePageSize()));
 
-            var b = EraseCommand(addr, (int)blockSize);
+            var b = EraseCommand(addr, blockSize);
             if(addr == 0)
                 this.WaitForOperation(500, 1000, "!"); // For some reason sector 0 is way longer to erase
             else
                 this.WaitForOperation(50, 25, "!");
 
-            if (!this.SetWriteRegisterDisable())
-                return false;
-
+            //if (!this.SetWriteRegisterDisable())
+            //    return false;
 
             return b;
         }
@@ -375,29 +347,16 @@ namespace MadeInTheUSB.FT232H.Components
 
         public bool ReadPages(int address, int size, List<byte> buffer)
         {
-            try
+            var tmpBuffer = new List<byte>();
+            var sizeToRead = Math.Min(size, MAX_BLOCK_SIZE);
+            if (this.ReadBuffer(address, sizeToRead, tmpBuffer))
             {
-                var tmpBuffer = new List<byte>();
-                var sizeToRead = Math.Min(size, MAX_BLOCK_SIZE);
-                if (this.ReadBuffer(address, sizeToRead, tmpBuffer))
-                {
-                    buffer.AddRange(tmpBuffer);
-                    return true;
-                }
-                else return false;
+                buffer.AddRange(tmpBuffer);
+                return true;
             }
-            finally {
-                this.SetUserHardwareInterfaceState(DeviceState.Idle);
-            }
+            else return false;
         }
 
-        /// <summary>
-        /// Read a buffer of data at the address.
-        /// </summary>
-        /// <param name="address"></param>
-        /// <param name="size">Size to read limited to 64k max</param>
-        /// <param name="buffer"></param>
-        /// <returns></returns>
         private bool ReadBuffer(int address, int size, List<byte> buffer)
         {
             this.Trace($"ReadPages addr:{address}, sieze:{size}");
@@ -415,20 +374,6 @@ namespace MadeInTheUSB.FT232H.Components
             }
 
             return false;
-
-            //var ec = base.Write(spiBufferWrite, spiBufferWrite.Length, out byteSent, FtSpiTransferOptions.ChipselectEnable);
-            //if (ec == FtdiMpsseSPIResult.Ok)
-            //{
-            //    var spiBufferRead = GetEepromApiDataBuffer(size);
-            //    ec = base.Read(spiBufferRead, spiBufferRead.Length, out byteSent, FtSpiTransferOptions.ChipselectDisable);
-            //    if (ec == FtdiMpsseSPIResult.Ok)
-            //    {
-            //        buffer.AddRange(spiBufferRead);
-            //        return true;
-            //    }
-            //}
-            //return false;
         }
-
     }
 }

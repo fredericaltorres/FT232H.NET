@@ -17,7 +17,7 @@ namespace MadeInTheUSB.FT232H
             {
                 if (s1[i] != s2[i])
                 {
-                    //throw new ArgumentException($"Different char at postion {i} c1:{s1[i]} c2:{s2[i]}");
+                    throw new ArgumentException($"Different char at postion {i} c1:{s1[i]} c2:{s2[i]}");
                     Console.WriteLine($"Different char at postion {i} c1:{s1[i]} c2:{s2[i]}");
                     break;
                 }

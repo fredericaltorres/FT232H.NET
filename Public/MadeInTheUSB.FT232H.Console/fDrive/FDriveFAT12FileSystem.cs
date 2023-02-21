@@ -123,7 +123,7 @@ namespace MadeInTheUSB.FT232H.Console
         
         private bool WriteSector512(int addr, List<byte> buffer)
         {
-            return _flash.WritePages(addr, buffer, verify: true, format: true);
+            return _flash.WritePages(addr, buffer, verify: true, eraseBlock: true);
         }
     }
 }

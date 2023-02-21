@@ -49,7 +49,7 @@ namespace MadeInTheUSB.FT232H.Console
             var _64k0123String = PerformanceHelper.Get64kString0123();
             var _64k0123Buffer = PerformanceHelper.GetAsciiBuffer(_64k0123String).ToList();
             var ph = new PerformanceHelper();
-            var WRITE_FLASH = true;
+            var WRITE_FLASH = !true;
 
             if (WRITE_FLASH)
             {
@@ -67,14 +67,14 @@ namespace MadeInTheUSB.FT232H.Console
 
                     if (_64kBlock == 11)
                     {
-                        r = flash.WritePages(_64kBlock * FlashMemory.MAX_BLOCK_SIZE, _64k0123Buffer, format: true);
+                        r = flash.WritePages(_64kBlock * FlashMemory.MAX_BLOCK_SIZE, _64k0123Buffer, eraseBlock: true);
                     }
                     else
                     {
                         if (_64kBlock % 3 == 0)
-                            r = flash.WritePages(_64kBlock * FlashMemory.MAX_BLOCK_SIZE, _64kFredBuffer, format: true);
+                            r = flash.WritePages(_64kBlock * FlashMemory.MAX_BLOCK_SIZE, _64kFredBuffer, eraseBlock: true);
                         else
-                            r = flash.WritePages(_64kBlock * FlashMemory.MAX_BLOCK_SIZE, _64kAbdcBuffer, format: true);
+                            r = flash.WritePages(_64kBlock * FlashMemory.MAX_BLOCK_SIZE, _64kAbdcBuffer, eraseBlock: true);
 
                     }
                     if (!r)
