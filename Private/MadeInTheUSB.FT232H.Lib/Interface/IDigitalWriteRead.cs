@@ -13,7 +13,7 @@ namespace MadeInTheUSB.FT232H
         byte MaxGpio { get; }
         void SetPullUp(int p, PinState d);
 
-        void ProgressNext(int reset = -1);
+        void ProgressNext(bool clear = false);
     }
 
 }

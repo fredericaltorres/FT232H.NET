@@ -36,6 +36,8 @@
             this.fT232HToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.ft232HDetect = new System.Windows.Forms.ToolStripMenuItem();
             this.ft232HInfoClick = new System.Windows.Forms.ToolStripMenuItem();
+            this.nusbioV2ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.initializeDeviceToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.fLASHToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.flashInfo = new System.Windows.Forms.ToolStripMenuItem();
             this.fAT12ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -61,8 +63,6 @@
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.rbDisplaySector512 = new System.Windows.Forms.RadioButton();
             this.rbDisplaySector256 = new System.Windows.Forms.RadioButton();
-            this.nusbioV2ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.initializeDeviceToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.grpSettings.SuspendLayout();
             this.statusBar.SuspendLayout();
@@ -129,16 +129,31 @@
             // 
             this.ft232HDetect.Name = "ft232HDetect";
             this.ft232HDetect.ShortcutKeys = System.Windows.Forms.Keys.F5;
-            this.ft232HDetect.Size = new System.Drawing.Size(180, 24);
+            this.ft232HDetect.Size = new System.Drawing.Size(148, 24);
             this.ft232HDetect.Text = "Detect";
             this.ft232HDetect.Click += new System.EventHandler(this.ft232HDetect_Click);
             // 
             // ft232HInfoClick
             // 
             this.ft232HInfoClick.Name = "ft232HInfoClick";
-            this.ft232HInfoClick.Size = new System.Drawing.Size(180, 24);
+            this.ft232HInfoClick.Size = new System.Drawing.Size(148, 24);
             this.ft232HInfoClick.Text = "Info";
             this.ft232HInfoClick.Click += new System.EventHandler(this.ft232HInfoClick_Click);
+            // 
+            // nusbioV2ToolStripMenuItem
+            // 
+            this.nusbioV2ToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.initializeDeviceToolStripMenuItem});
+            this.nusbioV2ToolStripMenuItem.Name = "nusbioV2ToolStripMenuItem";
+            this.nusbioV2ToolStripMenuItem.Size = new System.Drawing.Size(148, 24);
+            this.nusbioV2ToolStripMenuItem.Text = "Nusbio v2 ";
+            // 
+            // initializeDeviceToolStripMenuItem
+            // 
+            this.initializeDeviceToolStripMenuItem.Name = "initializeDeviceToolStripMenuItem";
+            this.initializeDeviceToolStripMenuItem.Size = new System.Drawing.Size(183, 24);
+            this.initializeDeviceToolStripMenuItem.Text = "Initialize Device";
+            this.initializeDeviceToolStripMenuItem.Click += new System.EventHandler(this.initializeDeviceToolStripMenuItem_Click);
             // 
             // fLASHToolStripMenuItem
             // 
@@ -153,7 +168,7 @@
             // flashInfo
             // 
             this.flashInfo.Name = "flashInfo";
-            this.flashInfo.Size = new System.Drawing.Size(126, 24);
+            this.flashInfo.Size = new System.Drawing.Size(180, 24);
             this.flashInfo.Text = "Info";
             this.flashInfo.Click += new System.EventHandler(this.flashInfo_Click);
             // 
@@ -163,7 +178,7 @@
             this.fat12ReadDiskToolStripMenuItem,
             this.fat12WriteDiskToolStripMenuItem});
             this.fAT12ToolStripMenuItem.Name = "fAT12ToolStripMenuItem";
-            this.fAT12ToolStripMenuItem.Size = new System.Drawing.Size(126, 24);
+            this.fAT12ToolStripMenuItem.Size = new System.Drawing.Size(180, 24);
             this.fAT12ToolStripMenuItem.Text = "FAT12";
             // 
             // fat12ReadDiskToolStripMenuItem
@@ -188,34 +203,34 @@
             this.writeFileToolStripMenuItem,
             this.eraseAllToolStripMenuItem});
             this.sectorsToolStripMenuItem.Name = "sectorsToolStripMenuItem";
-            this.sectorsToolStripMenuItem.Size = new System.Drawing.Size(126, 24);
+            this.sectorsToolStripMenuItem.Size = new System.Drawing.Size(180, 24);
             this.sectorsToolStripMenuItem.Text = "Sectors";
             // 
             // readToolStripMenuItem
             // 
             this.readToolStripMenuItem.Name = "readToolStripMenuItem";
-            this.readToolStripMenuItem.Size = new System.Drawing.Size(141, 24);
+            this.readToolStripMenuItem.Size = new System.Drawing.Size(180, 24);
             this.readToolStripMenuItem.Text = "Read";
             this.readToolStripMenuItem.Click += new System.EventHandler(this.readToolStripMenuItem_Click);
             // 
             // writeToolStripMenuItem
             // 
             this.writeToolStripMenuItem.Name = "writeToolStripMenuItem";
-            this.writeToolStripMenuItem.Size = new System.Drawing.Size(141, 24);
+            this.writeToolStripMenuItem.Size = new System.Drawing.Size(180, 24);
             this.writeToolStripMenuItem.Text = "Write";
             this.writeToolStripMenuItem.Click += new System.EventHandler(this.writeToolStripMenuItem_Click);
             // 
             // writeFileToolStripMenuItem
             // 
             this.writeFileToolStripMenuItem.Name = "writeFileToolStripMenuItem";
-            this.writeFileToolStripMenuItem.Size = new System.Drawing.Size(141, 24);
+            this.writeFileToolStripMenuItem.Size = new System.Drawing.Size(180, 24);
             this.writeFileToolStripMenuItem.Text = "Write File";
             this.writeFileToolStripMenuItem.Click += new System.EventHandler(this.writeFileToolStripMenuItem_Click);
             // 
             // eraseAllToolStripMenuItem
             // 
             this.eraseAllToolStripMenuItem.Name = "eraseAllToolStripMenuItem";
-            this.eraseAllToolStripMenuItem.Size = new System.Drawing.Size(141, 24);
+            this.eraseAllToolStripMenuItem.Size = new System.Drawing.Size(180, 24);
             this.eraseAllToolStripMenuItem.Text = "Erase All";
             this.eraseAllToolStripMenuItem.Click += new System.EventHandler(this.eraseAllToolStripMenuItem_Click);
             // 
@@ -367,21 +382,6 @@
             this.rbDisplaySector256.TabIndex = 0;
             this.rbDisplaySector256.Text = "256";
             this.rbDisplaySector256.UseVisualStyleBackColor = true;
-            // 
-            // nusbioV2ToolStripMenuItem
-            // 
-            this.nusbioV2ToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.initializeDeviceToolStripMenuItem});
-            this.nusbioV2ToolStripMenuItem.Name = "nusbioV2ToolStripMenuItem";
-            this.nusbioV2ToolStripMenuItem.Size = new System.Drawing.Size(180, 24);
-            this.nusbioV2ToolStripMenuItem.Text = "Nusbio v2 ";
-            // 
-            // initializeDeviceToolStripMenuItem
-            // 
-            this.initializeDeviceToolStripMenuItem.Name = "initializeDeviceToolStripMenuItem";
-            this.initializeDeviceToolStripMenuItem.Size = new System.Drawing.Size(183, 24);
-            this.initializeDeviceToolStripMenuItem.Text = "Initialize Device";
-            this.initializeDeviceToolStripMenuItem.Click += new System.EventHandler(this.initializeDeviceToolStripMenuItem_Click);
             // 
             // Form1
             // 

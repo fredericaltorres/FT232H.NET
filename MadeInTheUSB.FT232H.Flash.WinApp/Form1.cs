@@ -268,8 +268,8 @@ namespace MadeInTheUSB.FT232H.Flash.WinApp
             var buffer = new List<byte>();
             this.ShowUser($"About to Read {_flash.MaxPage} pages");
 
-            var maxPage = Math.Min(_flash.MaxPage, _flash.MaxPage);
-            var pageBufferCount = 256; //  256 * 256  = 65536
+            var maxPage = Math.Min(256, _flash.MaxPage);
+            var pageBufferCount = 64; //  256 * 256  = 65536
 
             for (var p = 0; p < maxPage; p+= pageBufferCount)
             {
@@ -292,6 +292,7 @@ namespace MadeInTheUSB.FT232H.Flash.WinApp
             this.ShowUser(bg.Generate(new BinaryViewerOption { ShowSector = true, SectorSize = GetDisplaySectorSize() }));
 
             this.ShowState();
+            this._interfaces.Gpios.ProgressNext(clear: true);
         }
 
         private int GetDisplaySectorSize()

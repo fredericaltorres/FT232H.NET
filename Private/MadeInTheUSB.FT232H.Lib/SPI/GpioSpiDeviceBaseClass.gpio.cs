@@ -76,21 +76,30 @@ namespace MadeInTheUSB.FT232H
 
         static bool _progressModeInitialized = false;
         static int _progressModeIndex = -1;
-        public void ProgressNext(int reset = -1)
+        public void ProgressNext(bool clear = false)
         {
             if (!_progressModeInitialized)
             {
                 _progressModeInitialized = true;
                 AllGpios(false);
             }
-            if(_progressModeIndex >= 0)
-                this.DigitalWrite(_progressModeIndex, PinState.Low);
-            _progressModeIndex += 1;
 
-            if (_progressModeIndex == this.MaxGpio)
-                _progressModeIndex = 0;
+            if (clear)
+            {
+                AllGpios(false);
+                _progressModeIndex = -1;
+            }
+            else
+            {
+                if (_progressModeIndex >= 0)
+                    this.DigitalWrite(_progressModeIndex, PinState.Low);
+                _progressModeIndex += 1;
 
-            this.DigitalWrite(_progressModeIndex, PinState.High);
+                if (_progressModeIndex == this.MaxGpio)
+                    _progressModeIndex = 0;
+
+                this.DigitalWrite(_progressModeIndex, PinState.High);
+            }
         }
 
         private void AllGpios(bool on)
