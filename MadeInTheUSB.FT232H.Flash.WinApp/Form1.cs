@@ -61,7 +61,7 @@ namespace MadeInTheUSB.FT232H.Flash.WinApp
                 _ft232Device = FT232HDetector.Detect();
                 if (_ft232Device.Ok)
                 {
-                    this.ShowUser($"FT232H:{_ft232Device}");
+                    this.ShowUser($"FT232H [{_ft232Device}]");
                     // MCP3088 and MAX7219 is limited to 10Mhz
                     var clockSpeed = this.rbMhz30.Checked ? MpsseSpiConfig._30Mhz : MpsseSpiConfig._10Mhz;
                     _gpioSpiDevice = new GpioSpiDevice(MpsseSpiConfig.Make(clockSpeed));
@@ -97,6 +97,10 @@ namespace MadeInTheUSB.FT232H.Flash.WinApp
         {
             DetectIfNeeded();
             this.ShowUser($"");
+
+
+
+
             this.ShowUser($"FT232H Properties");
             foreach (var p in _ft232Device.Properties)
                 this.ShowUser($"    {p.Key}: {p.Value}");
@@ -380,6 +384,17 @@ namespace MadeInTheUSB.FT232H.Flash.WinApp
             if (openFileDialog.ShowDialog() != DialogResult.OK) return null;
 
             return openFileDialog.FileName;
+        }
+
+        private void initializeDeviceToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            _ft232Device = FT232HDetector.Detect();
+            if (_ft232Device.Ok)
+            {
+                this.ShowUser($"FT232H:{_ft232Device}");
+                this.ShowUser($"IsFT2323H: {_ft232Device.IsFT2323H}, IsNusbioV2: {_ft232Device.IsNusbioV2}");
+                FT232HDetector.InitializeAsNusbioV2Device();
+            }
         }
     }
 }
