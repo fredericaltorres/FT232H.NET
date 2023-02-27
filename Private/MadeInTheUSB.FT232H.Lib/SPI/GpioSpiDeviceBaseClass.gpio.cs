@@ -6,6 +6,11 @@ using System.Text;
 
 namespace MadeInTheUSB.FT232H
 {
+
+    public class Interfaces {
+        public IDigitalWriteRead Gpios;
+        public ISPI Spi;
+     }
     /// <summary>
     /// Implement the IDigitalWriteRead for accessing the gpio 0..7 of the FT232H
     /// </summary>
@@ -18,6 +23,9 @@ namespace MadeInTheUSB.FT232H
         
         private int       _values;
         private int       _directions;
+
+
+        public Interfaces Interfaces => new Interfaces { Spi = this.SPI, Gpios = this.GPIO };
 
         public IDigitalWriteRead GPIO
         {
@@ -65,6 +73,32 @@ namespace MadeInTheUSB.FT232H
                 throw new GpioException(r, nameof(DigitalWrite));
             }
         }
+
+        static bool _progressModeInitialized = false;
+        static int _progressModeIndex = -1;
+        public void ProgressNext(int reset = -1)
+        {
+            if (!_progressModeInitialized)
+            {
+                _progressModeInitialized = true;
+                AllGpios(false);
+            }
+            if(_progressModeIndex >= 0)
+                this.DigitalWrite(_progressModeIndex, PinState.Low);
+            _progressModeIndex += 1;
+
+            if (_progressModeIndex == this.MaxGpio)
+                _progressModeIndex = 0;
+
+            this.DigitalWrite(_progressModeIndex, PinState.High);
+        }
+
+        private void AllGpios(bool on)
+        {
+            for (int i = 0; i < this.MaxGpio; i++)
+                this.DigitalWrite(i, on ? PinState.High : PinState.Low);
+        }
+
         public void SetPinMode(int pin, PinMode pinMode)
         {
             if (pinMode == PinMode.Output)

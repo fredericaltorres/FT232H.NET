@@ -45,10 +45,10 @@ namespace MadeInTheUSB.FT232H.Console
             };
             //FlashMemoryWriteFDriveFileSystem(spi, files, fatLinkedListSectorCount, volumeName, updateFlash: false);
             //FlashMemoryWriteFlashContentToLocalFile(spi);
-            FlashMemorySample(spi);
+            //FlashMemorySample(spi);
             //Api102RgbLedSample(spi);
             // ADC_MCP3008Demo(spi);
-            // GpioSample(gpios, false);
+             GpioSample(gpios, false);
         }
     }
 }

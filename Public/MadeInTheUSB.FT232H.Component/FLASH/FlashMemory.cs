@@ -163,6 +163,7 @@ namespace MadeInTheUSB.FT232H.Components
                             this.SizeInByte = 16 * 1024 * 1024;
                             break;
                     }
+                
                 }
             }
         }
@@ -202,7 +203,7 @@ namespace MadeInTheUSB.FT232H.Components
             if (!this.SendCommand(FLASH_COMMAND.WRITE_ENABLE_LATCH_WREN))
                 return result;
 
-            this.WaitForOperation(5, 5, "w");
+            this.WaitForOperation(5, 3, "w");
             if (checkStatus)
             {
                 if (this.IsWriteRegisterEnable())
@@ -300,7 +301,7 @@ namespace MadeInTheUSB.FT232H.Components
             var spiBufferWrite = GetEepromApiWriteBuffer(address, buffer);
             var r1 = this._spi.Write(spiBufferWrite) == FtdiMpsseSPIResult.Ok;
 
-            this.WaitForOperation(30, 7, "w");
+            this.WaitForOperation(30, 4, "w");
 
             // Added for the EEPROM, Not needed for CYPRESS - FRED TODO
             //if(!SetWriteRegisterDisable())

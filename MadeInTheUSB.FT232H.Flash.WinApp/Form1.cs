@@ -17,13 +17,12 @@ namespace MadeInTheUSB.FT232H.Flash.WinApp
 {
     public partial class Form1 : Form
     {
-        public IDigitalWriteRead _gpios;
-        public ISPI _spi;
+        public Interfaces _interfaces;
         FT232HDetectorInformation _ft232Device;
         GpioSpiDevice _gpioSpiDevice;
         FlashMemory _flash;
 
-        public bool HardwareDetected => this._spi != null;
+        public bool HardwareDetected => this._interfaces != null;
 
         public Form1()
         {
@@ -55,7 +54,7 @@ namespace MadeInTheUSB.FT232H.Flash.WinApp
             Application.DoEvents();
         }
 
-        public ISPI DetectFT232H()
+        public Interfaces DetectFT232H()
         {
             if (_ft232Device == null)
             {
@@ -66,9 +65,8 @@ namespace MadeInTheUSB.FT232H.Flash.WinApp
                     // MCP3088 and MAX7219 is limited to 10Mhz
                     var clockSpeed = this.rbMhz30.Checked ? MpsseSpiConfig._30Mhz : MpsseSpiConfig._10Mhz;
                     _gpioSpiDevice = new GpioSpiDevice(MpsseSpiConfig.Make(clockSpeed));
-                    _gpios = _gpioSpiDevice.GPIO;
-                    _spi = _gpioSpiDevice.SPI;
-                    return _gpioSpiDevice.SPI;
+                    _interfaces = _gpioSpiDevice.Interfaces;
+                    return _gpioSpiDevice.Interfaces;
                 }
                 else
                 {
@@ -79,7 +77,7 @@ namespace MadeInTheUSB.FT232H.Flash.WinApp
             else
             {
                 this.ShowUser($"FT232H:{_ft232Device}");
-                return _spi;
+                return _interfaces;
             }
         }
 
@@ -114,7 +112,7 @@ namespace MadeInTheUSB.FT232H.Flash.WinApp
         {
             if (!this.HardwareDetected)
             {
-                this._spi = DetectFT232H();
+                this._interfaces = DetectFT232H();
             }
         }
 
@@ -122,7 +120,7 @@ namespace MadeInTheUSB.FT232H.Flash.WinApp
         {
             if (_flash == null)
             {
-                _flash = new FlashMemory(_spi);
+                _flash = new FlashMemory(this._interfaces.Spi);
                 _flash.ReadIdentification( );
                 this.ShowUser($"");
                 this.ShowUser($"FLASH: {_flash.GetDeviceInfo()}");
@@ -131,7 +129,7 @@ namespace MadeInTheUSB.FT232H.Flash.WinApp
 
         private void ft232HDetect_Click(object sender, EventArgs e)
         {
-            this._spi = DetectFT232H();
+            this._interfaces = DetectFT232H();
         }
 
         private void clearToolStripMenuItem_Click(object sender, EventArgs e)
@@ -252,7 +250,7 @@ namespace MadeInTheUSB.FT232H.Flash.WinApp
         private void eEPROM25AA1024ToolStripMenuItem_Click(object sender, EventArgs e)
         {
             DetectIfNeeded();
-            _flash = new FlashMemory(_spi);
+            _flash = new FlashMemory(this._interfaces.Spi);
             _flash.ReadIdentification(FlashMemory.FLASH_DEVICE_ID.EEPROM_25AA1024_128Kb);
             this.ShowUser($"");
             this.ShowUser($"EEPROM: {_flash.GetDeviceInfo()}");
@@ -266,15 +264,18 @@ namespace MadeInTheUSB.FT232H.Flash.WinApp
             var buffer = new List<byte>();
             this.ShowUser($"About to Read {_flash.MaxPage} pages");
 
-            var maxPage = Math.Min(204, _flash.MaxPage);
+            var maxPage = Math.Min(_flash.MaxPage, _flash.MaxPage);
+            var pageBufferCount = 256; //  256 * 256  = 65536
 
-            for (var p = 0; p < maxPage; p++)
+            for (var p = 0; p < maxPage; p+= pageBufferCount)
             {
                 if (p % 10 == 0)
-                    this.ShowState($"Page {p}");
+                    this.ShowState($"Page {p}, {buffer.Count/1024} Kb loaded");
                 var tmpBuffer = new List<byte>();
-                _flash.ReadPages(p * _flash.PageSize, _flash.PageSize, tmpBuffer);
+                _flash.ReadPages(p * _flash.PageSize, pageBufferCount*_flash.PageSize, tmpBuffer);
                 buffer.AddRange(tmpBuffer);
+
+                this._interfaces.Gpios.ProgressNext();
             }
 
             var tmpFileName = Path.Combine(Path.GetTempPath(), Path.GetTempFileName());
@@ -300,20 +301,21 @@ namespace MadeInTheUSB.FT232H.Flash.WinApp
             DetectFlashIfNeeded();
             byte asciValue = 65;
             this.ShowUser($"About to write {_flash.MaxPage} pages");
-            var maxPage = Math.Min(200, _flash.MaxPage);
+            var maxPage = Math.Min(_flash.MaxPage, _flash.MaxPage);
 
             /// _flash.ErasePage(0, FlashMemory.ERASE_BLOCK_SIZE.BLOCK_64K);
 
-            for (var p = 0; p < maxPage; p++)
+            for (var p = 30000; p < maxPage; p++)
             {
                 var totalWritten = p * _flash.PageSize;
                 if (p % 10 == 0)
-                    this.ShowState($"Writing page {p} {totalWritten / 1024} / {_flash.SizeInByte}");
+                    this.ShowState($"Writing page {p}/{maxPage},  {totalWritten / 1024}/{_flash.SizeInByte / 1024} kB");
 
-                _flash.WritePages(p * _flash.PageSize, BufferUtils.MakeBuffer(_flash.PageSize, asciValue), verify: true, eraseBlock: true );
+                _flash.WritePages(p * _flash.PageSize, BufferUtils.MakeBuffer(_flash.PageSize, asciValue), verify: !true, eraseBlock: true );
                 asciValue += 1;
                 if (asciValue >= 128)
                     asciValue = 65;
+                this._interfaces.Gpios.ProgressNext();
             }
             this.ShowUser($"done");
         }
