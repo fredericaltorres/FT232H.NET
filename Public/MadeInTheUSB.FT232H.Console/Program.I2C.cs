@@ -19,13 +19,8 @@ namespace MadeInTheUSB.FT232H.Console
 
         static void I2CSample(I2CDevice i2cDevice)
         {
-            // _ledMatrix00 = new LEDBackpack(i2cDevice, 8, 8);
-            //_ledMatrix00.Begin(0x71);
-            //_ledMatrix00.DrawLine(0, 0, 7, 7, true);
-            //_ledMatrix00.WriteDisplay();
-
             _multiLEDBackpackManager = new MultiLEDBackpackManager();
-            _ledMatrix00  = _multiLEDBackpackManager.Add(i2cDevice, 8, 8, 0x71);
+            _ledMatrix00 = _multiLEDBackpackManager.Add(i2cDevice, 8, 8, 0x71);
 
             Animate();
         }

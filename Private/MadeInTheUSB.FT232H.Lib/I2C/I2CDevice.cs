@@ -13,37 +13,40 @@ namespace MadeInTheUSB.FT232H
         FTDI.FT_STATUS ftStatus = FTDI.FT_STATUS.FT_OK;
 
         // ###### I2C Library defines ######
-        const byte I2C_Dir_SDAin_SCLin  = 0x00;
-        const byte I2C_Dir_SDAin_SCLout = 0x01;
-        const byte I2C_Dir_SDAout_SCLout = 0x03;
-        const byte I2C_Dir_SDAout_SCLin = 0x02;
-        const byte I2C_Data_SDAhi_SCLhi = 0x03;
-        const byte I2C_Data_SDAlo_SCLhi = 0x01;
-        const byte I2C_Data_SDAlo_SCLlo = 0x00;
-        const byte I2C_Data_SDAhi_SCLlo = 0x02;
+        const byte I2C_Dir_SDAin_SCLin          = 0x00;
+        const byte I2C_Dir_SDAin_SCLout         = 0x01;
+        const byte I2C_Dir_SDAout_SCLout        = 0x03;
+        const byte I2C_Dir_SDAout_SCLin         = 0x02;
+        const byte I2C_Data_SDAhi_SCLhi         = 0x03;
+        const byte I2C_Data_SDAlo_SCLhi         = 0x01;
+        const byte I2C_Data_SDAlo_SCLlo         = 0x00;
+        const byte I2C_Data_SDAhi_SCLlo         = 0x02;
+
         // MPSSE clocking commands
-        const byte MSB_FALLING_EDGE_CLOCK_BYTE_IN = 0x24;
-        const byte MSB_RISING_EDGE_CLOCK_BYTE_IN = 0x20;
-        const byte MSB_FALLING_EDGE_CLOCK_BYTE_OUT = 0x11;
-        const byte MSB_DOWN_EDGE_CLOCK_BIT_IN = 0x26;
-        const byte MSB_UP_EDGE_CLOCK_BYTE_IN = 0x20;
-        const byte MSB_UP_EDGE_CLOCK_BYTE_OUT = 0x10;
-        const byte MSB_RISING_EDGE_CLOCK_BIT_IN = 0x22;
-        const byte MSB_FALLING_EDGE_CLOCK_BIT_OUT = 0x13;
+        const byte MSB_FALLING_EDGE_CLOCK_BYTE_IN   = 0x24;
+        const byte MSB_RISING_EDGE_CLOCK_BYTE_IN    = 0x20;
+        const byte MSB_FALLING_EDGE_CLOCK_BYTE_OUT  = 0x11;
+        const byte MSB_DOWN_EDGE_CLOCK_BIT_IN       = 0x26;
+        const byte MSB_UP_EDGE_CLOCK_BYTE_IN        = 0x20;
+        const byte MSB_UP_EDGE_CLOCK_BYTE_OUT       = 0x10;
+        const byte MSB_RISING_EDGE_CLOCK_BIT_IN     = 0x22;
+        const byte MSB_FALLING_EDGE_CLOCK_BIT_OUT   = 0x13;
+
         // Clock
-        const uint ClockDivisor = 49;      //          = 199;// for 100KHz
+        const uint ClockDivisor = 199;// for 100KHz
+
         // Sending and receiving
-        static uint NumBytesToSend = 0;
+        static uint _numBytesToSend = 0;
         static uint NumBytesToRead = 0;
-        uint NumBytesSent = 0;
+        uint _numBytesSent = 0;
         static uint NumBytesRead = 0;
-        static byte[] MPSSEbuffer = new byte[500];
-        static byte[] InputBuffer = new byte[500];
-        static byte[] InputBuffer2 = new byte[500];
+        static byte[] _MPSSEbuffer = new byte[500];
+        static byte[] _inputBuffer = new byte[500];
+        static byte[] _inputBuffer2 = new byte[500];
         static uint BytesAvailable = 0;
-        public  bool I2C_Ack = false;
+        public bool I2C_Ack = false;
         static byte AppStatus = 0;
-        static byte I2C_Status = 0;
+        static bool I2C_Status = false;
         public bool Running = true;
         static bool DeviceOpen = false;
         // GPIO
@@ -58,14 +61,6 @@ namespace MadeInTheUSB.FT232H
             this.myFtdiDevice = myFtdiDevice;
         }
 
-
-        //###################################################################################################################################
-        //###################################################################################################################################
-        //##################                             I2C Layer                                                      #####################
-        //###################################################################################################################################
-        //###################################################################################################################################
-
-
         public bool Idle()
         {
             // Set the line AD3 as output driving low to turn off white LED on colour sensor
@@ -76,14 +71,11 @@ namespace MadeInTheUSB.FT232H
             return (AppStatus == 0);
         }
 
-        public byte I2C_ConfigureMpsse()
+        public bool I2C_ConfigureMpsse()
         {
-
             byte ADbusVal = 0;
             byte ADbusDir = 0;
-            NumBytesToSend = 0;
-
-            /***** Initial device configuration *****/
+            _numBytesToSend = 0;
 
             ftStatus = FTDI.FT_STATUS.FT_OK;
             ftStatus |= myFtdiDevice.SetTimeouts(5000, 5000);
@@ -93,62 +85,61 @@ namespace MadeInTheUSB.FT232H
             ftStatus |= myFtdiDevice.SetBitMode(0x00, 0x02);         // MPSSE mode        
 
             if (ftStatus != FTDI.FT_STATUS.FT_OK)
-                return 1; // error();
+                return false;
 
-            /***** Flush the buffer *****/
             I2C_Status = FlushBuffer();
 
             /***** Synchronize the MPSSE interface by sending bad command 0xAA *****/
-            NumBytesToSend = 0;
-            MPSSEbuffer[NumBytesToSend++] = 0xAA;
-            I2C_Status = Send_Data(NumBytesToSend);
-            if (I2C_Status != 0) return 1; // error();
+            _numBytesToSend = 0;
+            _MPSSEbuffer[_numBytesToSend++] = 0xAA;
+            I2C_Status = Send_Data(_numBytesToSend, _MPSSEbuffer);
+            if (!I2C_Status) return false;
             NumBytesToRead = 2;
             I2C_Status = Receive_Data(2);
-            if (I2C_Status != 0) return 1; //error();
+            if (!I2C_Status) return false;
 
-            if ((InputBuffer2[0] == 0xFA) && (InputBuffer2[1] == 0xAA))
+            if ((_inputBuffer2[0] == 0xFA) && (_inputBuffer2[1] == 0xAA))
             {
-                //Console.WriteLine("Bad Command Echo successful");
+                // Bad Command Echo successful
             }
             else
             {
-                return 1;            //error();
+                return false;
             }
 
             /***** Synchronize the MPSSE interface by sending bad command 0xAB *****/
-            NumBytesToSend = 0;
-            MPSSEbuffer[NumBytesToSend++] = 0xAB;
-            I2C_Status = Send_Data(NumBytesToSend);
-            if (I2C_Status != 0) return 1; // error();
+            _numBytesToSend = 0;
+            _MPSSEbuffer[_numBytesToSend++] = 0xAB;
+            I2C_Status = Send_Data(_numBytesToSend, _MPSSEbuffer);
+            if (!I2C_Status) return false;
             NumBytesToRead = 2;
             I2C_Status = Receive_Data(2);
-            if (I2C_Status != 0) return 1; //error();
+            if (!I2C_Status) return false;
 
-            if ((InputBuffer2[0] == 0xFA) && (InputBuffer2[1] == 0xAB))
+            if ((_inputBuffer2[0] == 0xFA) && (_inputBuffer2[1] == 0xAB))
             {
-                //Console.WriteLine("Bad Command Echo successful");
+                // Bad Command Echo successful
             }
             else
             {
-                return 1;            //error();
+                return false;
             }
 
-            NumBytesToSend = 0;
-            MPSSEbuffer[NumBytesToSend++] = 0x8A; 	// Disable clock divide by 5 for 60Mhz master clock
-            MPSSEbuffer[NumBytesToSend++] = 0x97;	// Turn off adaptive clocking
-            MPSSEbuffer[NumBytesToSend++] = 0x8C; 	// Enable 3 phase data clock, used by I2C to allow data on both clock edges
+            _numBytesToSend = 0;
+            _MPSSEbuffer[_numBytesToSend++] = 0x8A; 	// Disable clock divide by 5 for 60Mhz master clock
+            _MPSSEbuffer[_numBytesToSend++] = 0x97;	// Turn off adaptive clocking
+            _MPSSEbuffer[_numBytesToSend++] = 0x8C; 	// Enable 3 phase data clock, used by I2C to allow data on both clock edges
             // The SK clock frequency can be worked out by below algorithm with divide by 5 set as off
             // SK frequency  = 60MHz /((1 +  [(1 +0xValueH*256) OR 0xValueL])*2)
-            MPSSEbuffer[NumBytesToSend++] = 0x86; 	//Command to set clock divisor
-            MPSSEbuffer[NumBytesToSend++] = (byte)(ClockDivisor & 0x00FF);	//Set 0xValueL of clock divisor
-            MPSSEbuffer[NumBytesToSend++] = (byte)((ClockDivisor >> 8) & 0x00FF);	//Set 0xValueH of clock divisor
-            MPSSEbuffer[NumBytesToSend++] = 0x85; 			// loopback off
+            _MPSSEbuffer[_numBytesToSend++] = 0x86; 	//Command to set clock divisor
+            _MPSSEbuffer[_numBytesToSend++] = (byte)(ClockDivisor & 0x00FF);	//Set 0xValueL of clock divisor
+            _MPSSEbuffer[_numBytesToSend++] = (byte)((ClockDivisor >> 8) & 0x00FF);	//Set 0xValueH of clock divisor
+            _MPSSEbuffer[_numBytesToSend++] = 0x85;  // loopback off
 
 #if (FT232H)
-            MPSSEbuffer[NumBytesToSend++] = 0x9E;       //Enable the FT232H's drive-zero mode with the following enable mask...
-            MPSSEbuffer[NumBytesToSend++] = 0x07;       // ... Low byte (ADx) enables - bits 0, 1 and 2 and ... 
-            MPSSEbuffer[NumBytesToSend++] = 0x00;       //...High byte (ACx) enables - all off
+            _MPSSEbuffer[_numBytesToSend++] = 0x9E;       //Enable the FT232H's drive-zero mode with the following enable mask...
+            _MPSSEbuffer[_numBytesToSend++] = 0x07;       // ... Low byte (ADx) enables - bits 0, 1 and 2 and ... 
+            _MPSSEbuffer[_numBytesToSend++] = 0x00;       //...High byte (ACx) enables - all off
 
             ADbusVal = (byte)(0x00 | I2C_Data_SDAhi_SCLhi | (GPIO_Low_Dat & 0xF8)); // SDA and SCL both output high (open drain)
             ADbusDir = (byte)(0x00 | I2C_Dir_SDAout_SCLout | (GPIO_Low_Dir & 0xF8));
@@ -158,51 +149,49 @@ namespace MadeInTheUSB.FT232H
 
 #endif
 
-            MPSSEbuffer[NumBytesToSend++] = 0x80; 	//Command to set directions of lower 8 pins and force value on bits set as output 
-            MPSSEbuffer[NumBytesToSend++] = (byte)(ADbusVal);
-            MPSSEbuffer[NumBytesToSend++] = (byte)(ADbusDir);
+            _MPSSEbuffer[_numBytesToSend++] = 0x80; 	//Command to set directions of lower 8 pins and force value on bits set as output 
+            _MPSSEbuffer[_numBytesToSend++] = (byte)(ADbusVal);
+            _MPSSEbuffer[_numBytesToSend++] = (byte)(ADbusDir);
 
 
-            I2C_Status = Send_Data(NumBytesToSend);
-            if (I2C_Status != 0)
+            I2C_Status = Send_Data(_numBytesToSend, _MPSSEbuffer);
+            if (!I2C_Status)
             {
-                return 1;            //error();
+                return false;
             }
             else
             {
-                return 0;
+                return true;
             }
         }
 
-        //###################################################################################################################################
-        // Reads a byte over I2C 
-
+        
         public byte I2C_ReadByte(bool ACK)
         {
             byte ADbusVal = 0;
             byte ADbusDir = 0;
-            NumBytesToSend = 0;
+            _numBytesToSend = 0;
 
 #if (FT232H)
             // Clock in one data byte
-            MPSSEbuffer[NumBytesToSend++] = MSB_RISING_EDGE_CLOCK_BYTE_IN;      // Clock data byte in
-            MPSSEbuffer[NumBytesToSend++] = 0x00;
-            MPSSEbuffer[NumBytesToSend++] = 0x00;                               // Data length of 0x0000 means 1 byte data to clock in
+            _MPSSEbuffer[_numBytesToSend++] = MSB_RISING_EDGE_CLOCK_BYTE_IN;      // Clock data byte in
+            _MPSSEbuffer[_numBytesToSend++] = 0x00;
+            _MPSSEbuffer[_numBytesToSend++] = 0x00;                               // Data length of 0x0000 means 1 byte data to clock in
 
             // clock out one bit as ack/nak bit
-            MPSSEbuffer[NumBytesToSend++] = MSB_FALLING_EDGE_CLOCK_BIT_OUT;     // Clock data bit out
-            MPSSEbuffer[NumBytesToSend++] = 0x00;                               // Length of 0 means 1 bit
+            _MPSSEbuffer[_numBytesToSend++] = MSB_FALLING_EDGE_CLOCK_BIT_OUT;     // Clock data bit out
+            _MPSSEbuffer[_numBytesToSend++] = 0x00;                               // Length of 0 means 1 bit
             if (ACK == true)
-                MPSSEbuffer[NumBytesToSend++] = 0x00;                           // Data bit to send is a '0'
+                _MPSSEbuffer[_numBytesToSend++] = 0x00;                           // Data bit to send is a '0'
             else
-                MPSSEbuffer[NumBytesToSend++] = 0xFF;                           // Data bit to send is a '1'
+                _MPSSEbuffer[_numBytesToSend++] = 0xFF;                           // Data bit to send is a '1'
 
             // I2C lines back to idle state 
             ADbusVal = (byte)(0x00 | I2C_Data_SDAhi_SCLlo | (GPIO_Low_Dat & 0xF8));
             ADbusDir = (byte)(0x00 | I2C_Dir_SDAout_SCLout | (GPIO_Low_Dir & 0xF8));
-            MPSSEbuffer[NumBytesToSend++] = 0x80;                               //       ' Command - set low byte
-            MPSSEbuffer[NumBytesToSend++] = ADbusVal;                            //      ' Set the values
-            MPSSEbuffer[NumBytesToSend++] = ADbusDir;                             //     ' Set the directions
+            _MPSSEbuffer[_numBytesToSend++] = 0x80;                               //       ' Command - set low byte
+            _MPSSEbuffer[_numBytesToSend++] = ADbusVal;                            //      ' Set the values
+            _MPSSEbuffer[_numBytesToSend++] = ADbusDir;                             //     ' Set the directions
 #else
             // Ensure line is definitely an input since FT2232H and FT4232H don't have open drain
             ADbusVal = (byte)(0x00 | I2C_Data_SDAlo_SCLlo | (GPIO_Low_Dat & 0xF8));
@@ -243,18 +232,18 @@ namespace MadeInTheUSB.FT232H
 
 #endif
             // This command then tells the MPSSE to send any results gathered back immediately
-            MPSSEbuffer[NumBytesToSend++] = 0x87;                                  //    ' Send answer back immediate command
+            _MPSSEbuffer[_numBytesToSend++] = 0x87;                                  //    ' Send answer back immediate command
 
             // send commands to chip
-            I2C_Status = Send_Data(NumBytesToSend);
-            if (I2C_Status != 0)
+            I2C_Status = Send_Data(_numBytesToSend, _MPSSEbuffer);
+            if (!I2C_Status)
             {
                 return 1;
             }
 
             // get the byte which has been read from the driver's receive buffer
             I2C_Status = Receive_Data(1);
-            if (I2C_Status != 0)
+            if (!I2C_Status)
             {
                 return 1;
             }
@@ -272,29 +261,27 @@ namespace MadeInTheUSB.FT232H
         {
             byte ADbusVal = 0;
             byte ADbusDir = 0;
-            NumBytesToSend = 0;
-
-            // ------------------------------------ Address ------------------------------------
+            _numBytesToSend = 0;
 
             Address <<= 1;
             Address |= 0x01;
 
 #if (FT232H)
-            MPSSEbuffer[NumBytesToSend++] = MSB_FALLING_EDGE_CLOCK_BYTE_OUT;        // clock data byte out
-            MPSSEbuffer[NumBytesToSend++] = 0x00;                                   // 
-            MPSSEbuffer[NumBytesToSend++] = 0x00;                                   //  Data length of 0x0000 means 1 byte data to clock in
-            MPSSEbuffer[NumBytesToSend++] = Address;// DataSend[0];          //  Byte to send
+            _MPSSEbuffer[_numBytesToSend++] = MSB_FALLING_EDGE_CLOCK_BYTE_OUT;        // clock data byte out
+            _MPSSEbuffer[_numBytesToSend++] = 0x00;                                   // 
+            _MPSSEbuffer[_numBytesToSend++] = 0x00;                                   //  Data length of 0x0000 means 1 byte data to clock in
+            _MPSSEbuffer[_numBytesToSend++] = Address;                                // 
 
             // Put line back to idle (data released, clock pulled low)
-            ADbusVal = (byte)(0x00 | I2C_Data_SDAhi_SCLlo | (GPIO_Low_Dat & 0xF8));
+            ADbusVal = (byte)(0x00 | I2C_Data_SDAhi_SCLlo  | (GPIO_Low_Dat & 0xF8));
             ADbusDir = (byte)(0x00 | I2C_Dir_SDAout_SCLout | (GPIO_Low_Dir & 0xF8));// make data input
-            MPSSEbuffer[NumBytesToSend++] = 0x80;                                   // Command - set low byte
-            MPSSEbuffer[NumBytesToSend++] = ADbusVal;                               // Set the values
-            MPSSEbuffer[NumBytesToSend++] = ADbusDir;                               // Set the directions
+            _MPSSEbuffer[_numBytesToSend++] = 0x80;                                   // Command - set low byte
+            _MPSSEbuffer[_numBytesToSend++] = ADbusVal;                               // Set the values
+            _MPSSEbuffer[_numBytesToSend++] = ADbusDir;                               // Set the directions
 
             // CLOCK IN ACK
-            MPSSEbuffer[NumBytesToSend++] = MSB_RISING_EDGE_CLOCK_BIT_IN;           // clock data bits in
-            MPSSEbuffer[NumBytesToSend++] = 0x00;                                   // Length of 0 means 1 bit
+            _MPSSEbuffer[_numBytesToSend++] = MSB_RISING_EDGE_CLOCK_BIT_IN;           // clock data bits in
+            _MPSSEbuffer[_numBytesToSend++] = 0x00;                                   // Length of 0 means 1 bit
 #else
 
             // Set directions of clock and data to output in preparation for clocking out a byte
@@ -325,20 +312,20 @@ namespace MadeInTheUSB.FT232H
             // ------------------------------------ Clock in 1st byte and ACK ------------------------------------
 
 #if (FT232H)
-            MPSSEbuffer[NumBytesToSend++] = MSB_RISING_EDGE_CLOCK_BYTE_IN;      // Clock data byte in
-            MPSSEbuffer[NumBytesToSend++] = 0x00;
-            MPSSEbuffer[NumBytesToSend++] = 0x00;                               // Data length of 0x0000 means 1 byte data to clock in
+            _MPSSEbuffer[_numBytesToSend++] = MSB_RISING_EDGE_CLOCK_BYTE_IN;      // Clock data byte in
+            _MPSSEbuffer[_numBytesToSend++] = 0x00;
+            _MPSSEbuffer[_numBytesToSend++] = 0x00;                               // Data length of 0x0000 means 1 byte data to clock in
 
-            MPSSEbuffer[NumBytesToSend++] = MSB_FALLING_EDGE_CLOCK_BIT_OUT;    // Clock data bit out
-            MPSSEbuffer[NumBytesToSend++] = 0x00;                              // Length of 0 means 1 bit
-            MPSSEbuffer[NumBytesToSend++] = 0x00;                              // Sending 0 here as ACK
+            _MPSSEbuffer[_numBytesToSend++] = MSB_FALLING_EDGE_CLOCK_BIT_OUT;    // Clock data bit out
+            _MPSSEbuffer[_numBytesToSend++] = 0x00;                              // Length of 0 means 1 bit
+            _MPSSEbuffer[_numBytesToSend++] = 0x00;                              // Sending 0 here as ACK
 
             ADbusVal = (byte)(0x00 | I2C_Data_SDAhi_SCLlo | (GPIO_Low_Dat & 0xF8));
             ADbusDir = (byte)(0x00 | I2C_Dir_SDAout_SCLout | (GPIO_Low_Dir & 0xF8));
 
-            MPSSEbuffer[NumBytesToSend++] = 0x80;                               //       ' Command - set low byte
-            MPSSEbuffer[NumBytesToSend++] = ADbusVal;                            //      ' Set the values
-            MPSSEbuffer[NumBytesToSend++] = ADbusDir;                             //     ' Set the directions
+            _MPSSEbuffer[_numBytesToSend++] = 0x80;                               //       ' Command - set low byte
+            _MPSSEbuffer[_numBytesToSend++] = ADbusVal;                            //      ' Set the values
+            _MPSSEbuffer[_numBytesToSend++] = ADbusDir;                             //     ' Set the directions
 #else          
 
             MPSSEbuffer[NumBytesToSend++] = MSB_RISING_EDGE_CLOCK_BYTE_IN;      // Clock data byte in
@@ -369,20 +356,20 @@ namespace MadeInTheUSB.FT232H
             // ------------------------------------ Clock in 2nd byte and NAK ------------------------------------
 
 #if (FT232H)
-            MPSSEbuffer[NumBytesToSend++] = MSB_RISING_EDGE_CLOCK_BYTE_IN;      // Clock data byte in
-            MPSSEbuffer[NumBytesToSend++] = 0x00;
-            MPSSEbuffer[NumBytesToSend++] = 0x00;                               // Data length of 0x0000 means 1 byte data to clock in
+            _MPSSEbuffer[_numBytesToSend++] = MSB_RISING_EDGE_CLOCK_BYTE_IN;      // Clock data byte in
+            _MPSSEbuffer[_numBytesToSend++] = 0x00;
+            _MPSSEbuffer[_numBytesToSend++] = 0x00;                               // Data length of 0x0000 means 1 byte data to clock in
 
-            MPSSEbuffer[NumBytesToSend++] = MSB_FALLING_EDGE_CLOCK_BIT_OUT;    // Clock data bit out
-            MPSSEbuffer[NumBytesToSend++] = 0x00;                              // Length of 0 means 1 bit
-            MPSSEbuffer[NumBytesToSend++] = 0xFF;                              // Sending 1 here as NAK
+            _MPSSEbuffer[_numBytesToSend++] = MSB_FALLING_EDGE_CLOCK_BIT_OUT;    // Clock data bit out
+            _MPSSEbuffer[_numBytesToSend++] = 0x00;                              // Length of 0 means 1 bit
+            _MPSSEbuffer[_numBytesToSend++] = 0xFF;                              // Sending 1 here as NAK
 
             ADbusVal = (byte)(0x00 | I2C_Data_SDAhi_SCLlo | (GPIO_Low_Dat & 0xF8));
             ADbusDir = (byte)(0x00 | I2C_Dir_SDAout_SCLout | (GPIO_Low_Dir & 0xF8));
 
-            MPSSEbuffer[NumBytesToSend++] = 0x80;                               //       ' Command - set low byte
-            MPSSEbuffer[NumBytesToSend++] = ADbusVal;                            //      ' Set the values
-            MPSSEbuffer[NumBytesToSend++] = ADbusDir;                             //     ' Set the directions
+            _MPSSEbuffer[_numBytesToSend++] = 0x80;                               //       ' Command - set low byte
+            _MPSSEbuffer[_numBytesToSend++] = ADbusVal;                            //      ' Set the values
+            _MPSSEbuffer[_numBytesToSend++] = ADbusDir;                             //     ' Set the directions
 #else
             MPSSEbuffer[NumBytesToSend++] = MSB_RISING_EDGE_CLOCK_BYTE_IN;      // Clock data byte in
             MPSSEbuffer[NumBytesToSend++] = 0x00;
@@ -408,24 +395,24 @@ namespace MadeInTheUSB.FT232H
 
 #endif
             // This command then tells the MPSSE to send any results gathered back immediately
-            MPSSEbuffer[NumBytesToSend++] = 0x87;                                //  ' Send answer back immediate command
+            _MPSSEbuffer[_numBytesToSend++] = 0x87;                                //  ' Send answer back immediate command
 
             // Send off the commands
-            I2C_Status = Send_Data(NumBytesToSend);
-            if (I2C_Status != 0)
+            I2C_Status = Send_Data(_numBytesToSend, _MPSSEbuffer);
+            if (!I2C_Status)
             {
                 return 1;
             }
 
             // Read back the ack from the address phase and the 2 bytes read
             I2C_Status = Receive_Data(3);
-            if (I2C_Status != 0)
+            if (!I2C_Status)
             {
                 return 1;
             }
 
             // Check if address phase was acked
-            if ((InputBuffer2[0] & 0x01) == 0)
+            if ((_inputBuffer2[0] & 0x01) == 0)
             {
                 I2C_Ack = true;
             }
@@ -435,8 +422,8 @@ namespace MadeInTheUSB.FT232H
             }
 
             // Get the two data bytes to put back to the calling function - InputBuffer2[0..1] now contains the results
-            InputBuffer2[0] = InputBuffer2[1];
-            InputBuffer2[1] = InputBuffer2[2];
+            _inputBuffer2[0] = _inputBuffer2[1];
+            _inputBuffer2[1] = _inputBuffer2[2];
 
             return 0;
 
@@ -451,28 +438,28 @@ namespace MadeInTheUSB.FT232H
 
             byte ADbusVal = 0;
             byte ADbusDir = 0;
-            NumBytesToSend = 0;
+            _numBytesToSend = 0;
 
             Address <<= 1;
             if (Read == true)
                 Address |= 0x01;
 
 #if (FT232H)
-            MPSSEbuffer[NumBytesToSend++] = MSB_FALLING_EDGE_CLOCK_BYTE_OUT;        // clock data byte out
-            MPSSEbuffer[NumBytesToSend++] = 0x00;                                   // 
-            MPSSEbuffer[NumBytesToSend++] = 0x00;                                   //  Data length of 0x0000 means 1 byte data to clock in
-            MPSSEbuffer[NumBytesToSend++] = Address;           //  Byte to send
+            _MPSSEbuffer[_numBytesToSend++] = MSB_FALLING_EDGE_CLOCK_BYTE_OUT;        // clock data byte out
+            _MPSSEbuffer[_numBytesToSend++] = 0x00;                                   // 
+            _MPSSEbuffer[_numBytesToSend++] = 0x00;                                   //  Data length of 0x0000 means 1 byte data to clock in
+            _MPSSEbuffer[_numBytesToSend++] = Address;           //  Byte to send
 
             // Put line back to idle (data released, clock pulled low)
             ADbusVal = (byte)(0x00 | I2C_Data_SDAhi_SCLlo | (GPIO_Low_Dat & 0xF8));
             ADbusDir = (byte)(0x00 | I2C_Dir_SDAout_SCLout | (GPIO_Low_Dir & 0xF8));// make data input
-            MPSSEbuffer[NumBytesToSend++] = 0x80;                                   // Command - set low byte
-            MPSSEbuffer[NumBytesToSend++] = ADbusVal;                               // Set the values
-            MPSSEbuffer[NumBytesToSend++] = ADbusDir;                               // Set the directions
+            _MPSSEbuffer[_numBytesToSend++] = 0x80;                                   // Command - set low byte
+            _MPSSEbuffer[_numBytesToSend++] = ADbusVal;                               // Set the values
+            _MPSSEbuffer[_numBytesToSend++] = ADbusDir;                               // Set the directions
 
             // CLOCK IN ACK
-            MPSSEbuffer[NumBytesToSend++] = MSB_RISING_EDGE_CLOCK_BIT_IN;           // clock data bits in
-            MPSSEbuffer[NumBytesToSend++] = 0x00;                                   // Length of 0 means 1 bit
+            _MPSSEbuffer[_numBytesToSend++] = MSB_RISING_EDGE_CLOCK_BIT_IN;           // clock data bits in
+            _MPSSEbuffer[_numBytesToSend++] = 0x00;                                   // Length of 0 means 1 bit
 #else
 
             // Set directions of clock and data to output in preparation for clocking out a byte
@@ -500,24 +487,24 @@ namespace MadeInTheUSB.FT232H
 
 #endif
             // This command then tells the MPSSE to send any results gathered (in this case the ack bit) back immediately
-            MPSSEbuffer[NumBytesToSend++] = 0x87;                                //  ' Send answer back immediate command
+            _MPSSEbuffer[_numBytesToSend++] = 0x87;                                //  ' Send answer back immediate command
 
             // send commands to chip
-            I2C_Status = Send_Data(NumBytesToSend);
-            if (I2C_Status != 0)
+            I2C_Status = Send_Data(_numBytesToSend, _MPSSEbuffer);
+            if (!I2C_Status)
             {
                 return 1;
             }
 
             // read back byte containing ack
             I2C_Status = Receive_Data(1);
-            if (I2C_Status != 0)
+            if (!I2C_Status)
             {
                 return 1;            // can also check NumBytesRead
             }
 
             // if ack bit is 0 then sensor acked the transfer, otherwise it nak'd the transfer
-            if ((InputBuffer2[0] & 0x01) == 0)
+            if ((_inputBuffer2[0] & 0x01) == 0)
             {
                 I2C_Ack = true;
             }
@@ -537,24 +524,24 @@ namespace MadeInTheUSB.FT232H
         {
             byte ADbusVal = 0;
             byte ADbusDir = 0;
-            NumBytesToSend = 0;
+            _numBytesToSend = 0;
 
 #if (FT232H)
-            MPSSEbuffer[NumBytesToSend++] = MSB_FALLING_EDGE_CLOCK_BYTE_OUT;        // clock data byte out
-            MPSSEbuffer[NumBytesToSend++] = 0x00;                                   // 
-            MPSSEbuffer[NumBytesToSend++] = 0x00;                                   //  Data length of 0x0000 means 1 byte data to clock in
-            MPSSEbuffer[NumBytesToSend++] = DataByteToSend;// DataSend[0];          //  Byte to send
+            _MPSSEbuffer[_numBytesToSend++] = MSB_FALLING_EDGE_CLOCK_BYTE_OUT;        // clock data byte out
+            _MPSSEbuffer[_numBytesToSend++] = 0x00;                                   // 
+            _MPSSEbuffer[_numBytesToSend++] = 0x00;                                   //  Data length of 0x0000 means 1 byte data to clock in
+            _MPSSEbuffer[_numBytesToSend++] = DataByteToSend;// DataSend[0];          //  Byte to send
 
             // Put line back to idle (data released, clock pulled low)
             ADbusVal = (byte)(0x00 | I2C_Data_SDAhi_SCLlo | (GPIO_Low_Dat & 0xF8));
             ADbusDir = (byte)(0x00 | I2C_Dir_SDAout_SCLout | (GPIO_Low_Dir & 0xF8));// make data input
-            MPSSEbuffer[NumBytesToSend++] = 0x80;                                   // Command - set low byte
-            MPSSEbuffer[NumBytesToSend++] = ADbusVal;                               // Set the values
-            MPSSEbuffer[NumBytesToSend++] = ADbusDir;                               // Set the directions
+            _MPSSEbuffer[_numBytesToSend++] = 0x80;                                   // Command - set low byte
+            _MPSSEbuffer[_numBytesToSend++] = ADbusVal;                               // Set the values
+            _MPSSEbuffer[_numBytesToSend++] = ADbusDir;                               // Set the directions
 
             // CLOCK IN ACK
-            MPSSEbuffer[NumBytesToSend++] = MSB_RISING_EDGE_CLOCK_BIT_IN;           // clock data bits in
-            MPSSEbuffer[NumBytesToSend++] = 0x00;                                   // Length of 0 means 1 bit
+            _MPSSEbuffer[_numBytesToSend++] = MSB_RISING_EDGE_CLOCK_BIT_IN;           // clock data bits in
+            _MPSSEbuffer[_numBytesToSend++] = 0x00;                                   // Length of 0 means 1 bit
 #else
 
             // Set directions of clock and data to output in preparation for clocking out a byte
@@ -582,24 +569,24 @@ namespace MadeInTheUSB.FT232H
 
 #endif
             // This command then tells the MPSSE to send any results gathered (in this case the ack bit) back immediately
-            MPSSEbuffer[NumBytesToSend++] = 0x87;                                //  ' Send answer back immediate command
+            _MPSSEbuffer[_numBytesToSend++] = 0x87;                                //  ' Send answer back immediate command
 
             // send commands to chip
-            I2C_Status = Send_Data(NumBytesToSend);
-            if (I2C_Status != 0)
+            I2C_Status = Send_Data(_numBytesToSend, _MPSSEbuffer);
+            if (!I2C_Status)
             {
                 return 1;
             }
 
             // read back byte containing ack
             I2C_Status = Receive_Data(1);
-            if (I2C_Status != 0)
+            if (!I2C_Status)
             {
                 return 1;            // can also check NumBytesRead
             }
 
             // if ack bit is 0 then sensor acked the transfer, otherwise it nak'd the transfer
-            if ((InputBuffer2[0] & 0x01) == 0)
+            if ((_inputBuffer2[0] & 0x01) == 0)
             {
                 I2C_Ack = true;
             }
@@ -620,7 +607,7 @@ namespace MadeInTheUSB.FT232H
             byte Count = 0;
             byte ADbusVal = 0;
             byte ADbusDir = 0;
-            NumBytesToSend = 0;
+            _numBytesToSend = 0;
 
 
 #if (FT232H)
@@ -630,9 +617,9 @@ namespace MadeInTheUSB.FT232H
 
             for (Count = 0; Count < 6; Count++)
             {
-                MPSSEbuffer[NumBytesToSend++] = 0x80;	    // ADbus GPIO command
-                MPSSEbuffer[NumBytesToSend++] = ADbusVal;   // Set data value
-                MPSSEbuffer[NumBytesToSend++] = ADbusDir;	// Set direction
+                _MPSSEbuffer[_numBytesToSend++] = 0x80;	    // ADbus GPIO command
+                _MPSSEbuffer[_numBytesToSend++] = ADbusVal;   // Set data value
+                _MPSSEbuffer[_numBytesToSend++] = ADbusDir;	// Set direction
             }
 
             // SDA lo, SCL high
@@ -640,9 +627,9 @@ namespace MadeInTheUSB.FT232H
 
             for (Count = 0; Count < 6; Count++)	// Repeat commands to ensure the minimum period of the start setup time ie 600ns is achieved
             {
-                MPSSEbuffer[NumBytesToSend++] = 0x80;	    // ADbus GPIO command
-                MPSSEbuffer[NumBytesToSend++] = ADbusVal;   // Set data value
-                MPSSEbuffer[NumBytesToSend++] = ADbusDir;	// Set direction
+                _MPSSEbuffer[_numBytesToSend++] = 0x80;	    // ADbus GPIO command
+                _MPSSEbuffer[_numBytesToSend++] = ADbusVal;   // Set data value
+                _MPSSEbuffer[_numBytesToSend++] = ADbusDir;	// Set direction
             }
 
             // SDA lo, SCL lo
@@ -650,17 +637,17 @@ namespace MadeInTheUSB.FT232H
 
             for (Count = 0; Count < 6; Count++)	// Repeat commands to ensure the minimum period of the start setup time ie 600ns is achieved
             {
-                MPSSEbuffer[NumBytesToSend++] = 0x80;	    // ADbus GPIO command
-                MPSSEbuffer[NumBytesToSend++] = ADbusVal;   // Set data value
-                MPSSEbuffer[NumBytesToSend++] = ADbusDir;	// Set direction
+                _MPSSEbuffer[_numBytesToSend++] = 0x80;	    // ADbus GPIO command
+                _MPSSEbuffer[_numBytesToSend++] = ADbusVal;   // Set data value
+                _MPSSEbuffer[_numBytesToSend++] = ADbusDir;	// Set direction
             }
 
             // Release SDA
             ADbusVal = (byte)(0x00 | I2C_Data_SDAhi_SCLlo | (GPIO_Low_Dat & 0xF8));
 
-            MPSSEbuffer[NumBytesToSend++] = 0x80;	    // ADbus GPIO command
-            MPSSEbuffer[NumBytesToSend++] = ADbusVal;   // Set data value
-            MPSSEbuffer[NumBytesToSend++] = ADbusDir;	// Set direction
+            _MPSSEbuffer[_numBytesToSend++] = 0x80;	    // ADbus GPIO command
+            _MPSSEbuffer[_numBytesToSend++] = ADbusVal;   // Set data value
+            _MPSSEbuffer[_numBytesToSend++] = ADbusDir;	// Set direction
 
 
 # else
@@ -709,8 +696,8 @@ namespace MadeInTheUSB.FT232H
 
 
 # endif
-            I2C_Status = Send_Data(NumBytesToSend);
-            if (I2C_Status != 0)
+            I2C_Status = Send_Data(_numBytesToSend, _MPSSEbuffer);
+            if (!I2C_Status)
                 return 1;
             else
                 return 0;
@@ -725,7 +712,7 @@ namespace MadeInTheUSB.FT232H
             byte Count = 0;
             byte ADbusVal = 0;
             byte ADbusDir = 0;
-            NumBytesToSend = 0;
+            _numBytesToSend = 0;
 
 #if (FT232H)
             // SDA low, SCL low
@@ -734,9 +721,9 @@ namespace MadeInTheUSB.FT232H
 
             for (Count = 0; Count < 6; Count++)
             {
-                MPSSEbuffer[NumBytesToSend++] = 0x80;	    // ADbus GPIO command
-                MPSSEbuffer[NumBytesToSend++] = ADbusVal;   // Set data value
-                MPSSEbuffer[NumBytesToSend++] = ADbusDir;	// Set direction
+                _MPSSEbuffer[_numBytesToSend++] = 0x80;	    // ADbus GPIO command
+                _MPSSEbuffer[_numBytesToSend++] = ADbusVal;   // Set data value
+                _MPSSEbuffer[_numBytesToSend++] = ADbusDir;	// Set direction
             }
            
             // SDA low, SCL high
@@ -745,9 +732,9 @@ namespace MadeInTheUSB.FT232H
 
             for (Count = 0; Count < 6; Count++)
             {
-                MPSSEbuffer[NumBytesToSend++] = 0x80;	    // ADbus GPIO command
-                MPSSEbuffer[NumBytesToSend++] = ADbusVal;   // Set data value
-                MPSSEbuffer[NumBytesToSend++] = ADbusDir;	// Set direction
+                _MPSSEbuffer[_numBytesToSend++] = 0x80;	    // ADbus GPIO command
+                _MPSSEbuffer[_numBytesToSend++] = ADbusVal;   // Set data value
+                _MPSSEbuffer[_numBytesToSend++] = ADbusDir;	// Set direction
             }
 
             // SDA high, SCL high
@@ -756,9 +743,9 @@ namespace MadeInTheUSB.FT232H
 
             for (Count = 0; Count < 6; Count++)	
             {
-                MPSSEbuffer[NumBytesToSend++] = 0x80;	    // ADbus GPIO command
-                MPSSEbuffer[NumBytesToSend++] = ADbusVal;   // Set data value
-                MPSSEbuffer[NumBytesToSend++] = ADbusDir;	// Set direction
+                _MPSSEbuffer[_numBytesToSend++] = 0x80;	    // ADbus GPIO command
+                _MPSSEbuffer[_numBytesToSend++] = ADbusVal;   // Set data value
+                _MPSSEbuffer[_numBytesToSend++] = ADbusDir;	// Set direction
             }
            
 # else
@@ -798,8 +785,8 @@ namespace MadeInTheUSB.FT232H
             }
 #endif
             // send the buffer of commands to the chip 
-            I2C_Status = Send_Data(NumBytesToSend);
-            if (I2C_Status != 0)
+            I2C_Status = Send_Data(_numBytesToSend, _MPSSEbuffer);
+            if (!I2C_Status)
                 return 1;
             else
                 return 0;
@@ -815,7 +802,7 @@ namespace MadeInTheUSB.FT232H
         {
             byte ADbusVal = 0;
             byte ADbusDir = 0;
-            NumBytesToSend = 0;
+            _numBytesToSend = 0;
 
 #if (FT232H)
            // '######## Combine the I2C line state for bits 2..0 with the GPIO for bits 7..3 ########
@@ -827,12 +814,12 @@ namespace MadeInTheUSB.FT232H
             ADbusDir = (byte)(0x00 | I2C_Dir_SDAin_SCLin | (GPIO_Low_Dir & 0xF8));       // FT2232H/FT4232H use input to mimic open drain
 #endif
 
-            MPSSEbuffer[NumBytesToSend++] = 0x80;       // ADbus GPIO command
-            MPSSEbuffer[NumBytesToSend++] = ADbusVal;   // Set data value
-            MPSSEbuffer[NumBytesToSend++] = ADbusDir;   // Set direction
+            _MPSSEbuffer[_numBytesToSend++] = 0x80;       // ADbus GPIO command
+            _MPSSEbuffer[_numBytesToSend++] = ADbusVal;   // Set data value
+            _MPSSEbuffer[_numBytesToSend++] = ADbusDir;   // Set direction
 
-            I2C_Status = Send_Data(NumBytesToSend);
-            if (I2C_Status != 0)
+            I2C_Status = Send_Data(_numBytesToSend, _MPSSEbuffer);
+            if (!I2C_Status)
                 return 1;
             else
                 return 0;
@@ -847,22 +834,22 @@ namespace MadeInTheUSB.FT232H
 
         public byte I2C_GetGPIOValuesLow()
         {
-            NumBytesToSend = 0;
+            _numBytesToSend = 0;
 
-            MPSSEbuffer[NumBytesToSend++] = 0x81;       // ADbus GPIO command for reading low byte
-            MPSSEbuffer[NumBytesToSend++] = 0x87;        // Send answer back immediate command
+            _MPSSEbuffer[_numBytesToSend++] = 0x81;       // ADbus GPIO command for reading low byte
+            _MPSSEbuffer[_numBytesToSend++] = 0x87;        // Send answer back immediate command
 
-            I2C_Status = Send_Data(NumBytesToSend);
-            if (I2C_Status != 0)
+            I2C_Status = Send_Data(_numBytesToSend, _MPSSEbuffer);
+            if (!I2C_Status)
                 return 1;
 
             I2C_Status = Receive_Data(1);
-            if (I2C_Status != 0)
+            if (!I2C_Status)
             {
                 return 1;
             }
 
-            ADbusReadVal = (byte)(InputBuffer2[0] & 0xF8); // mask the returned value to show only 5 GPIO lines (bits 0/1/2 are I2C)
+            ADbusReadVal = (byte)(_inputBuffer2[0] & 0xF8); // mask the returned value to show only 5 GPIO lines (bits 0/1/2 are I2C)
 
             return 0;
         }
@@ -874,19 +861,19 @@ namespace MadeInTheUSB.FT232H
 
         public byte I2C_SetGPIOValuesHigh(byte ACbusDir, byte ACbusVal)
         {
-            NumBytesToSend = 0;
+            _numBytesToSend = 0;
 
 #if (FT4232H)
 
            return 1;
            
 #else
-            MPSSEbuffer[NumBytesToSend++] = 0x82;       // ACbus GPIO command
-            MPSSEbuffer[NumBytesToSend++] = ACbusVal;   // Set data value
-            MPSSEbuffer[NumBytesToSend++] = ACbusDir;   // Set direction
+            _MPSSEbuffer[_numBytesToSend++] = 0x82;       // ACbus GPIO command
+            _MPSSEbuffer[_numBytesToSend++] = ACbusVal;   // Set data value
+            _MPSSEbuffer[_numBytesToSend++] = ACbusDir;   // Set direction
 
-            I2C_Status = Send_Data(NumBytesToSend);
-            if (I2C_Status != 0)
+            I2C_Status = Send_Data(_numBytesToSend, _MPSSEbuffer);
+            if (!I2C_Status)
                 return 1;
             else
                 return 0;
@@ -901,24 +888,24 @@ namespace MadeInTheUSB.FT232H
 
         public byte I2C_GetGPIOValuesHigh()
         {
-            NumBytesToSend = 0;
+            _numBytesToSend = 0;
 
 #if (FT4232H)
                 return 1;       // no high byte on FT4232H
 #else
 
-            MPSSEbuffer[NumBytesToSend++] = 0x83;           // ACbus read GPIO command
-            MPSSEbuffer[NumBytesToSend++] = 0x87;            // Send answer back immediate command
+            _MPSSEbuffer[_numBytesToSend++] = 0x83;           // ACbus read GPIO command
+            _MPSSEbuffer[_numBytesToSend++] = 0x87;            // Send answer back immediate command
 
-            I2C_Status = Send_Data(NumBytesToSend);
-            if (I2C_Status != 0)
+            I2C_Status = Send_Data(_numBytesToSend, _MPSSEbuffer);
+            if (!I2C_Status)
                 return 1;
 
             I2C_Status = Receive_Data(1);
-            if (I2C_Status != 0)
+            if (!I2C_Status)
                 return 1;
 
-            ACbusReadVal = (byte)(InputBuffer2[0]);      // Return via global variable for calling function to read
+            ACbusReadVal = (byte)(_inputBuffer2[0]);      // Return via global variable for calling function to read
 
             return 0;
 #endif
@@ -938,7 +925,7 @@ namespace MadeInTheUSB.FT232H
 
         // Read a specified number of bytes from the driver receive buffer
 
-        private byte Receive_Data(uint BytesToRead)
+        private bool Receive_Data(uint BytesToRead)
         {
             uint NumBytesInQueue = 0;
             uint QueueTimeOut = 0;
@@ -955,7 +942,7 @@ namespace MadeInTheUSB.FT232H
 
                 if ((NumBytesInQueue > 0) && (ftStatus == FTDI.FT_STATUS.FT_OK))
                 {
-                    ftStatus = myFtdiDevice.Read(InputBuffer, NumBytesInQueue, ref NumBytesRxd);  // if any available read them
+                    ftStatus = myFtdiDevice.Read(_inputBuffer, NumBytesInQueue, ref NumBytesRxd);  // if any available read them
 
                     if ((NumBytesInQueue == NumBytesRxd) && (ftStatus == FTDI.FT_STATUS.FT_OK))
                     {
@@ -963,14 +950,14 @@ namespace MadeInTheUSB.FT232H
 
                         while (Buffer1Index < NumBytesRxd)
                         {
-                            InputBuffer2[Buffer2Index] = InputBuffer[Buffer1Index];     // copy into main overall application buffer
+                            _inputBuffer2[Buffer2Index] = _inputBuffer[Buffer1Index];     // copy into main overall application buffer
                             Buffer1Index++;
                             Buffer2Index++;
                         }
                         TotalBytesRead = TotalBytesRead + NumBytesRxd;                  // Keep track of total
                     }
                     else
-                        return 1;
+                        return false;
 
                     QueueTimeOut++;
                     if (QueueTimeOut == 5000)
@@ -983,63 +970,44 @@ namespace MadeInTheUSB.FT232H
             NumBytesRead = TotalBytesRead;
 
             if (QueueTimeoutFlag == true)
-                return 1;
+                return false;
             else
-                return 0;
+                return true;
         }
 
 
         //###################################################################################################################################
         // Write a buffer of data and check that it got sent without error
 
-        private byte Send_Data(uint BytesToSend)
+        private bool Send_Data(uint bytesToSend, byte[] buffer)
         {
-
-            NumBytesToSend = BytesToSend;
+            _numBytesToSend = bytesToSend;
+            uint numBytesSent = 0;
 
             // Send data. This will return once all sent or if times out
-            ftStatus = myFtdiDevice.Write(MPSSEbuffer, NumBytesToSend, ref NumBytesSent);
+            ftStatus = myFtdiDevice.Write(buffer, _numBytesToSend, ref numBytesSent);
 
             // Ensure that call completed OK and that all bytes sent as requested
-            if ((NumBytesSent != NumBytesToSend) || (ftStatus != FTDI.FT_STATUS.FT_OK))
-                return 1;   // error   calling function can check NumBytesSent to see how many got sent
+            if ((numBytesSent != _numBytesToSend) || (ftStatus != FTDI.FT_STATUS.FT_OK))
+                return false;
             else
-                return 0;   // success
+                return true;
         }
-
-
-        //###################################################################################################################################
-        // Flush drivers receive buffer - Get queue status and read everything available and discard data
-
-        private byte FlushBuffer()
+        
+        private bool FlushBuffer()
         {
-            ftStatus = myFtdiDevice.GetRxBytesAvailable(ref BytesAvailable);	 // Get the number of bytes in the receive buffer
+            ftStatus = myFtdiDevice.GetRxBytesAvailable(ref BytesAvailable);
             if (ftStatus != FTDI.FT_STATUS.FT_OK)
-                return 1;
+                return false;
 
             if (BytesAvailable > 0)
             {
-                ftStatus = myFtdiDevice.Read(InputBuffer, BytesAvailable, ref NumBytesRead);  	//Read out the data from receive buffer
-                if (ftStatus != FTDI.FT_STATUS.FT_OK)
-                    return 1;       // error
-                else
-                    return 0;       // all bytes successfully read
+                ftStatus = myFtdiDevice.Read(_inputBuffer, BytesAvailable, ref NumBytesRead);  	//Read out the data from receive buffer
+                return (ftStatus == FTDI.FT_STATUS.FT_OK);
             }
-            else
-            {
-                return 0;           // there were no bytes to read
-            }
+            else return true;
         }
-
-
-
-
-
-
-
-
-
-
-
     }
 }
+
+
