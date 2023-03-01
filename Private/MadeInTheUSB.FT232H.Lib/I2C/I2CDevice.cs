@@ -16,28 +16,33 @@ namespace MadeInTheUSB.FT232H
         FTDI.FT_STATUS ftStatus = FTDI.FT_STATUS.FT_OK;
 
         // ###### I2C Library defines ######
-        const byte I2C_Dir_SDAin_SCLin          = 0x00;
-        const byte I2C_Dir_SDAin_SCLout         = 0x01;
-        const byte I2C_Dir_SDAout_SCLout        = 0x03;
-        const byte I2C_Dir_SDAout_SCLin         = 0x02;
-        const byte I2C_Data_SDAhi_SCLhi         = 0x03;
-        const byte I2C_Data_SDAlo_SCLhi         = 0x01;
-        const byte I2C_Data_SDAlo_SCLlo         = 0x00;
-        const byte I2C_Data_SDAhi_SCLlo         = 0x02;
+        const byte I2C_Dir_SDAin_SCLin = 0x00;
+        const byte I2C_Dir_SDAin_SCLout = 0x01;
+        const byte I2C_Dir_SDAout_SCLout = 0x03;
+        const byte I2C_Dir_SDAout_SCLin = 0x02;
+        const byte I2C_Data_SDAhi_SCLhi = 0x03;
+        const byte I2C_Data_SDAlo_SCLhi = 0x01;
+        const byte I2C_Data_SDAlo_SCLlo = 0x00;
+        const byte I2C_Data_SDAhi_SCLlo = 0x02;
 
         // MPSSE clocking commands
-        const byte MSB_FALLING_EDGE_CLOCK_BYTE_IN   = 0x24;
-        const byte MSB_RISING_EDGE_CLOCK_BYTE_IN    = 0x20;
-        const byte MSB_FALLING_EDGE_CLOCK_BYTE_OUT  = 0x11;
-        const byte MSB_DOWN_EDGE_CLOCK_BIT_IN       = 0x26;
-        const byte MSB_UP_EDGE_CLOCK_BYTE_IN        = 0x20;
-        const byte MSB_UP_EDGE_CLOCK_BYTE_OUT       = 0x10;
-        const byte MSB_RISING_EDGE_CLOCK_BIT_IN     = 0x22;
-        const byte MSB_FALLING_EDGE_CLOCK_BIT_OUT   = 0x13;
+        const byte MSB_FALLING_EDGE_CLOCK_BYTE_IN = 0x24;
+        const byte MSB_RISING_EDGE_CLOCK_BYTE_IN = 0x20;
+        const byte MSB_FALLING_EDGE_CLOCK_BYTE_OUT = 0x11;
+        const byte MSB_DOWN_EDGE_CLOCK_BIT_IN = 0x26;
+        const byte MSB_UP_EDGE_CLOCK_BYTE_IN = 0x20;
+        const byte MSB_UP_EDGE_CLOCK_BYTE_OUT = 0x10;
+        const byte MSB_RISING_EDGE_CLOCK_BIT_IN = 0x22;
+        const byte MSB_FALLING_EDGE_CLOCK_BIT_OUT = 0x13;
 
-        // Clock
-        //const uint ClockDivisor = 199;// for 100KHz
-        const uint ClockDivisor = 199*7;// for 100KHz
+
+        public enum ClockEnum  {
+            Clock600Khz_Divisor = 49,
+            Clock12Mhz_Divisor = 24
+        }
+
+
+        ClockEnum ClockSpeed = ClockEnum.Clock600Khz_Divisor;
 
         // Sending and receiving
         static uint _numBytesToSend = 0;
@@ -52,17 +57,23 @@ namespace MadeInTheUSB.FT232H
         static byte AppStatus = 0;
         static bool I2C_Status = false;
         public bool Running = true;
-        static bool DeviceOpen = false;
+        //static bool DeviceOpen = false;
         // GPIO
         static byte GPIO_Low_Dat = 0;
         static byte GPIO_Low_Dir = 0;
-        static byte ADbusReadVal = 0;
-        static byte ACbusReadVal = 0;
 
+        GpioI2CImplementationDevice _gpios;
+        public IDigitalWriteRead Gpios => _gpios;
 
-        public I2CDevice(FTD2XX_NET.FTDI myFtdiDevice)
+        public I2CDevice(FTD2XX_NET.FTDI myFtdiDevice, ClockEnum clockSpeed = ClockEnum.Clock600Khz_Divisor)
         {
             this.myFtdiDevice = myFtdiDevice;
+            this.ClockSpeed = clockSpeed;
+
+            this.I2C_ConfigureMpsse();
+            _gpios = new GpioI2CImplementationDevice(this);
+            
+
         }
 
         public bool Idle()
@@ -136,8 +147,8 @@ namespace MadeInTheUSB.FT232H
             // The SK clock frequency can be worked out by below algorithm with divide by 5 set as off
             // SK frequency  = 60MHz /((1 +  [(1 +0xValueH*256) OR 0xValueL])*2)
             _MPSSEbuffer[_numBytesToSend++] = 0x86; 	//Command to set clock divisor
-            _MPSSEbuffer[_numBytesToSend++] = (byte)(ClockDivisor & 0x00FF);	//Set 0xValueL of clock divisor
-            _MPSSEbuffer[_numBytesToSend++] = (byte)((ClockDivisor >> 8) & 0x00FF);	//Set 0xValueH of clock divisor
+            _MPSSEbuffer[_numBytesToSend++] = (byte)(((int)this.ClockSpeed) & 0x00FF);	//Set 0xValueL of clock divisor
+            _MPSSEbuffer[_numBytesToSend++] = (byte)((((int)this.ClockSpeed) >> 8) & 0x00FF);	//Set 0xValueH of clock divisor
             _MPSSEbuffer[_numBytesToSend++] = 0x85;  // loopback off
 
 #if (FT232H)
@@ -834,7 +845,7 @@ namespace MadeInTheUSB.FT232H
         //###################################################################################################################################
         // Gets GPIO values from low byte
 
-        public byte I2C_GetGPIOValuesLow()
+        public int I2C_GetGPIOValuesLow()
         {
             _numBytesToSend = 0;
 
@@ -843,17 +854,17 @@ namespace MadeInTheUSB.FT232H
 
             I2C_Status = Send_Data(_numBytesToSend, _MPSSEbuffer);
             if (!I2C_Status)
-                return 1;
+                return -1;
 
             I2C_Status = Receive_Data(1);
             if (!I2C_Status)
             {
-                return 1;
+                return -1;
             }
 
-            ADbusReadVal = (byte)(_inputBuffer2[0] & 0xF8); // mask the returned value to show only 5 GPIO lines (bits 0/1/2 are I2C)
+            var ADbusReadVal = (byte)(_inputBuffer2[0] & 0xF8); // mask the returned value to show only 5 GPIO lines (bits 0/1/2 are I2C)
 
-            return 0;
+            return ADbusReadVal;
         }
 
 
@@ -888,7 +899,7 @@ namespace MadeInTheUSB.FT232H
         //###################################################################################################################################
         // Gets GPIO values from high byte
 
-        public byte I2C_GetGPIOValuesHigh()
+        public int I2C_GetGPIOValuesHigh()
         {
             _numBytesToSend = 0;
 
@@ -901,15 +912,15 @@ namespace MadeInTheUSB.FT232H
 
             I2C_Status = Send_Data(_numBytesToSend, _MPSSEbuffer);
             if (!I2C_Status)
-                return 1;
+                return -1;
 
             I2C_Status = Receive_Data(1);
             if (!I2C_Status)
-                return 1;
+                return -1;
 
-            ACbusReadVal = (byte)(_inputBuffer2[0]);      // Return via global variable for calling function to read
+            var ACbusReadVal = (byte)(_inputBuffer2[0]);      // Return via global variable for calling function to read
 
-            return 0;
+            return ACbusReadVal;
 #endif
         }
 

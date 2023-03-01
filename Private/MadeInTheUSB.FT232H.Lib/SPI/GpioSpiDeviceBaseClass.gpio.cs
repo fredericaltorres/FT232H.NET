@@ -13,16 +13,12 @@ namespace MadeInTheUSB.FT232H
         public ISPI Spi;
     }
 
+ 
     /// <summary>
     /// Implement the IDigitalWriteRead for accessing the gpio 0..7 of the FT232H
     /// </summary>
-    public abstract partial class GpioSpiDeviceBaseClass : FT232HDeviceBaseClass, IDisposable, IDigitalWriteRead, ISPI
+    public abstract partial class GpioSpiImplementationDeviceBaseClass : FT232HDeviceBaseClass, IDisposable, IDigitalWriteRead, ISPI
     {
-        private const int _gpioStartIndex = 0;
-        private const int _maxGpio = 8;
-        private const int ValuesDefaultMask = 0;
-        private const int DirectionDefaultMask = 0xFF;
-
         private int _values;
         private int _directions;
 
@@ -37,10 +33,7 @@ namespace MadeInTheUSB.FT232H
             get { return this as ISPI; }
         }
 
-        public byte MaxGpio
-        {
-            get { return _maxGpio; }
-        }
+     
         public void DigitalWrite(PinState mode, params int[] pins)
         {
             foreach (var p in pins)
@@ -110,7 +103,7 @@ namespace MadeInTheUSB.FT232H
                 throw new GpioException(FtdiMpsseSPIResult.IoError, nameof(GetGpioMask));
             return (byte)values;
         }
-        public byte GpioStartIndex { get { return _gpioStartIndex; } }
+        
         public void SetPullUp(int p, PinState d)
         {
             throw new NotImplementedException();

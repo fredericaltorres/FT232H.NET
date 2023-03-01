@@ -21,7 +21,7 @@ namespace MadeInTheUSB.FT232H.Console
         {
             _multiLEDBackpackManager = new MultiLEDBackpackManager();
             _ledMatrix00 = _multiLEDBackpackManager.Add(i2cDevice, 8, 8, 0x71);
-
+            
             Animate();
         }
 
@@ -115,6 +115,7 @@ namespace MadeInTheUSB.FT232H.Console
             int maxRepeat = 5;
 
             DrawRoundRectDemo(wait, maxRepeat);
+            return;
 
             _multiLEDBackpackManager.SetRotation(0);
             DrawPixelDemo(maxRepeat, waitPixelDemo);

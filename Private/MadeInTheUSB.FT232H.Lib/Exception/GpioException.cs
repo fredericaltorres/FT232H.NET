@@ -12,5 +12,9 @@ namespace MadeInTheUSB.FT232H
         {
             Reason = res;
         }
+        public GpioException(string message) : base($"GPIO operation failed, {message}")
+        {
+         
+        }
     }
 }

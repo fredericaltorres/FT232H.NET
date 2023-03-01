@@ -23,9 +23,11 @@ namespace MadeInTheUSB.FT232H.Console
             }
 
             var i2cDevice = new I2CDevice(ft232Device.ft232h);
-            i2cDevice.I2C_ConfigureMpsse();
-            I2CSample(i2cDevice);
 
+            i2cDevice.Gpios.DigitalWrite(i2cDevice.Gpios.GpioStartIndex, PinState.High);
+            i2cDevice.Gpios.DigitalWrite(i2cDevice.Gpios.MaxGpio-1, PinState.High);
+
+            I2CSample(i2cDevice);
             return;
 
             // MCP3088 and MAX7219 is limited to 10Mhz
@@ -35,7 +37,8 @@ namespace MadeInTheUSB.FT232H.Console
             var spi                 = ft232hGpioSpiDevice.SPI;
             var gpios               = ft232hGpioSpiDevice.GPIO;
 
-            //GpioSample(gpios, true);
+            GpioSample(gpios, true);
+
             // CheetahBoosterDemo(gpios, false);
 
             const int fatLinkedListSectorCount = 10;
