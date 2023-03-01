@@ -20,7 +20,8 @@ namespace MadeInTheUSB.FT232H.Console
         {
             _ledMatrix00 = new LEDBackpack(i2cDevice, 8, 8);
             _ledMatrix00.Begin(0x71);
-
+            i2cDevice.Gpios.ProgressNext(clear: true);
+            _ledMatrix00.SetBrightness(1);
             Animate();
         }
 
@@ -106,7 +107,7 @@ namespace MadeInTheUSB.FT232H.Console
 
         private static void SetBrightnesses()
         {
-            _ledMatrix00.SetBrightness(4);
+            _ledMatrix00.SetBrightness(1);
         }
 
         static void Animate()

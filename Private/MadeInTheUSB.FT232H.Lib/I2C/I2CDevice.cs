@@ -46,17 +46,17 @@ namespace MadeInTheUSB.FT232H
 
         // Sending and receiving
         static uint _numBytesToSend = 0;
-        static uint NumBytesToRead = 0;
-        uint _numBytesSent = 0;
+        //static uint NumBytesToRead = 0;
+        //uint _numBytesSent = 0;
         static uint NumBytesRead = 0;
         //static byte[] _MPSSEbuffer = new byte[500];
         //static byte[] _inputBuffer = new byte[500];
         //static byte[] _inputBuffer2 = new byte[500];
         static uint BytesAvailable = 0;
-        public bool I2C_Ack = false;
+        public bool Ack = false;
         static byte AppStatus = 0;
         static bool I2C_Status = false;
-        public bool Running = true;
+        //public bool Running = true;
         //static bool DeviceOpen = false;
         // GPIO
         static byte GPIO_Low_Dat = 0;
@@ -107,7 +107,7 @@ namespace MadeInTheUSB.FT232H
             mpssebuffer[_numBytesToSend++] = 0xAA;
             I2C_Status = Send_Data(_numBytesToSend, mpssebuffer);
             if (!I2C_Status) return false;
-            NumBytesToRead = 2;
+            //NumBytesToRead = 2;
             var rd = Receive_Data(2);
             if (!rd.Status) return false;
 
@@ -125,7 +125,7 @@ namespace MadeInTheUSB.FT232H
             mpssebuffer[_numBytesToSend++] = 0xAB;
             I2C_Status = Send_Data(_numBytesToSend, mpssebuffer);
             if (!I2C_Status) return false;
-            NumBytesToRead = 2;
+            //NumBytesToRead = 2;
             rd = Receive_Data(2);
             if (!rd.Status) return false;
 
@@ -427,15 +427,7 @@ namespace MadeInTheUSB.FT232H
                 return 1;
             }
 
-            // Check if address phase was acked
-            if ((rd.InputBuffer[0] & 0x01) == 0)
-            {
-                I2C_Ack = true;
-            }
-            else
-            {
-                I2C_Ack = false;
-            }
+            this.Ack = rd.Ack;
 
             // Get the two data bytes to put back to the calling function - InputBuffer2[0..1] now contains the results
             rd.InputBuffer[0] = rd.InputBuffer[1];
@@ -515,15 +507,7 @@ namespace MadeInTheUSB.FT232H
             if (!rd.Status)
                 return 1;            // can also check NumBytesRead
 
-            // if ack bit is 0 then sensor acked the transfer, otherwise it nak'd the transfer
-            if ((rd.InputBuffer[0] & 0x01) == 0)
-            {
-                I2C_Ack = true;
-            }
-            else
-            {
-                I2C_Ack = false;
-            }
+            this.Ack = rd.Ack;
 
             return 0;
 
@@ -596,15 +580,7 @@ namespace MadeInTheUSB.FT232H
             if (!rd.Status)
                 return 1;            // can also check NumBytesRead
 
-            // if ack bit is 0 then sensor acked the transfer, otherwise it nak'd the transfer
-            if ((rd.InputBuffer[0] & 0x01) == 0)
-            {
-                I2C_Ack = true;
-            }
-            else
-            {
-                I2C_Ack = false;
-            }
+            this.Ack = rd.Ack;
 
             return 0;
 
@@ -932,6 +908,8 @@ namespace MadeInTheUSB.FT232H
         {
             public bool Status = false;
             public byte[] InputBuffer = new byte[500];
+
+            public bool Ack => (this.InputBuffer[0] & 0x01) == 0;
         }
 
         private ReceivedData Receive_Data(uint BytesToRead)
@@ -1039,11 +1017,11 @@ namespace MadeInTheUSB.FT232H
 
                 appStatus = this.I2C_SendDeviceAddrAndCheckACK((byte)(this.I2CDeviceId), false);     // I2C ADDRESS (for write)
                 if (appStatus != 0) return false;
-                if (!this.I2C_Ack) return false;
+                if (!this.Ack) return false;
 
                 appStatus = this.I2C_SendByteAndCheckACK(c);
                 if (appStatus != 0) return false;
-                if (this.I2C_Ack != true) return false;
+                if (this.Ack != true) return false;
             }
             catch (Exception ex)
             {
@@ -1071,13 +1049,13 @@ namespace MadeInTheUSB.FT232H
 
                 appStatus = this.I2C_SendDeviceAddrAndCheckACK((byte)(this.I2CDeviceId), false);
                 if (appStatus != 0) return false;
-                if (!this.I2C_Ack) return false;
+                if (!this.Ack) return false;
 
                 foreach (var c in buffer)
                 {
                     appStatus = this.I2C_SendByteAndCheckACK(c);
                     if (appStatus != 0) return false;
-                    if (!this.I2C_Ack) return false;
+                    if (!this.Ack) return false;
                 }
             }
             catch(Exception ex)
