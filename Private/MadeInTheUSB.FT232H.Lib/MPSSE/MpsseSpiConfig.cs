@@ -43,9 +43,7 @@ namespace MadeInTheUSB.FT232H
             var f              = new MpsseSpiConfig();
             f.ClockRate        = clockRate;
             f.LatencyTimer     = 1;
-            f.spiConfigOptions = FtdiMpsseSpiConfigOptions.Mode0 | 
-                                    FtdiMpsseSpiConfigOptions.CsActivelow | 
-                                    ((FtdiMpsseSpiConfigOptions) selectPin);
+            f.spiConfigOptions = FtdiMpsseSpiConfigOptions.Mode0 | FtdiMpsseSpiConfigOptions.CsActivelow | ((FtdiMpsseSpiConfigOptions) selectPin);
             return f;
         }
 
@@ -54,7 +52,7 @@ namespace MadeInTheUSB.FT232H
             return MpsseSpiConfig.Init(MpsseSpiConfig._30Mhz, FtdiMpsseSpiSelectPin.CsDbus3);
         }
 
-        public static MpsseSpiConfig Make(int speed, FtdiMpsseSpiSelectPin chipSelect = FtdiMpsseSpiSelectPin.CsDbus3)
+        public static MpsseSpiConfig BuildSPI(int speed, FtdiMpsseSpiSelectPin chipSelect = FtdiMpsseSpiSelectPin.CsDbus3)
         {
             return MpsseSpiConfig.Init(speed, chipSelect);
         }

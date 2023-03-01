@@ -13,6 +13,8 @@ namespace MadeInTheUSB.FT232H
         FTDI.FT_STATUS _lastStatus;
         public Dictionary<string, object> Properties = new Dictionary<string, object>();
 
+        public FTD2XX_NET.FTDI ft232h = null;
+
         public override string ToString()
         {
             return $"Type:{DeviceType}, NusbioV2Device:{this.IsNusbioV2}, SerialNumber:{SerialNumber}, Description:{Description}, Properties:{Properties.Count}";

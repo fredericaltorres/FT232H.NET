@@ -12,10 +12,12 @@ namespace MadeInTheUSB.FT232H
 
         FTDI.FT_STATUS _lastStatus;
 
-        public static FT232HDetectorInformation Detect(string serialNumber = null)
+        public static FT232HDetectorInformation Detect(string serialNumber = null, bool closeDevice = true)
         {
             var r = new FT232HDetectorInformation();
             var ft232h = new FTD2XX_NET.FTDI();
+
+            r.ft232h = ft232h;
 
             UInt32 count = 0;
             Ok(ft232h.GetNumberOfDevices(ref count));
@@ -56,7 +58,11 @@ namespace MadeInTheUSB.FT232H
                 r.Description = ee232h.Description;
                 r.Properties = ReflectionHelper.GetDictionary(ee232h);
             }
-            ft232h.Close();
+            if(closeDevice)
+            {
+                ft232h.Close();
+            }
+            
             r.Ok = true;
             return r;
         }

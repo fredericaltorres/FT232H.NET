@@ -15,18 +15,22 @@ namespace MadeInTheUSB.FT232H.Console
     {
         static void Main(string[] args)
         {
-            var ft232Device = FT232HDetector.Detect();
+            var ft232Device = FT232HDetector.Detect(closeDevice: false);
             if(ft232Device.Ok)
             {
                 System.Console.WriteLine(ft232Device.ToString());
-                //foreach(var p in ft232Device.Properties)
-                //    System.Console.WriteLine($"{p.Key}: {p.Value}");
+                //foreach(var p in ft232Device.Properties) System.Console.WriteLine($"{p.Key}: {p.Value}");
             }
 
+            var i2cDevice = new I2CDevice(ft232Device.ft232h);
+            i2cDevice.I2C_ConfigureMpsse();
+            I2CSample(i2cDevice);
+
+            return;
+
             // MCP3088 and MAX7219 is limited to 10Mhz
-            var clockSpeed = MpsseSpiConfig._30Mhz;
-            // clockSpeed = MpsseSpiConfig._10Mhz;
-            var ft232hGpioSpiDevice = new GpioSpiDevice(MpsseSpiConfig.Make(clockSpeed));
+            var clockSpeed = MpsseSpiConfig._30Mhz; // MpsseSpiConfig._10Mhz;
+            var ft232hGpioSpiDevice = new GpioSpiDevice(MpsseSpiConfig.BuildSPI(clockSpeed));
 
             var spi                 = ft232hGpioSpiDevice.SPI;
             var gpios               = ft232hGpioSpiDevice.GPIO;
@@ -48,7 +52,8 @@ namespace MadeInTheUSB.FT232H.Console
             //FlashMemorySample(spi);
             //Api102RgbLedSample(spi);
             // ADC_MCP3008Demo(spi);
-             GpioSample(gpios, false);
+            // GpioSample(gpios, false);
+            
         }
     }
 }

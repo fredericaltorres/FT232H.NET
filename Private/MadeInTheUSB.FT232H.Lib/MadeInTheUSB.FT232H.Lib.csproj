@@ -69,6 +69,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SPI\GpioSpiDeviceBaseClass.gpio.cs" />
     <Compile Include="SPI\GpioSpiDeviceBaseClass.spi.cs" />
+    <Compile Include="I2C\I2CDevice.cs" />
     <Compile Include="Util\ConsoleEx.cs" />
     <Compile Include="Util\WinUtil.cs" />
   </ItemGroup>
@@ -80,6 +81,9 @@
       <Link>MPSSE\libMPSSE.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="MPSSE-I2C\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

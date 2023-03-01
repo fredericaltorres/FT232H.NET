@@ -45,15 +45,18 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AdafruitGFX\Adafruit_GFX.cs" />
-    <Compile Include="ADC\MCP3008.cs" />
-    <Compile Include="APA_102_RGB_LED\APA102LEDStrip.cs" />
-    <Compile Include="MAX7219\MAX7219.cs" />
-    <Compile Include="MAX7219\NusbioLedMatrix.cs" />
-    <Compile Include="MAX7219\SPIResult.cs" />
-    <Compile Include="FLASH\FlashMemory.Const.cs" />
-    <Compile Include="FLASH\FlashMemory.cs" />
-    <Compile Include="FLASH\FlashMemory.Enum.cs" />
-    <Compile Include="FLASH\FlashMemory.SPIHelper.cs" />
+    <Compile Include="I2C\Adafruit\I2CCommunicationException.cs" />
+    <Compile Include="I2C\Adafruit\LEDBackpack.cs" />
+    <Compile Include="I2C\Adafruit\MultiLEDBackpackManager.cs" />
+    <Compile Include="SPI\ADC\MCP3008.cs" />
+    <Compile Include="SPI\APA_102_RGB_LED\APA102LEDStrip.cs" />
+    <Compile Include="SPI\MAX7219\MAX7219.cs" />
+    <Compile Include="SPI\MAX7219\NusbioLedMatrix.cs" />
+    <Compile Include="SPI\MAX7219\SPIResult.cs" />
+    <Compile Include="SPI\FLASH\FlashMemory.Const.cs" />
+    <Compile Include="SPI\FLASH\FlashMemory.cs" />
+    <Compile Include="SPI\FLASH\FlashMemory.Enum.cs" />
+    <Compile Include="SPI\FLASH\FlashMemory.SPIHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utils\ErrorManager.cs" />
     <Compile Include="Utils\PublicEncryptor.cs" />

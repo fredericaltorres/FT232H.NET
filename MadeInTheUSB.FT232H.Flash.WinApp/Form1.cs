@@ -64,7 +64,7 @@ namespace MadeInTheUSB.FT232H.Flash.WinApp
                     this.ShowUser($"FT232H [{_ft232Device}]");
                     // MCP3088 and MAX7219 is limited to 10Mhz
                     var clockSpeed = this.rbMhz30.Checked ? MpsseSpiConfig._30Mhz : MpsseSpiConfig._10Mhz;
-                    _gpioSpiDevice = new GpioSpiDevice(MpsseSpiConfig.Make(clockSpeed));
+                    _gpioSpiDevice = new GpioSpiDevice(MpsseSpiConfig.BuildSPI(clockSpeed));
                     _interfaces = _gpioSpiDevice.Interfaces;
                     return _gpioSpiDevice.Interfaces;
                 }

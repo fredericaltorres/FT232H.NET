@@ -1,7 +1,7 @@
 /*
 ** FTD2XX_NET.cs
 **
-** Copyright © 2009-2013 Future Technology Devices International Limited
+** Copyright ? 2009-2021 Future Technology Devices International Limited
 **
 ** C# Source file for .NET wrapper of the Windows FTD2XX.dll API calls.
 ** Main module
@@ -17,8 +17,8 @@
 **  1.0.12	-	Included support for the FT232H device.
 **  1.0.14	-	Included Support for the X-Series of devices.
 **  1.0.16  -	Overloaded constructor to allow a path to the driver to be passed.
-**  1.1.0   -   Handle full 16 character Serial Number and support FT4222 programming board.
-** 
+**  1.1.0	-	Handle full 16 character Serial Number and support FT4222 programming board.
+**  1.1.2	-	Add new devices and change NULL string for .NET 5 compaibility.
 */
 
 
@@ -52,13 +52,11 @@ namespace FTD2XX_NET
                 hFTD2XXDLL = LoadLibrary(@"FTD2XX.DLL");
                 if (hFTD2XXDLL == IntPtr.Zero)
                 {
-                    var error = "Attempting to load FTD2XX.DLL from:\n" + Path.GetDirectoryName(GetType().Assembly.Location);
                     // Failed to load our FTD2XX.DLL library from System32 or the application directory
                     // Try the same directory that this FTD2XX_NET DLL is in
-                    Console.WriteLine(error);
-                    throw new ApplicationException(error);
-#if DEBUG
-                    this.Throw("Attempting to load FTD2XX.DLL from:\n" + Path.GetDirectoryName(GetType().Assembly.Location));
+                    Console.WriteLine("Attempting to load FTD2XX.DLL from:\n" + Path.GetDirectoryName(GetType().Assembly.Location));
+#if DEBUG && false
+                    MessageBox.Show("Attempting to load FTD2XX.DLL from:\n" + Path.GetDirectoryName(GetType().Assembly.Location));
 #endif
                     hFTD2XXDLL = LoadLibrary(@Path.GetDirectoryName(GetType().Assembly.Location) + "\\FTD2XX.DLL");
                 }
@@ -71,19 +69,12 @@ namespace FTD2XX_NET
             }
             else
             {
-                var error = "Failed to load FTD2XX.DLL.  Are the FTDI drivers installed?";
                 // Failed to load our DLL - alert the user
-                Console.WriteLine(error);
-                throw new ApplicationException (error);
-#if DEBUG
-                this.Throw("Failed to load FTD2XX.DLL.  Are the FTDI drivers installed?");
+                Console.WriteLine("Failed to load FTD2XX.DLL.  Are the FTDI drivers installed?");
+#if DEBUG && false
+                MessageBox.Show("Failed to load FTD2XX.DLL.  Are the FTDI drivers installed?");
 #endif
             }
-        }
-
-        private void Throw(string message)
-        {
-            throw new ApplicationException(message);
         }
 
         /// <summary>
@@ -104,8 +95,8 @@ namespace FTD2XX_NET
                     // Failed to load our PathToDll library
                     // Give up :(
                     Console.WriteLine("Attempting to load FTD2XX.DLL from:\n" + Path.GetDirectoryName(GetType().Assembly.Location));
-#if DEBUG
-                    this.Throw("Attempting to load FTD2XX.DLL from:\n" + Path.GetDirectoryName(GetType().Assembly.Location));
+#if DEBUG && false
+                    MessageBox.Show("Attempting to load FTD2XX.DLL from:\n" + Path.GetDirectoryName(GetType().Assembly.Location));
 #endif
                 }
             }
@@ -118,8 +109,8 @@ namespace FTD2XX_NET
             else
             {
                 Console.WriteLine("Failed to load FTD2XX.DLL.  Are the FTDI drivers installed?");
-#if DEBUG
-                this.Throw("Failed to load FTD2XX.DLL.  Are the FTDI drivers installed?");
+#if DEBUG && false
+                MessageBox.Show("Failed to load FTD2XX.DLL.  Are the FTDI drivers installed?");
 #endif
             }
         }
@@ -180,6 +171,7 @@ namespace FTD2XX_NET
             pFT_EEPROM_Program = GetProcAddress(hFTD2XXDLL, "FT_EEPROM_Program");
             pFT_VendorCmdGet = GetProcAddress(hFTD2XXDLL, "FT_VendorCmdGet");
             pFT_VendorCmdSet = GetProcAddress(hFTD2XXDLL, "FT_VendorCmdSet");
+            pFT_VendorCmdSetX = GetProcAddress(hFTD2XXDLL, "FT_VendorCmdSetX");
         }
 
         /// <summary>
@@ -327,6 +319,8 @@ namespace FTD2XX_NET
         private delegate FT_STATUS tFT_VendorCmdGet(IntPtr ftHandle, UInt16 request, byte[] buf, UInt16 len);
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         private delegate FT_STATUS tFT_VendorCmdSet(IntPtr ftHandle, UInt16 request, byte[] buf, UInt16 len);
+        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+        private delegate FT_STATUS tFT_VendorCmdSetX(IntPtr ftHandle, UInt16 request, byte[] buf, UInt16 len);
 
         #endregion
 
@@ -424,9 +418,9 @@ namespace FTD2XX_NET
         };
 
         // Flags for FT_OpenEx
-        private const UInt32 FT_OPEN_BY_SERIAL_NUMBER	= 0x00000001;
-        private const UInt32 FT_OPEN_BY_DESCRIPTION		= 0x00000002;
-        private const UInt32 FT_OPEN_BY_LOCATION		= 0x00000004;
+        private const UInt32 FT_OPEN_BY_SERIAL_NUMBER = 0x00000001;
+        private const UInt32 FT_OPEN_BY_DESCRIPTION = 0x00000002;
+        private const UInt32 FT_OPEN_BY_LOCATION = 0x00000004;
 
         // Word Lengths
         /// <summary>
@@ -469,23 +463,23 @@ namespace FTD2XX_NET
             /// <summary>
             /// No parity
             /// </summary>
-            public const byte FT_PARITY_NONE	= 0x00;
+            public const byte FT_PARITY_NONE = 0x00;
             /// <summary>
             /// Odd parity
             /// </summary>
-            public const byte FT_PARITY_ODD		= 0x01;
+            public const byte FT_PARITY_ODD = 0x01;
             /// <summary>
             /// Even parity
             /// </summary>
-            public const byte FT_PARITY_EVEN	= 0x02;
+            public const byte FT_PARITY_EVEN = 0x02;
             /// <summary>
             /// Mark parity
             /// </summary>
-            public const byte FT_PARITY_MARK	= 0x03;
+            public const byte FT_PARITY_MARK = 0x03;
             /// <summary>
             /// Space parity
             /// </summary>
-            public const byte FT_PARITY_SPACE	= 0x04;
+            public const byte FT_PARITY_SPACE = 0x04;
         }
 
         // Flow Control
@@ -497,19 +491,19 @@ namespace FTD2XX_NET
             /// <summary>
             /// No flow control
             /// </summary>
-            public const UInt16 FT_FLOW_NONE		= 0x0000;
+            public const UInt16 FT_FLOW_NONE = 0x0000;
             /// <summary>
             /// RTS/CTS flow control
             /// </summary>
-            public const UInt16 FT_FLOW_RTS_CTS		= 0x0100;
+            public const UInt16 FT_FLOW_RTS_CTS = 0x0100;
             /// <summary>
             /// DTR/DSR flow control
             /// </summary>
-            public const UInt16 FT_FLOW_DTR_DSR		= 0x0200;
+            public const UInt16 FT_FLOW_DTR_DSR = 0x0200;
             /// <summary>
             /// Xon/Xoff flow control
             /// </summary>
-            public const UInt16 FT_FLOW_XON_XOFF	= 0x0400;
+            public const UInt16 FT_FLOW_XON_XOFF = 0x0400;
         }
 
         // Purge Rx and Tx buffers
@@ -537,19 +531,19 @@ namespace FTD2XX_NET
             /// <summary>
             /// Clear To Send (CTS) modem status
             /// </summary>
-            public const byte FT_CTS	= 0x10;
+            public const byte FT_CTS = 0x10;
             /// <summary>
             /// Data Set Ready (DSR) modem status
             /// </summary>
-            public const byte FT_DSR	= 0x20;
+            public const byte FT_DSR = 0x20;
             /// <summary>
             /// Ring Indicator (RI) modem status
             /// </summary>
-            public const byte FT_RI		= 0x40;
+            public const byte FT_RI = 0x40;
             /// <summary>
             /// Data Carrier Detect (DCD) modem status
             /// </summary>
-            public const byte FT_DCD	= 0x80;
+            public const byte FT_DCD = 0x80;
         }
 
         // Line Status bits
@@ -585,15 +579,15 @@ namespace FTD2XX_NET
             /// <summary>
             /// Event on receive character
             /// </summary>
-            public const UInt32 FT_EVENT_RXCHAR			= 0x00000001;
+            public const UInt32 FT_EVENT_RXCHAR = 0x00000001;
             /// <summary>
             /// Event on modem status change
             /// </summary>
-            public const UInt32 FT_EVENT_MODEM_STATUS	= 0x00000002;
+            public const UInt32 FT_EVENT_MODEM_STATUS = 0x00000002;
             /// <summary>
             /// Event on line status change
             /// </summary>
-            public const UInt32 FT_EVENT_LINE_STATUS	= 0x00000004;
+            public const UInt32 FT_EVENT_LINE_STATUS = 0x00000004;
         }
 
         // Bit modes
@@ -605,35 +599,35 @@ namespace FTD2XX_NET
             /// <summary>
             /// Reset bit mode
             /// </summary>
-            public const byte FT_BIT_MODE_RESET			= 0x00;
+            public const byte FT_BIT_MODE_RESET = 0x00;
             /// <summary>
             /// Asynchronous bit-bang mode
             /// </summary>
-            public const byte FT_BIT_MODE_ASYNC_BITBANG	= 0x01;
+            public const byte FT_BIT_MODE_ASYNC_BITBANG = 0x01;
             /// <summary>
             /// MPSSE bit mode - only available on FT2232, FT2232H, FT4232H and FT232H
             /// </summary>
-            public const byte FT_BIT_MODE_MPSSE			= 0x02;
+            public const byte FT_BIT_MODE_MPSSE = 0x02;
             /// <summary>
             /// Synchronous bit-bang mode
             /// </summary>
-            public const byte FT_BIT_MODE_SYNC_BITBANG	= 0x04;
+            public const byte FT_BIT_MODE_SYNC_BITBANG = 0x04;
             /// <summary>
             /// MCU host bus emulation mode - only available on FT2232, FT2232H, FT4232H and FT232H
             /// </summary>
-            public const byte FT_BIT_MODE_MCU_HOST		= 0x08;
+            public const byte FT_BIT_MODE_MCU_HOST = 0x08;
             /// <summary>
             /// Fast opto-isolated serial mode - only available on FT2232, FT2232H, FT4232H and FT232H
             /// </summary>
-            public const byte FT_BIT_MODE_FAST_SERIAL	= 0x10;
+            public const byte FT_BIT_MODE_FAST_SERIAL = 0x10;
             /// <summary>
             /// CBUS bit-bang mode - only available on FT232R and FT232H
             /// </summary>
-            public const byte FT_BIT_MODE_CBUS_BITBANG	= 0x20;
+            public const byte FT_BIT_MODE_CBUS_BITBANG = 0x20;
             /// <summary>
             /// Single channel synchronous 245 FIFO mode - only available on FT2232H channel A and FT232H
             /// </summary>
-            public const byte FT_BIT_MODE_SYNC_FIFO		= 0x40;
+            public const byte FT_BIT_MODE_SYNC_FIFO = 0x40;
         }
 
         // FT232R CBUS Options
@@ -645,55 +639,55 @@ namespace FTD2XX_NET
             /// <summary>
             /// FT232R CBUS EEPROM options - Tx Data Enable
             /// </summary>
-            public const byte FT_CBUS_TXDEN			= 0x00;
+            public const byte FT_CBUS_TXDEN = 0x00;
             /// <summary>
             /// FT232R CBUS EEPROM options - Power On
             /// </summary>
-            public const byte FT_CBUS_PWRON			= 0x01;
+            public const byte FT_CBUS_PWRON = 0x01;
             /// <summary>
             /// FT232R CBUS EEPROM options - Rx LED
             /// </summary>
-            public const byte FT_CBUS_RXLED			= 0x02;
+            public const byte FT_CBUS_RXLED = 0x02;
             /// <summary>
             /// FT232R CBUS EEPROM options - Tx LED
             /// </summary>
-            public const byte FT_CBUS_TXLED			= 0x03;
+            public const byte FT_CBUS_TXLED = 0x03;
             /// <summary>
             /// FT232R CBUS EEPROM options - Tx and Rx LED
             /// </summary>
-            public const byte FT_CBUS_TXRXLED		= 0x04;
+            public const byte FT_CBUS_TXRXLED = 0x04;
             /// <summary>
             /// FT232R CBUS EEPROM options - Sleep
             /// </summary>
-            public const byte FT_CBUS_SLEEP			= 0x05;
+            public const byte FT_CBUS_SLEEP = 0x05;
             /// <summary>
             /// FT232R CBUS EEPROM options - 48MHz clock
             /// </summary>
-            public const byte FT_CBUS_CLK48			= 0x06;
+            public const byte FT_CBUS_CLK48 = 0x06;
             /// <summary>
             /// FT232R CBUS EEPROM options - 24MHz clock
             /// </summary>
-            public const byte FT_CBUS_CLK24			= 0x07;
+            public const byte FT_CBUS_CLK24 = 0x07;
             /// <summary>
             /// FT232R CBUS EEPROM options - 12MHz clock
             /// </summary>
-            public const byte FT_CBUS_CLK12			= 0x08;
+            public const byte FT_CBUS_CLK12 = 0x08;
             /// <summary>
             /// FT232R CBUS EEPROM options - 6MHz clock
             /// </summary>
-            public const byte FT_CBUS_CLK6			= 0x09;
+            public const byte FT_CBUS_CLK6 = 0x09;
             /// <summary>
             /// FT232R CBUS EEPROM options - IO mode
             /// </summary>
-            public const byte FT_CBUS_IOMODE		= 0x0A;
+            public const byte FT_CBUS_IOMODE = 0x0A;
             /// <summary>
             /// FT232R CBUS EEPROM options - Bit-bang write strobe
             /// </summary>
-            public const byte FT_CBUS_BITBANG_WR	= 0x0B;
+            public const byte FT_CBUS_BITBANG_WR = 0x0B;
             /// <summary>
             /// FT232R CBUS EEPROM options - Bit-bang read strobe
             /// </summary>
-            public const byte FT_CBUS_BITBANG_RD	= 0x0C;
+            public const byte FT_CBUS_BITBANG_RD = 0x0C;
         }
 
         // FT232H CBUS Options
@@ -750,8 +744,8 @@ namespace FTD2XX_NET
             /// FT232H CBUS EEPROM options - 15MHz clock
             /// </summary>
             public const byte FT_CBUS_CLK15 = 0x0B;/// <summary>
-            /// FT232H CBUS EEPROM options - 7.5MHz clock
-            /// </summary>
+                                                   /// FT232H CBUS EEPROM options - 7.5MHz clock
+                                                   /// </summary>
             public const byte FT_CBUS_CLK7_5 = 0x0C;
         }
 
@@ -859,11 +853,11 @@ namespace FTD2XX_NET
             /// <summary>
             /// Indicates that the device is open
             /// </summary>
-            public const UInt32 FT_FLAGS_OPENED		= 0x00000001;
+            public const UInt32 FT_FLAGS_OPENED = 0x00000001;
             /// <summary>
             /// Indicates that the device is enumerated as a hi-speed USB device
             /// </summary>
-            public const UInt32 FT_FLAGS_HISPEED	= 0x00000002;
+            public const UInt32 FT_FLAGS_HISPEED = 0x00000002;
         }
 
         // Valid drive current values for FT2232H, FT4232H and FT232H devices
@@ -875,19 +869,19 @@ namespace FTD2XX_NET
             /// <summary>
             /// 4mA drive current
             /// </summary>
-            public const byte FT_DRIVE_CURRENT_4MA	= 4;
+            public const byte FT_DRIVE_CURRENT_4MA = 4;
             /// <summary>
             /// 8mA drive current
             /// </summary>
-            public const byte FT_DRIVE_CURRENT_8MA	= 8;
+            public const byte FT_DRIVE_CURRENT_8MA = 8;
             /// <summary>
             /// 12mA drive current
             /// </summary>
-            public const byte FT_DRIVE_CURRENT_12MA	= 12;
+            public const byte FT_DRIVE_CURRENT_12MA = 12;
             /// <summary>
             /// 16mA drive current
             /// </summary>
-            public const byte FT_DRIVE_CURRENT_16MA	= 16;
+            public const byte FT_DRIVE_CURRENT_16MA = 16;
         }
 
         // Device type identifiers for FT_GetDeviceInfoDetail and FT_GetDeviceInfo
@@ -903,10 +897,10 @@ namespace FTD2XX_NET
             /// <summary>
             /// FT8U232AM or FT8U245AM device
             /// </summary>
-            FT_DEVICE_AM,
-            /// <summary>
-            /// FT8U100AX device
-            /// </summary>
+            FT_DEVICE_AM, /// 1 
+                          /// <summary>
+                          /// FT8U100AX device
+                          /// </summary>
             FT_DEVICE_100AX,
             /// <summary>
             /// Unknown device
@@ -919,50 +913,94 @@ namespace FTD2XX_NET
             /// <summary>
             /// FT232R or FT245R device
             /// </summary>
-            FT_DEVICE_232R,
-            /// <summary>
-            /// FT2232H device
-            /// </summary>
-            FT_DEVICE_2232H,
-            /// <summary>
-            /// FT4232H device
-            /// </summary>
-            FT_DEVICE_4232H,
-            /// <summary>
-            /// FT232H device
-            /// </summary>
-            FT_DEVICE_232H,
-            /// <summary>
-            /// FT X-Series device
-            /// </summary>
-            FT_DEVICE_X_SERIES,
-            /// <summary>
-            /// FT4222 hi-speed device Mode 0 - 2 interfaces
-            /// </summary>
-            FT_DEVICE_4222H_0,
-            /// <summary>
-            /// FT4222 hi-speed device Mode 1 or 2 - 4 interfaces
-            /// </summary>
-            FT_DEVICE_4222H_1_2,
-            /// <summary>
-            /// FT4222 hi-speed device Mode 3 - 1 interface
-            /// </summary>
-            FT_DEVICE_4222H_3,
-            /// <summary>
-            /// OTP programmer board for the FT4222.
-            /// </summary>
-            FT_DEVICE_4222_PROG,
+            FT_DEVICE_232R, /// 5
+                            /// <summary>
+                            /// FT2232H device
+                            /// </summary>
+            FT_DEVICE_2232H, /// 6
+                             /// <summary>
+                             /// FT4232H device
+                             /// </summary>
+            FT_DEVICE_4232H, /// 7
+                             /// <summary>
+                             /// FT232H device
+                             /// </summary>
+            FT_DEVICE_232H, /// 8
+                            /// <summary>
+                            /// FT X-Series device
+                            /// </summary>
+            FT_DEVICE_X_SERIES, /// 9
+                                /// <summary>
+                                /// FT4222 hi-speed device Mode 0 - 2 interfaces
+                                /// </summary>
+            FT_DEVICE_4222H_0, /// 10
+                               /// <summary>
+                               /// FT4222 hi-speed device Mode 1 or 2 - 4 interfaces
+                               /// </summary>
+            FT_DEVICE_4222H_1_2, /// 11
+                                 /// <summary>
+                                 /// FT4222 hi-speed device Mode 3 - 1 interface
+                                 /// </summary>
+            FT_DEVICE_4222H_3, /// 12
+                               /// <summary>
+                               /// OTP programmer board for the FT4222.
+                               /// </summary>
+            FT_DEVICE_4222_PROG, /// 13
+                                 /// <summary>
+                                 /// OTP programmer board for the FT900.
+                                 /// </summary>
+            FT_DEVICE_FT900, /// 14
+                             /// <summary>
+                             /// OTP programmer board for the FT930.
+                             /// </summary>
+            FT_DEVICE_FT930, /// 15
+                             /// <summary>
+                             /// Flash programmer board for the UMFTPD3A.
+                             /// </summary>
+            FT_DEVICE_UMFTPD3A, /// 16
+                                /// <summary>
+                                /// FT2233HP hi-speed device.
+                                /// </summary>
+            FT_DEVICE_2233HP, /// 17
+                              /// <summary>
+                              /// FT4233HP hi-speed device.
+                              /// </summary>
+            FT_DEVICE_4233HP, /// 18
+                              /// <summary>
+                              /// FT2233HP hi-speed device.
+                              /// </summary>
+            FT_DEVICE_2232HP, /// 19
+                              /// <summary>
+                              /// FT4233HP hi-speed device.
+                              /// </summary>
+            FT_DEVICE_4232HP, /// 20
+                              /// <summary>
+                              /// FT233HP hi-speed device.
+                              /// </summary>
+            FT_DEVICE_233HP, /// 21
+                             /// <summary>
+                             /// FT232HP hi-speed device.
+                             /// </summary>
+            FT_DEVICE_232HP, /// 22
+                             /// <summary>
+                             /// FT2233HA hi-speed device.
+                             /// </summary>
+            FT_DEVICE_2232HA, /// 23
+                              /// <summary>
+                              /// FT4233HA hi-speed device.
+                              /// </summary>
+            FT_DEVICE_4232HA, /// 24
         };
-#endregion
+        #endregion
 
         #region DEFAULT_VALUES
-        private const UInt32 FT_DEFAULT_BAUD_RATE			= 9600;
-        private const UInt32 FT_DEFAULT_DEADMAN_TIMEOUT		= 5000;
-        private const Int32 FT_COM_PORT_NOT_ASSIGNED		= -1;
-        private const UInt32 FT_DEFAULT_IN_TRANSFER_SIZE	= 0x1000;
-        private const UInt32 FT_DEFAULT_OUT_TRANSFER_SIZE	= 0x1000;
-        private const byte FT_DEFAULT_LATENCY				= 16;
-        private const UInt32 FT_DEFAULT_DEVICE_ID			= 0x04036001;
+        private const UInt32 FT_DEFAULT_BAUD_RATE = 9600;
+        private const UInt32 FT_DEFAULT_DEADMAN_TIMEOUT = 5000;
+        private const Int32 FT_COM_PORT_NOT_ASSIGNED = -1;
+        private const UInt32 FT_DEFAULT_IN_TRANSFER_SIZE = 0x1000;
+        private const UInt32 FT_DEFAULT_OUT_TRANSFER_SIZE = 0x1000;
+        private const byte FT_DEFAULT_LATENCY = 16;
+        private const UInt32 FT_DEFAULT_DEVICE_ID = 0x04036001;
         #endregion
 
         #region VARIABLES
@@ -2082,6 +2120,7 @@ namespace FTD2XX_NET
         IntPtr pFT_EEPROM_Program = IntPtr.Zero;
         IntPtr pFT_VendorCmdGet = IntPtr.Zero;
         IntPtr pFT_VendorCmdSet = IntPtr.Zero;
+        IntPtr pFT_VendorCmdSetX = IntPtr.Zero;
         #endregion
 
         #region METHOD_DEFINITIONS
@@ -2114,8 +2153,8 @@ namespace FTD2XX_NET
             else
             {
                 Console.WriteLine("Failed to load function FT_CreateDeviceInfoList.");
-#if DEBUG
-                this.Throw("Failed to load function FT_CreateDeviceInfoList.");
+#if DEBUG && false
+                MessageBox.Show("Failed to load function FT_CreateDeviceInfoList.");
 #endif
             }
             return ftStatus;
@@ -2181,10 +2220,10 @@ namespace FTD2XX_NET
                         devicelist[i].SerialNumber = Encoding.ASCII.GetString(sernum);
                         devicelist[i].Description = Encoding.ASCII.GetString(desc);
                         // Trim strings to first occurrence of a null terminator character
-                        nullIndex = devicelist[i].SerialNumber.IndexOf("\0");
+                        nullIndex = devicelist[i].SerialNumber.IndexOf('\0');
                         if (nullIndex != -1)
                             devicelist[i].SerialNumber = devicelist[i].SerialNumber.Substring(0, nullIndex);
-                        nullIndex = devicelist[i].Description.IndexOf("\0");
+                        nullIndex = devicelist[i].Description.IndexOf('\0');
                         if (nullIndex != -1)
                             devicelist[i].Description = devicelist[i].Description.Substring(0, nullIndex);
                     }
@@ -2195,15 +2234,15 @@ namespace FTD2XX_NET
                 if (pFT_CreateDeviceInfoList == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_CreateDeviceInfoList.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_CreateDeviceInfoList.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_CreateDeviceInfoList.");
 #endif
                 }
                 if (pFT_GetDeviceInfoDetail == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_GetDeviceInfoListDetail.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_GetDeviceInfoListDetail.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_GetDeviceInfoListDetail.");
 #endif
                 }
             }
@@ -2268,29 +2307,29 @@ namespace FTD2XX_NET
                 if (pFT_Open == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_Open.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_Open.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_Open.");
 #endif
                 }
                 if (pFT_SetDataCharacteristics == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_SetDataCharacteristics.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_SetDataCharacteristics.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_SetDataCharacteristics.");
 #endif
                 }
                 if (pFT_SetFlowControl == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_SetFlowControl.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_SetFlowControl.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_SetFlowControl.");
 #endif
                 }
                 if (pFT_SetBaudRate == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_SetBaudRate.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_SetBaudRate.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_SetBaudRate.");
 #endif
                 }
             }
@@ -2354,29 +2393,29 @@ namespace FTD2XX_NET
                 if (pFT_OpenEx == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_OpenEx.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_OpenEx.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_OpenEx.");
 #endif
                 }
                 if (pFT_SetDataCharacteristics == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_SetDataCharacteristics.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_SetDataCharacteristics.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_SetDataCharacteristics.");
 #endif
                 }
                 if (pFT_SetFlowControl == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_SetFlowControl.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_SetFlowControl.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_SetFlowControl.");
 #endif
                 }
                 if (pFT_SetBaudRate == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_SetBaudRate.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_SetBaudRate.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_SetBaudRate.");
 #endif
                 }
             }
@@ -2440,29 +2479,29 @@ namespace FTD2XX_NET
                 if (pFT_OpenEx == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_OpenEx.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_OpenEx.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_OpenEx.");
 #endif
                 }
                 if (pFT_SetDataCharacteristics == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_SetDataCharacteristics.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_SetDataCharacteristics.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_SetDataCharacteristics.");
 #endif
                 }
                 if (pFT_SetFlowControl == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_SetFlowControl.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_SetFlowControl.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_SetFlowControl.");
 #endif
                 }
                 if (pFT_SetBaudRate == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_SetBaudRate.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_SetBaudRate.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_SetBaudRate.");
 #endif
                 }
             }
@@ -2510,15 +2549,15 @@ namespace FTD2XX_NET
                     byte WordLength = FT_DATA_BITS.FT_BITS_8;
                     byte StopBits = FT_STOP_BITS.FT_STOP_BITS_1;
                     byte Parity = FT_PARITY.FT_PARITY_NONE;
-                    ftStatus = FT_SetDataCharacteristics(ftHandle, WordLength, StopBits, Parity);
+                    FT_SetDataCharacteristics(ftHandle, WordLength, StopBits, Parity);
                     // Initialise to no flow control
                     UInt16 FlowControl = FT_FLOW_CONTROL.FT_FLOW_NONE;
                     byte Xon = 0x11;
                     byte Xoff = 0x13;
-                    ftStatus = FT_SetFlowControl(ftHandle, FlowControl, Xon, Xoff);
+                    FT_SetFlowControl(ftHandle, FlowControl, Xon, Xoff);
                     // Initialise Baud rate
                     UInt32 BaudRate = 9600;
-                    ftStatus = FT_SetBaudRate(ftHandle, BaudRate);
+                    FT_SetBaudRate(ftHandle, BaudRate);
                 }
             }
             else
@@ -2526,29 +2565,29 @@ namespace FTD2XX_NET
                 if (pFT_OpenEx == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_OpenEx.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_OpenEx.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_OpenEx.");
 #endif
                 }
                 if (pFT_SetDataCharacteristics == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_SetDataCharacteristics.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_SetDataCharacteristics.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_SetDataCharacteristics.");
 #endif
                 }
                 if (pFT_SetFlowControl == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_SetFlowControl.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_SetFlowControl.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_SetFlowControl.");
 #endif
                 }
                 if (pFT_SetBaudRate == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_SetBaudRate.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_SetBaudRate.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_SetBaudRate.");
 #endif
                 }
             }
@@ -2591,8 +2630,8 @@ namespace FTD2XX_NET
                 if (pFT_Close == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_Close.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_Close.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_Close.");
 #endif
                 }
             }
@@ -2643,8 +2682,8 @@ namespace FTD2XX_NET
                 if (pFT_Read == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_Read.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_Read.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_Read.");
 #endif
                 }
             }
@@ -2694,8 +2733,8 @@ namespace FTD2XX_NET
                 if (pFT_Read == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_Read.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_Read.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_Read.");
 #endif
                 }
             }
@@ -2738,8 +2777,8 @@ namespace FTD2XX_NET
                 if (pFT_Write == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_Write.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_Write.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_Write.");
 #endif
                 }
             }
@@ -2779,8 +2818,8 @@ namespace FTD2XX_NET
                 if (pFT_Write == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_Write.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_Write.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_Write.");
 #endif
                 }
             }
@@ -2823,8 +2862,8 @@ namespace FTD2XX_NET
                 if (pFT_Write == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_Write.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_Write.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_Write.");
 #endif
                 }
             }
@@ -2867,8 +2906,8 @@ namespace FTD2XX_NET
                 if (pFT_Write == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_Write.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_Write.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_Write.");
 #endif
                 }
             }
@@ -2908,8 +2947,8 @@ namespace FTD2XX_NET
                 if (pFT_ResetDevice == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_ResetDevice.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_ResetDevice.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_ResetDevice.");
 #endif
                 }
             }
@@ -2950,8 +2989,8 @@ namespace FTD2XX_NET
                 if (pFT_Purge == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_Purge.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_Purge.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_Purge.");
 #endif
                 }
             }
@@ -2994,8 +3033,8 @@ namespace FTD2XX_NET
                 if (pFT_SetEventNotification == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_SetEventNotification.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_SetEventNotification.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_SetEventNotification.");
 #endif
                 }
             }
@@ -3035,8 +3074,8 @@ namespace FTD2XX_NET
                 if (pFT_StopInTask == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_StopInTask.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_StopInTask.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_StopInTask.");
 #endif
                 }
             }
@@ -3076,8 +3115,8 @@ namespace FTD2XX_NET
                 if (pFT_RestartInTask == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_RestartInTask.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_RestartInTask.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_RestartInTask.");
 #endif
                 }
             }
@@ -3117,8 +3156,8 @@ namespace FTD2XX_NET
                 if (pFT_ResetPort == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_ResetPort.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_ResetPort.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_ResetPort.");
 #endif
                 }
             }
@@ -3169,15 +3208,15 @@ namespace FTD2XX_NET
                 if (pFT_CyclePort == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_CyclePort.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_CyclePort.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_CyclePort.");
 #endif
                 }
                 if (pFT_Close == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_Close.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_Close.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_Close.");
 #endif
                 }
             }
@@ -3214,8 +3253,8 @@ namespace FTD2XX_NET
                 if (pFT_Rescan == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_Rescan.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_Rescan.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_Rescan.");
 #endif
                 }
             }
@@ -3255,8 +3294,8 @@ namespace FTD2XX_NET
                 if (pFT_Reload == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_Reload.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_Reload.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_Reload.");
 #endif
                 }
             }
@@ -3348,7 +3387,11 @@ namespace FTD2XX_NET
                             ErrorHandler(ftStatus, ftErrorCondition);
                         }
                     }
-                    else if ((DeviceType == FT_DEVICE.FT_DEVICE_2232H) && (BitMode != FT_BIT_MODES.FT_BIT_MODE_RESET))
+                    else if (((DeviceType == FT_DEVICE.FT_DEVICE_2232H)
+                        || (DeviceType == FT_DEVICE.FT_DEVICE_2232HP)
+                        || (DeviceType == FT_DEVICE.FT_DEVICE_2233HP)
+                        || (DeviceType == FT_DEVICE.FT_DEVICE_2232HA))
+                            && (BitMode != FT_BIT_MODES.FT_BIT_MODE_RESET))
                     {
                         if ((BitMode & (FT_BIT_MODES.FT_BIT_MODE_ASYNC_BITBANG | FT_BIT_MODES.FT_BIT_MODE_MPSSE | FT_BIT_MODES.FT_BIT_MODE_SYNC_BITBANG | FT_BIT_MODES.FT_BIT_MODE_MCU_HOST | FT_BIT_MODES.FT_BIT_MODE_FAST_SERIAL | FT_BIT_MODES.FT_BIT_MODE_SYNC_FIFO)) == 0)
                         {
@@ -3364,7 +3407,11 @@ namespace FTD2XX_NET
                             ErrorHandler(ftStatus, ftErrorCondition);
                         }
                     }
-                    else if ((DeviceType == FT_DEVICE.FT_DEVICE_4232H) && (BitMode != FT_BIT_MODES.FT_BIT_MODE_RESET))
+                    else if (((DeviceType == FT_DEVICE.FT_DEVICE_4232H)
+                        || (DeviceType == FT_DEVICE.FT_DEVICE_4232HP)
+                        || (DeviceType == FT_DEVICE.FT_DEVICE_4233HP)
+                        || (DeviceType == FT_DEVICE.FT_DEVICE_4232HA))
+                            && (BitMode != FT_BIT_MODES.FT_BIT_MODE_RESET))
                     {
                         if ((BitMode & (FT_BIT_MODES.FT_BIT_MODE_ASYNC_BITBANG | FT_BIT_MODES.FT_BIT_MODE_MPSSE | FT_BIT_MODES.FT_BIT_MODE_SYNC_BITBANG)) == 0)
                         {
@@ -3380,7 +3427,10 @@ namespace FTD2XX_NET
                             ErrorHandler(ftStatus, ftErrorCondition);
                         }
                     }
-                    else if ((DeviceType == FT_DEVICE.FT_DEVICE_232H) && (BitMode != FT_BIT_MODES.FT_BIT_MODE_RESET))
+                    else if (((DeviceType == FT_DEVICE.FT_DEVICE_232H)
+                        || (DeviceType == FT_DEVICE.FT_DEVICE_232HP)
+                        || (DeviceType == FT_DEVICE.FT_DEVICE_233HP))
+                            && (BitMode != FT_BIT_MODES.FT_BIT_MODE_RESET))
                     {
                         // FT232H supports all current bit modes!
                         if (BitMode > FT_BIT_MODES.FT_BIT_MODE_SYNC_FIFO)
@@ -3402,8 +3452,8 @@ namespace FTD2XX_NET
                 if (pFT_SetBitMode == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_SetBitMode.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_SetBitMode.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_SetBitMode.");
 #endif
                 }
             }
@@ -3444,8 +3494,8 @@ namespace FTD2XX_NET
                 if (pFT_GetBitMode == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_GetBitMode.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_GetBitMode.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_GetBitMode.");
 #endif
                 }
             }
@@ -3487,8 +3537,8 @@ namespace FTD2XX_NET
                 if (pFT_ReadEE == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_ReadEE.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_ReadEE.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_ReadEE.");
 #endif
                 }
             }
@@ -3530,8 +3580,8 @@ namespace FTD2XX_NET
                 if (pFT_WriteEE == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_WriteEE.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_WriteEE.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_WriteEE.");
 #endif
                 }
             }
@@ -3583,8 +3633,8 @@ namespace FTD2XX_NET
                 if (pFT_EraseEE == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_EraseEE.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_EraseEE.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_EraseEE.");
 #endif
                 }
             }
@@ -3675,8 +3725,8 @@ namespace FTD2XX_NET
                 if (pFT_EE_Read == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_EE_Read.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_EE_Read.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_EE_Read.");
 #endif
                 }
             }
@@ -3777,8 +3827,8 @@ namespace FTD2XX_NET
                 if (pFT_EE_Read == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_EE_Read.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_EE_Read.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_EE_Read.");
 #endif
                 }
             }
@@ -3884,8 +3934,8 @@ namespace FTD2XX_NET
                 if (pFT_EE_Read == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_EE_Read.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_EE_Read.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_EE_Read.");
 #endif
                 }
             }
@@ -3995,8 +4045,8 @@ namespace FTD2XX_NET
                 if (pFT_EE_Read == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_EE_Read.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_EE_Read.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_EE_Read.");
 #endif
                 }
             }
@@ -4105,8 +4155,8 @@ namespace FTD2XX_NET
                 if (pFT_EE_Read == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_EE_Read.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_EE_Read.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_EE_Read.");
 #endif
                 }
             }
@@ -4143,7 +4193,9 @@ namespace FTD2XX_NET
                     FT_DEVICE DeviceType = FT_DEVICE.FT_DEVICE_UNKNOWN;
                     // Check that it is an FT232H that we are trying to read
                     GetDeviceType(ref DeviceType);
-                    if (DeviceType != FT_DEVICE.FT_DEVICE_232H)
+                    if ((DeviceType != FT_DEVICE.FT_DEVICE_232H)
+                        && (DeviceType != FT_DEVICE.FT_DEVICE_232HP)
+                        && (DeviceType != FT_DEVICE.FT_DEVICE_233HP))
                     {
                         // If it is not, throw an exception
                         ftErrorCondition = FT_ERROR.FT_INCORRECT_DEVICE;
@@ -4209,7 +4261,7 @@ namespace FTD2XX_NET
                     ee232h.IsFastSer = Convert.ToBoolean(eedata.IsFastSerH);
                     ee232h.IsFT1248 = Convert.ToBoolean(eedata.IsFT1248H);
                     ee232h.FT1248Cpol = Convert.ToBoolean(eedata.FT1248CpolH);
-                    ee232h.FT1248Lsb =  Convert.ToBoolean(eedata.FT1248LsbH);
+                    ee232h.FT1248Lsb = Convert.ToBoolean(eedata.FT1248LsbH);
                     ee232h.FT1248FlowControl = Convert.ToBoolean(eedata.FT1248FlowControlH);
                     ee232h.IsVCP = Convert.ToBoolean(eedata.IsVCPH);
                     ee232h.PowerSaveEnable = Convert.ToBoolean(eedata.PowerSaveEnableH);
@@ -4220,8 +4272,8 @@ namespace FTD2XX_NET
                 if (pFT_EE_Read == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_EE_Read.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_EE_Read.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_EE_Read.");
 #endif
                 }
             }
@@ -4282,7 +4334,7 @@ namespace FTD2XX_NET
                     // Allocate space for our pointer...
                     IntPtr eeDataMarshal = Marshal.AllocHGlobal(size);
                     Marshal.StructureToPtr(eeData, eeDataMarshal, false);
-                    
+
                     // Call FT_EEPROM_Read
                     ftStatus = FT_EEPROM_Read(ftHandle, eeDataMarshal, (uint)size, manufacturer, manufacturerID, description, serialNumber);
 
@@ -4356,8 +4408,8 @@ namespace FTD2XX_NET
                 if (pFT_EE_Read == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_EE_Read.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_EE_Read.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_EE_Read.");
 #endif
                 }
             }
@@ -4468,8 +4520,8 @@ namespace FTD2XX_NET
                 if (pFT_EE_Program == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_EE_Program.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_EE_Program.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_EE_Program.");
 #endif
                 }
             }
@@ -4591,8 +4643,8 @@ namespace FTD2XX_NET
                 if (pFT_EE_Program == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_EE_Program.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_EE_Program.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_EE_Program.");
 #endif
                 }
             }
@@ -4722,8 +4774,8 @@ namespace FTD2XX_NET
                 if (pFT_EE_Program == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_EE_Program.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_EE_Program.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_EE_Program.");
 #endif
                 }
             }
@@ -4853,8 +4905,8 @@ namespace FTD2XX_NET
                 if (pFT_EE_Program == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_EE_Program.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_EE_Program.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_EE_Program.");
 #endif
                 }
             }
@@ -4983,8 +5035,8 @@ namespace FTD2XX_NET
                 if (pFT_EE_Program == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_EE_Program.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_EE_Program.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_EE_Program.");
 #endif
                 }
             }
@@ -5118,8 +5170,8 @@ namespace FTD2XX_NET
                 if (pFT_EE_Program == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_EE_Program.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_EE_Program.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_EE_Program.");
 #endif
                 }
             }
@@ -5151,7 +5203,7 @@ namespace FTD2XX_NET
                 return ftStatus;
 
             // Check for our required function pointers being set up
-            if (pFT_EEPROM_Program != IntPtr.Zero) 
+            if (pFT_EEPROM_Program != IntPtr.Zero)
             {
                 tFT_EEPROM_Program FT_EEPROM_Program = (tFT_EEPROM_Program)Marshal.GetDelegateForFunctionPointer(pFT_EEPROM_Program, typeof(tFT_EEPROM_Program));
 
@@ -5312,15 +5364,15 @@ namespace FTD2XX_NET
                 if (pFT_EE_UASize == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_EE_UASize.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_EE_UASize.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_EE_UASize.");
 #endif
                 }
                 if (pFT_EE_UARead == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_EE_UARead.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_EE_UARead.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_EE_UARead.");
 #endif
                 }
             }
@@ -5371,15 +5423,15 @@ namespace FTD2XX_NET
                 if (pFT_EE_UASize == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_EE_UASize.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_EE_UASize.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_EE_UASize.");
 #endif
                 }
                 if (pFT_EE_UAWrite == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_EE_UAWrite.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_EE_UAWrite.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_EE_UAWrite.");
 #endif
                 }
             }
@@ -5426,14 +5478,14 @@ namespace FTD2XX_NET
                 if (pFT_GetDeviceInfo == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_GetDeviceInfo.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_GetDeviceInfo.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_GetDeviceInfo.");
 #endif
                 }
             }
             return ftStatus;
         }
-        
+
         //**************************************************************************
         // GetDeviceID
         //**************************************************************************
@@ -5472,8 +5524,8 @@ namespace FTD2XX_NET
                 if (pFT_GetDeviceInfo == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_GetDeviceInfo.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_GetDeviceInfo.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_GetDeviceInfo.");
 #endif
                 }
             }
@@ -5516,7 +5568,7 @@ namespace FTD2XX_NET
                     // Call FT_GetDeviceInfo
                     ftStatus = FT_GetDeviceInfo(ftHandle, ref DeviceType, ref DeviceID, sernum, desc, IntPtr.Zero);
                     Description = Encoding.ASCII.GetString(desc);
-                    Description = Description.Substring(0, Description.IndexOf("\0"));
+                    Description = Description.Substring(0, Description.IndexOf('\0'));
                 }
             }
             else
@@ -5524,8 +5576,8 @@ namespace FTD2XX_NET
                 if (pFT_GetDeviceInfo == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_GetDeviceInfo.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_GetDeviceInfo.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_GetDeviceInfo.");
 #endif
                 }
             }
@@ -5568,7 +5620,7 @@ namespace FTD2XX_NET
                     // Call FT_GetDeviceInfo
                     ftStatus = FT_GetDeviceInfo(ftHandle, ref DeviceType, ref DeviceID, sernum, desc, IntPtr.Zero);
                     SerialNumber = Encoding.ASCII.GetString(sernum);
-                    SerialNumber = SerialNumber.Substring(0, SerialNumber.IndexOf("\0"));
+                    SerialNumber = SerialNumber.Substring(0, SerialNumber.IndexOf('\0'));
                 }
             }
             else
@@ -5576,8 +5628,8 @@ namespace FTD2XX_NET
                 if (pFT_GetDeviceInfo == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_GetDeviceInfo.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_GetDeviceInfo.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_GetDeviceInfo.");
 #endif
                 }
             }
@@ -5618,8 +5670,8 @@ namespace FTD2XX_NET
                 if (pFT_GetQueueStatus == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_GetQueueStatus.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_GetQueueStatus.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_GetQueueStatus.");
 #endif
                 }
             }
@@ -5663,8 +5715,8 @@ namespace FTD2XX_NET
                 if (pFT_GetStatus == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_GetStatus.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_GetStatus.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_GetStatus.");
 #endif
                 }
             }
@@ -5708,8 +5760,8 @@ namespace FTD2XX_NET
                 if (pFT_GetStatus == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_GetStatus.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_GetStatus.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_GetStatus.");
 #endif
                 }
             }
@@ -5754,8 +5806,8 @@ namespace FTD2XX_NET
                 if (pFT_GetModemStatus == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_GetModemStatus.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_GetModemStatus.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_GetModemStatus.");
 #endif
                 }
             }
@@ -5799,8 +5851,8 @@ namespace FTD2XX_NET
                 if (pFT_GetModemStatus == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_GetModemStatus.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_GetModemStatus.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_GetModemStatus.");
 #endif
                 }
             }
@@ -5841,8 +5893,8 @@ namespace FTD2XX_NET
                 if (pFT_SetBaudRate == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_SetBaudRate.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_SetBaudRate.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_SetBaudRate.");
 #endif
                 }
             }
@@ -5885,8 +5937,8 @@ namespace FTD2XX_NET
                 if (pFT_SetDataCharacteristics == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_SetDataCharacteristics.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_SetDataCharacteristics.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_SetDataCharacteristics.");
 #endif
                 }
             }
@@ -5929,8 +5981,8 @@ namespace FTD2XX_NET
                 if (pFT_SetFlowControl == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_SetFlowControl.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_SetFlowControl.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_SetFlowControl.");
 #endif
                 }
             }
@@ -5980,15 +6032,15 @@ namespace FTD2XX_NET
                 if (pFT_SetRts == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_SetRts.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_SetRts.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_SetRts.");
 #endif
                 }
                 if (pFT_ClrRts == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_ClrRts.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_ClrRts.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_ClrRts.");
 #endif
                 }
             }
@@ -6038,15 +6090,15 @@ namespace FTD2XX_NET
                 if (pFT_SetDtr == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_SetDtr.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_SetDtr.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_SetDtr.");
 #endif
                 }
                 if (pFT_ClrDtr == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_ClrDtr.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_ClrDtr.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_ClrDtr.");
 #endif
                 }
             }
@@ -6088,8 +6140,8 @@ namespace FTD2XX_NET
                 if (pFT_SetTimeouts == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_SetTimeouts.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_SetTimeouts.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_SetTimeouts.");
 #endif
                 }
             }
@@ -6139,21 +6191,21 @@ namespace FTD2XX_NET
                 if (pFT_SetBreakOn == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_SetBreakOn.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_SetBreakOn.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_SetBreakOn.");
 #endif
                 }
                 if (pFT_SetBreakOff == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_SetBreakOff.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_SetBreakOff.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_SetBreakOff.");
 #endif
                 }
             }
             return ftStatus;
         }
-        
+
         //**************************************************************************
         // SetResetPipeRetryCount
         //**************************************************************************
@@ -6189,8 +6241,8 @@ namespace FTD2XX_NET
                 if (pFT_SetResetPipeRetryCount == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_SetResetPipeRetryCount.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_SetResetPipeRetryCount.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_SetResetPipeRetryCount.");
 #endif
                 }
             }
@@ -6231,8 +6283,8 @@ namespace FTD2XX_NET
                 if (pFT_GetDriverVersion == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_GetDriverVersion.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_GetDriverVersion.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_GetDriverVersion.");
 #endif
                 }
             }
@@ -6270,8 +6322,8 @@ namespace FTD2XX_NET
                 if (pFT_GetLibraryVersion == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_GetLibraryVersion.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_GetLibraryVersion.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_GetLibraryVersion.");
 #endif
                 }
             }
@@ -6312,8 +6364,8 @@ namespace FTD2XX_NET
                 if (pFT_SetDeadmanTimeout == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_SetDeadmanTimeout.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_SetDeadmanTimeout.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_SetDeadmanTimeout.");
 #endif
                 }
             }
@@ -6367,8 +6419,8 @@ namespace FTD2XX_NET
                 if (pFT_SetLatencyTimer == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_SetLatencyTimer.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_SetLatencyTimer.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_SetLatencyTimer.");
 #endif
                 }
             }
@@ -6409,8 +6461,8 @@ namespace FTD2XX_NET
                 if (pFT_GetLatencyTimer == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_GetLatencyTimer.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_GetLatencyTimer.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_GetLatencyTimer.");
 #endif
                 }
             }
@@ -6455,8 +6507,8 @@ namespace FTD2XX_NET
                 if (pFT_SetUSBParameters == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_SetUSBParameters.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_SetUSBParameters.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_SetUSBParameters.");
 #endif
                 }
             }
@@ -6500,8 +6552,8 @@ namespace FTD2XX_NET
                 if (pFT_SetChars == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_SetChars.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_SetChars.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_SetChars.");
 #endif
                 }
             }
@@ -6541,8 +6593,8 @@ namespace FTD2XX_NET
                 if (pFT_EE_UASize == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_EE_UASize.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_EE_UASize.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_EE_UASize.");
 #endif
                 }
             }
@@ -6599,8 +6651,8 @@ namespace FTD2XX_NET
                 if (pFT_GetComPortNumber == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_GetComPortNumber.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_GetComPortNumber.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_GetComPortNumber.");
 #endif
                 }
             }
@@ -6641,8 +6693,8 @@ namespace FTD2XX_NET
                 if (pFT_VendorCmdGet == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_VendorCmdGet.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_VendorCmdGet.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_VendorCmdGet.");
 #endif
                 }
             }
@@ -6682,8 +6734,8 @@ namespace FTD2XX_NET
                 if (pFT_VendorCmdSet == IntPtr.Zero)
                 {
                     Console.WriteLine("Failed to load function FT_VendorCmdSet.");
-#if DEBUG
-                    this.Throw("Failed to load function FT_VendorCmdSet.");
+#if DEBUG && false
+                    MessageBox.Show("Failed to load function FT_VendorCmdSet.");
 #endif
                 }
             }
@@ -6727,7 +6779,15 @@ namespace FTD2XX_NET
                 {
                     FT_DEVICE deviceType = FT_DEVICE.FT_DEVICE_BM;
                     GetDeviceType(ref deviceType);
-                    if ((deviceType == FT_DEVICE.FT_DEVICE_2232) | (deviceType == FT_DEVICE.FT_DEVICE_2232H) | (deviceType == FT_DEVICE.FT_DEVICE_4232H))
+                    if (deviceType == FTD2XX_NET.FTDI.FT_DEVICE.FT_DEVICE_2232H ||
+                        deviceType == FTD2XX_NET.FTDI.FT_DEVICE.FT_DEVICE_4232H ||
+                        deviceType == FTD2XX_NET.FTDI.FT_DEVICE.FT_DEVICE_2233HP ||
+                        deviceType == FTD2XX_NET.FTDI.FT_DEVICE.FT_DEVICE_4233HP ||
+                        deviceType == FTD2XX_NET.FTDI.FT_DEVICE.FT_DEVICE_2232HP ||
+                        deviceType == FTD2XX_NET.FTDI.FT_DEVICE.FT_DEVICE_4232HP ||
+                        deviceType == FTD2XX_NET.FTDI.FT_DEVICE.FT_DEVICE_2232HA ||
+                        deviceType == FTD2XX_NET.FTDI.FT_DEVICE.FT_DEVICE_4232HA ||
+                        deviceType == FTD2XX_NET.FTDI.FT_DEVICE.FT_DEVICE_2232)
                     {
                         string Description;
                         GetDescription(out Description);

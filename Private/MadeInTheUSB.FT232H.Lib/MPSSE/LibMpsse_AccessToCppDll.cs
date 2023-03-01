@@ -14,6 +14,13 @@ namespace MadeInTheUSB.FT232H
     ///     
     /// http://www.eevblog.com/forum/projects/ftdi-2232h-in-mpsse-spi-mode-toil-and-trouble-example-code-needed/
     /// 
+    /// I2C https://ftdichip.com/wp-content/uploads/2020/08/AN_255_USB-to-I2C-Example-using-the-FT232H-and-FT201X-devices-1.pdf
+    /// https://ftdichip.com/software-examples/mpsse-projects/libmpsse-i2c-examples/
+    /// https://ftdichip.com/wp-content/uploads/2020/08/AN_177_User_Guide_For_LibMPSSE-I2C.pdf
+    /// // https://ftdichip.com/wp-content/uploads/2020/07/AN_355_FT232H-MPSSE-Example-I2C-Master-Interface-with-Visual-Basic.pdf
+    // https://ftdichip.com/wp-content/uploads/2020/07/AN_411_FTx232H-MPSSE-I2C-Master-Example-in-Csharp.pdf
+    // source https://ftdichip.com/wp-content/uploads/2020/07/AN_411_Source.zip
+    // https://ftdichip.com/software-examples/code-examples/csharp-examples/
     /// </summary>
     internal class LibMpsse_AccessToCppDll
     {
@@ -56,12 +63,7 @@ namespace MadeInTheUSB.FT232H
             FtSpiTransferOptions transferOptions);
 
         [DllImport(LibMpsse.DllName, SetLastError = true, CallingConvention = CallingConvention.Cdecl)]
-        public extern static FtdiMpsseSPIResult SPI_Write(
-            IntPtr handle,
-            byte[] buffer,
-            int sizeToTransfer,
-            out int sizeTransfered,
-            FtSpiTransferOptions options);
+        public extern static FtdiMpsseSPIResult SPI_Write(IntPtr handle, byte[] buffer, int sizeToTransfer, out int sizeTransfered, FtSpiTransferOptions options);
 
         // Written by Fred on 01.2016
         // http://www.ftdichip.com/Support/Documents/AppNotes/AN_178_User%20Guide%20for%20LibMPSSE-SPI.pdf
@@ -74,63 +76,18 @@ namespace MadeInTheUSB.FT232H
             int value /*0-low 1-high*/);
 
         [DllImport(LibMpsse.DllName, SetLastError = true, CallingConvention = CallingConvention.Cdecl)]
-        public extern static FtdiMpsseSPIResult FT_WriteGPIO(
-            IntPtr handle,
-            int value /*0-low 1-high*/);
+        public extern static FtdiMpsseSPIResult FT_WriteGPIO(IntPtr handle, int value /*0-low 1-high*/);
         
-        //Private Declare Function MPSSE_I2C_GetChannels Lib "libmpsse" Alias "I2C_GetNumChannels" (ByRef NumberOfChannels As UInt32) As UInt32
-        //Private Declare Function MPSSE_SPI_I2CChannelinfo Lib "libmpsse" Alias "I2C_GetChannelInfo" (ByVal Index As UInt32, ByRef DeviceInfo As DeviceInfoStructure) As UInt32
-        //Private Declare Function MPSEE_SPI_GPIORead Lib "libmpsse" Alias "FT_WriteGPIO" (ByVal SPI_ProbeHandle As UInt32, ByRef Value As Byte) As UInt32
 
-        //Private Declare Function MPSEE_SPI_GPIORead Lib "libmpsse" Alias "FT_WriteGPIO" (ByVal SPI_ProbeHandle As UInt32, ByRef Value As Byte) As UInt32
         [DllImport(LibMpsse.DllName, SetLastError = true, CallingConvention = CallingConvention.Cdecl)]
         public static extern FtdiMpsseSPIResult FT_ReadGPIO(IntPtr handle, out int value);
+        
+        [DllImport(LibMpsse.DllName, SetLastError = true, CallingConvention = CallingConvention.Cdecl)]
+        public static extern UInt32 MPSSE_I2C_GetChannels(UInt32 numberOfChannels);
+
+        [DllImportAttribute(LibMpsse.DllName, CallingConvention = CallingConvention.Cdecl)]
+        private static extern UInt32 I2C_DeviceWrite(IntPtr handle, UInt32 deviceAddress, UInt32 sizeToTransfer, byte[] buffer, out UInt32 sizeTransferred, UInt32 options);
+
+        
     }
 }
-/*
-From http://www.eevblog.com/forum/projects/ftdi-2232h-in-mpsse-spi-mode-toil-and-trouble-example-code-needed/
- * 
-Structure ChannelConfig
-        Dim clockrate As UInt32
-        Dim latencytimer As Byte
-        Dim ConfigOptions As UInt32
-        Dim Pins As UInt32
-        Dim Reserved As UInt16
-End Structure
-Dim FtdiMpsseChannelConfiguration As ChannelConfig
-Dim MPSSE_Status As UInt32
-Dim MPSSE_Handle As UInt32
-
-Private Declare Function MPSSE_SPI_GetChannels Lib "libmpsse" Alias "SPI_GetNumChannels" (ByRef NumberOfChannels As UInt32) As UInt32
-Private Declare Function MPSSE_SPI_GetChannelinfo Lib "libmpsse" Alias "SPI_GetChannelInfo" (ByVal Index As UInt32, ByRef DeviceInfo As DeviceInfoStructure) As UInt32
-Private Declare Function MPSSE_SPI_OpenChannel Lib "libmpsse" Alias "SPI_OpenChannel" (ByVal Index As UInt32, ByRef SPI_ProbeHandle As UInt32) As UInt32
-Private Declare Function MPSSE_SPI_InitChannel Lib "libmpsse" Alias "SPI_InitChannel" (ByVal SPI_ProbeHandle As UInt32, ByRef FtdiMpsseChannelConfiguration As ChannelConfig) As UInt32
-Private Declare Function MPSSE_SPI_CloseChannel Lib "libmpsse" Alias "SPI_Closechannel" (ByVal SPI_ProbeHandle As UInt32) As UInt32
-Private Declare Function MPSSE_SPI_Read Lib "libmpsse" Alias "SPI_read" (ByVal SPI_ProbeHandle As UInt32, ByRef Readbuffer() As Byte, ByVal SizeToRead As UInt32, ByRef SizeRead As UInt32, ByVal TransferOptions As UInt32) As UInt32
-Private Declare Function MPSEE_SPI_Write Lib "libmpsse" Alias "SPI_Write" (ByVal SPI_ProbeHandle As UInt32, ByVal Writebuffer() As Byte, ByVal SizeToWrite As UInt32, ByRef SizeWritten As UInt32, ByVal TransferOptions As UInt32) As UInt32
-Private Declare Function MPSEE_SPI_ReadWrite Lib "libmpsse" Alias "SPI_ReadWrite" (ByVal SPI_ProbeHandle As UInt32, ByRef Readbuffer() As Byte, ByVal Writebuffer() As Byte, ByVal SizeTotransfer As UInt32, ByRef Sizetransferred As UInt32, ByVal TransferOptions As UInt32) As UInt32
-Private Declare Function MPSEE_SPI_CheckBusy Lib "libmpsse" Alias "SPI_IsBusy" (ByVal SPI_ProbeHandle As UInt32, ByRef State As Byte) As UInt32
-Private Declare Function MPSEE_SPI_ChangeCS Lib "libmpsse" Alias "SPI_ChangeCS" (ByVal SPI_ProbeHandle As UInt32, ByVal Options As UInt32) As UInt32
-Private Declare Function MPSEE_SPI_GPIOWrite Lib "libmpsse" Alias "FT_WriteGPIO" (ByVal SPI_ProbeHandle As UInt32, ByVal Direction As Byte, ByVal Value As Byte) As UInt32
-Private Declare Function MPSEE_SPI_GPIORead Lib "libmpsse" Alias "FT_WriteGPIO" (ByVal SPI_ProbeHandle As UInt32, ByRef Value As Byte) As UInt32
-
-Private Declare Function MPSSE_I2C_GetChannels Lib "libmpsse" Alias "I2C_GetNumChannels" (ByRef NumberOfChannels As UInt32) As UInt32
-Private Declare Function MPSSE_SPI_I2CChannelinfo Lib "libmpsse" Alias "I2C_GetChannelInfo" (ByVal Index As UInt32, ByRef DeviceInfo As DeviceInfoStructure) As UInt32
-
-    Const Options_SPI_Mode0 As UInt32 = 0
-    Const Options_SPI_Mode1 As UInt32 = 1
-    Const Options_SPI_Mode2 As UInt32 = 2
-    Const Options_SPI_Mode3 As UInt32 = 3
-    Const Options_CS_DB3 As UInt32 = 0
-    Const Options_CS_DB4 As UInt32 = 4
-    Const Options_CS_DB5 As UInt32 = 8
-    Const Options_CS_DB6 As UInt32 = 12
-    Const Options_CS_DB7 As UInt32 = 16
-    Const Options_CSmode_ActiveHigh As UInt32 = 0
-    Const Options_CSmode_ActiveLow As UInt32 = 32
-    Const TransferOptions_Inbits As UInt32 = 1
-    Const TransferOptions_Inbytes As UInt32 = 0
-    Const TransferOptions_CSAtStart As UInt32 = 2
-    Const TransferOptions_CSAtStop As UInt32 = 4
- 
- */

@@ -7,23 +7,24 @@ using System.Text;
 namespace MadeInTheUSB.FT232H
 {
 
-    public class Interfaces {
+    public class Interfaces
+    {
         public IDigitalWriteRead Gpios;
         public ISPI Spi;
-     }
+    }
+
     /// <summary>
     /// Implement the IDigitalWriteRead for accessing the gpio 0..7 of the FT232H
     /// </summary>
     public abstract partial class GpioSpiDeviceBaseClass : FT232HDeviceBaseClass, IDisposable, IDigitalWriteRead, ISPI
     {
-        private const int _gpioStartIndex      = 0;
-        private const int _maxGpio             = 8;
-        private const int ValuesDefaultMask    = 0;
+        private const int _gpioStartIndex = 0;
+        private const int _maxGpio = 8;
+        private const int ValuesDefaultMask = 0;
         private const int DirectionDefaultMask = 0xFF;
-        
-        private int       _values;
-        private int       _directions;
 
+        private int _values;
+        private int _directions;
 
         public Interfaces Interfaces => new Interfaces { Spi = this.SPI, Gpios = this.GPIO };
 
@@ -35,11 +36,12 @@ namespace MadeInTheUSB.FT232H
         {
             get { return this as ISPI; }
         }
+
         public byte MaxGpio
         {
             get { return _maxGpio; }
         }
-        public void DigitalWrite(PinState mode, params int [] pins)
+        public void DigitalWrite(PinState mode, params int[] pins)
         {
             foreach (var p in pins)
                 this.DigitalWrite(p, mode);
@@ -74,33 +76,6 @@ namespace MadeInTheUSB.FT232H
             }
         }
 
-        static bool _progressModeInitialized = false;
-        static int _progressModeIndex = -1;
-        public void ProgressNext(bool clear = false)
-        {
-            if (!_progressModeInitialized)
-            {
-                _progressModeInitialized = true;
-                AllGpios(false);
-            }
-
-            if (clear)
-            {
-                AllGpios(false);
-                _progressModeIndex = -1;
-            }
-            else
-            {
-                if (_progressModeIndex >= 0)
-                    this.DigitalWrite(_progressModeIndex, PinState.Low);
-                _progressModeIndex += 1;
-
-                if (_progressModeIndex == this.MaxGpio)
-                    _progressModeIndex = 0;
-
-                this.DigitalWrite(_progressModeIndex, PinState.High);
-            }
-        }
 
         private void AllGpios(bool on)
         {
@@ -131,8 +106,8 @@ namespace MadeInTheUSB.FT232H
         public byte GetGpioMask(bool forceRead = false)
         {
             var values = this.ReadGPIOMask();
-            if(values==-1)
-                throw new GpioException( FtdiMpsseSPIResult.IoError, nameof(GetGpioMask));
+            if (values == -1)
+                throw new GpioException(FtdiMpsseSPIResult.IoError, nameof(GetGpioMask));
             return (byte)values;
         }
         public byte GpioStartIndex { get { return _gpioStartIndex; } }
@@ -158,6 +133,34 @@ namespace MadeInTheUSB.FT232H
                 return vals;
             else
                 return -1;
+        }
+
+        static bool _progressModeInitialized = false;
+        static int _progressModeIndex = -1;
+        public void ProgressNext(bool clear = false)
+        {
+            if (!_progressModeInitialized)
+            {
+                _progressModeInitialized = true;
+                AllGpios(false);
+            }
+
+            if (clear)
+            {
+                AllGpios(false);
+                _progressModeIndex = -1;
+            }
+            else
+            {
+                if (_progressModeIndex >= 0)
+                    this.DigitalWrite(_progressModeIndex, PinState.Low);
+                _progressModeIndex += 1;
+
+                if (_progressModeIndex == this.MaxGpio)
+                    _progressModeIndex = 0;
+
+                this.DigitalWrite(_progressModeIndex, PinState.High);
+            }
         }
     }
 }
