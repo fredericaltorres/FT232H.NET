@@ -49,9 +49,9 @@ namespace MadeInTheUSB.FT232H
         static uint NumBytesToRead = 0;
         uint _numBytesSent = 0;
         static uint NumBytesRead = 0;
-        static byte[] _MPSSEbuffer = new byte[500];
-        static byte[] _inputBuffer = new byte[500];
-        static byte[] _inputBuffer2 = new byte[500];
+        //static byte[] _MPSSEbuffer = new byte[500];
+        //static byte[] _inputBuffer = new byte[500];
+        //static byte[] _inputBuffer2 = new byte[500];
         static uint BytesAvailable = 0;
         public bool I2C_Ack = false;
         static byte AppStatus = 0;
@@ -108,10 +108,10 @@ namespace MadeInTheUSB.FT232H
             I2C_Status = Send_Data(_numBytesToSend, mpssebuffer);
             if (!I2C_Status) return false;
             NumBytesToRead = 2;
-            I2C_Status = Receive_Data(2);
-            if (!I2C_Status) return false;
+            var rd = Receive_Data(2);
+            if (!rd.Status) return false;
 
-            if ((_inputBuffer2[0] == 0xFA) && (_inputBuffer2[1] == 0xAA))
+            if ((rd.InputBuffer[0] == 0xFA) && (rd.InputBuffer[1] == 0xAA))
             {
                 // Bad Command Echo successful
             }
@@ -126,10 +126,10 @@ namespace MadeInTheUSB.FT232H
             I2C_Status = Send_Data(_numBytesToSend, mpssebuffer);
             if (!I2C_Status) return false;
             NumBytesToRead = 2;
-            I2C_Status = Receive_Data(2);
-            if (!I2C_Status) return false;
+            rd = Receive_Data(2);
+            if (!rd.Status) return false;
 
-            if ((_inputBuffer2[0] == 0xFA) && (_inputBuffer2[1] == 0xAB))
+            if ((rd.InputBuffer[0] == 0xFA) && (rd.InputBuffer[1] == 0xAB))
             {
                 // Bad Command Echo successful
             }
@@ -256,8 +256,8 @@ namespace MadeInTheUSB.FT232H
             }
 
             // get the byte which has been read from the driver's receive buffer
-            I2C_Status = Receive_Data(1);
-            if (!I2C_Status)
+            var rd = Receive_Data(1);
+            if (!rd.Status)
             {
                 return 1;
             }
@@ -421,14 +421,14 @@ namespace MadeInTheUSB.FT232H
             }
 
             // Read back the ack from the address phase and the 2 bytes read
-            I2C_Status = Receive_Data(3);
-            if (!I2C_Status)
+            var rd = Receive_Data(3);
+            if (!rd.Status)
             {
                 return 1;
             }
 
             // Check if address phase was acked
-            if ((_inputBuffer2[0] & 0x01) == 0)
+            if ((rd.InputBuffer[0] & 0x01) == 0)
             {
                 I2C_Ack = true;
             }
@@ -438,8 +438,8 @@ namespace MadeInTheUSB.FT232H
             }
 
             // Get the two data bytes to put back to the calling function - InputBuffer2[0..1] now contains the results
-            _inputBuffer2[0] = _inputBuffer2[1];
-            _inputBuffer2[1] = _inputBuffer2[2];
+            rd.InputBuffer[0] = rd.InputBuffer[1];
+            rd.InputBuffer[1] = rd.InputBuffer[2];
 
             return 0;
 
@@ -511,14 +511,12 @@ namespace MadeInTheUSB.FT232H
             }
 
             // read back byte containing ack
-            I2C_Status = Receive_Data(1);
-            if (!I2C_Status)
-            {
+            var rd = Receive_Data(1);
+            if (!rd.Status)
                 return 1;            // can also check NumBytesRead
-            }
 
             // if ack bit is 0 then sensor acked the transfer, otherwise it nak'd the transfer
-            if ((_inputBuffer2[0] & 0x01) == 0)
+            if ((rd.InputBuffer[0] & 0x01) == 0)
             {
                 I2C_Ack = true;
             }
@@ -594,14 +592,12 @@ namespace MadeInTheUSB.FT232H
             }
 
             // read back byte containing ack
-            I2C_Status = Receive_Data(1);
-            if (!I2C_Status)
-            {
+            var rd = Receive_Data(1);
+            if (!rd.Status)
                 return 1;            // can also check NumBytesRead
-            }
 
             // if ack bit is 0 then sensor acked the transfer, otherwise it nak'd the transfer
-            if ((_inputBuffer2[0] & 0x01) == 0)
+            if ((rd.InputBuffer[0] & 0x01) == 0)
             {
                 I2C_Ack = true;
             }
@@ -861,13 +857,11 @@ namespace MadeInTheUSB.FT232H
             if (!I2C_Status)
                 return -1;
 
-            I2C_Status = Receive_Data(1);
-            if (!I2C_Status)
-            {
+            var rd = Receive_Data(1);
+            if (!rd.Status)
                 return -1;
-            }
 
-            var ADbusReadVal = (byte)(_inputBuffer2[0] & 0xF8); // mask the returned value to show only 5 GPIO lines (bits 0/1/2 are I2C)
+            var ADbusReadVal = (byte)(rd.InputBuffer[0] & 0xF8); // mask the returned value to show only 5 GPIO lines (bits 0/1/2 are I2C)
 
             return ADbusReadVal;
         }
@@ -879,18 +873,17 @@ namespace MadeInTheUSB.FT232H
 
         public byte I2C_SetGPIOValuesHigh(byte ACbusDir, byte ACbusVal)
         {
-            _numBytesToSend = 0;
+            var mpssebuffer = new byte[500];
+            uint numBytesToSend = 0;
 
 #if (FT4232H)
-
            return 1;
-           
 #else
-            _MPSSEbuffer[_numBytesToSend++] = 0x82;       // ACbus GPIO command
-            _MPSSEbuffer[_numBytesToSend++] = ACbusVal;   // Set data value
-            _MPSSEbuffer[_numBytesToSend++] = ACbusDir;   // Set direction
+            mpssebuffer[numBytesToSend++] = 0x82;       // ACbus GPIO command
+            mpssebuffer[numBytesToSend++] = ACbusVal;   // Set data value
+            mpssebuffer[numBytesToSend++] = ACbusDir;   // Set direction
 
-            I2C_Status = Send_Data(_numBytesToSend, _MPSSEbuffer);
+            I2C_Status = Send_Data(numBytesToSend, mpssebuffer);
             if (!I2C_Status)
                 return 1;
             else
@@ -906,96 +899,104 @@ namespace MadeInTheUSB.FT232H
 
         public int I2C_GetGPIOValuesHigh()
         {
-            _numBytesToSend = 0;
+            var mpssebuffer = new byte[500];
+            uint numBytesToSend = 0;
 
 #if (FT4232H)
                 return 1;       // no high byte on FT4232H
 #else
 
-            _MPSSEbuffer[_numBytesToSend++] = 0x83;           // ACbus read GPIO command
-            _MPSSEbuffer[_numBytesToSend++] = 0x87;            // Send answer back immediate command
+            mpssebuffer[numBytesToSend++] = 0x83;           // ACbus read GPIO command
+            mpssebuffer[numBytesToSend++] = 0x87;            // Send answer back immediate command
 
-            I2C_Status = Send_Data(_numBytesToSend, _MPSSEbuffer);
+            I2C_Status = Send_Data(numBytesToSend, mpssebuffer);
             if (!I2C_Status)
                 return -1;
 
-            I2C_Status = Receive_Data(1);
-            if (!I2C_Status)
+            var rd = Receive_Data(1);
+            if (!rd.Status)
                 return -1;
 
-            var ACbusReadVal = (byte)(_inputBuffer2[0]);      // Return via global variable for calling function to read
+            var ACbusReadVal = (byte)(rd.InputBuffer[0]);      // Return via global variable for calling function to read
 
             return ACbusReadVal;
 #endif
         }
 
-
-
-
-
-
-        //###################################################################################################################################
-        //###################################################################################################################################
-        //##################                                          D2xx Layer                                        #####################
-        //###################################################################################################################################
-        //###################################################################################################################################
-
+        // D2xx Layer
 
         // Read a specified number of bytes from the driver receive buffer
 
-        private bool Receive_Data(uint BytesToRead)
+
+        internal class ReceivedData
         {
-            uint NumBytesInQueue = 0;
-            uint QueueTimeOut = 0;
+            public bool Status = false;
+            public byte[] InputBuffer = new byte[500];
+        }
+
+        private ReceivedData Receive_Data(uint BytesToRead)
+        {
+            var r = new ReceivedData();
+            uint numBytesInQueue = 0;
+            uint queueTimeOut = 0;
             uint Buffer1Index = 0;
-            uint Buffer2Index = 0;
-            uint TotalBytesRead = 0;
-            bool QueueTimeoutFlag = false;
-            uint NumBytesRxd = 0;
+            uint buffer2Index = 0;
+            uint totalBytesRead = 0;
+            bool timeoutFlag = false;
+            uint numBytesRxd = 0;
+            var inputBuffer = new byte[500];
+            var inputBuffer2 = new byte[500];
 
             // Keep looping until all requested bytes are received or we've tried 5000 times (value can be chosen as required)
-            while ((TotalBytesRead < BytesToRead) && (QueueTimeoutFlag == false))
+            while ((totalBytesRead < BytesToRead) && (timeoutFlag == false))
             {
-                ftStatus = _FtdiDevice.GetRxBytesAvailable(ref NumBytesInQueue);       // Check bytes available
+                ftStatus = _FtdiDevice.GetRxBytesAvailable(ref numBytesInQueue);       // Check bytes available
 
-                if ((NumBytesInQueue > 0) && (ftStatus == FTDI.FT_STATUS.FT_OK))
+                if ((numBytesInQueue > 0) && (ftStatus == FTDI.FT_STATUS.FT_OK))
                 {
-                    ftStatus = _FtdiDevice.Read(_inputBuffer, NumBytesInQueue, ref NumBytesRxd);  // if any available read them
+                    ftStatus = _FtdiDevice.Read(inputBuffer, numBytesInQueue, ref numBytesRxd);  // if any available read them
 
-                    if ((NumBytesInQueue == NumBytesRxd) && (ftStatus == FTDI.FT_STATUS.FT_OK))
+                    if ((numBytesInQueue == numBytesRxd) && (ftStatus == FTDI.FT_STATUS.FT_OK))
                     {
                         Buffer1Index = 0;
 
-                        while (Buffer1Index < NumBytesRxd)
+                        while (Buffer1Index < numBytesRxd)
                         {
-                            _inputBuffer2[Buffer2Index] = _inputBuffer[Buffer1Index];     // copy into main overall application buffer
+                            inputBuffer2[buffer2Index] = inputBuffer[Buffer1Index];     // copy into main overall application buffer
                             Buffer1Index++;
-                            Buffer2Index++;
+                            buffer2Index++;
                         }
-                        TotalBytesRead = TotalBytesRead + NumBytesRxd;                  // Keep track of total
+                        totalBytesRead = totalBytesRead + numBytesRxd;                  // Keep track of total
                     }
                     else
-                        return false;
+                    {
+                        r.Status = true;
+                        r.InputBuffer = inputBuffer2;
+                        return r;
+                    }
 
-                    QueueTimeOut++;
-                    if (QueueTimeOut == 5000)
-                        QueueTimeoutFlag = true;
+                    queueTimeOut++;
+                    if (queueTimeOut == 5000)
+                        timeoutFlag = true;
                     else
-                        Thread.Sleep(0);                                                // Avoids running Queue status checks back to back
+                        Thread.Sleep(0);// Avoids running Queue status checks back to back
                 }
             }
             // returning globals NumBytesRead and the buffer InputBuffer2
-            NumBytesRead = TotalBytesRead;
+            NumBytesRead = totalBytesRead;
 
-            if (QueueTimeoutFlag == true)
-                return false;
+            if (timeoutFlag)
+            {
+                r.Status = false;
+            }
             else
-                return true;
+            {
+                r.Status = true;
+                r.InputBuffer = inputBuffer2;
+            }
+
+            return r;
         }
-
-
-        //###################################################################################################################################
-        // Write a buffer of data and check that it got sent without error
 
         private bool Send_Data(uint bytesToSend, byte[] buffer)
         {
@@ -1014,13 +1015,15 @@ namespace MadeInTheUSB.FT232H
         
         private bool FlushBuffer()
         {
+            var inputBuffer = new byte[500];
+
             ftStatus = _FtdiDevice.GetRxBytesAvailable(ref BytesAvailable);
             if (ftStatus != FTDI.FT_STATUS.FT_OK)
                 return false;
 
             if (BytesAvailable > 0)
             {
-                ftStatus = _FtdiDevice.Read(_inputBuffer, BytesAvailable, ref NumBytesRead);  	//Read out the data from receive buffer
+                ftStatus = _FtdiDevice.Read(inputBuffer, BytesAvailable, ref NumBytesRead);  	//Read out the data from receive buffer
                 return (ftStatus == FTDI.FT_STATUS.FT_OK);
             }
             else return true;
