@@ -91,7 +91,7 @@ namespace MadeInTheUSB.Adafruit
         public const int _displayBufferRowCount = 8;
         public byte[] _displayBuffer = new byte[_displayBufferRowCount];
 
-        public int DeviceId;
+        
         private readonly I2CDevice _i2CDevice;
 
 
@@ -167,8 +167,8 @@ namespace MadeInTheUSB.Adafruit
 
         private void _begin(byte addr = 0x70)
         {
-            this.DeviceId = addr;
-            this.i2c_Send1ByteCommand(HT16K33_CMD_TURN_OSCILLATOR_ON);
+            this._i2CDevice.I2CDeviceId = addr;
+            this._i2CDevice.Send1ByteCommand(HT16K33_CMD_TURN_OSCILLATOR_ON);
             this.SetBlinkRate(HT16K33_BLINK_OFF);
             this.SetBrightness(5); // 0 to 15
             this.Clear(true);
@@ -208,14 +208,14 @@ namespace MadeInTheUSB.Adafruit
         {
             if (b > 15) b = 15;
             this._brightness = b;
-            if (!i2c_Send1ByteCommand((byte)(HT16K33_CMD_BRIGHTNESS | b)))
+            if (!this._i2CDevice.Send1ByteCommand((byte)(HT16K33_CMD_BRIGHTNESS | b)))
                 throw new I2CCommunicationException(DEFAULT_I2C_ERROR_MESSAGE);
         }
 
         public void SetBlinkRate(byte b)
         {
             if (b > 3) b = 0; // turn off if not sure  
-            if (!i2c_Send1ByteCommand((byte)(HT16K33_BLINK_CMD | HT16K33_BLINK_DISPLAYON | (b << 1))))
+            if (!this._i2CDevice.Send1ByteCommand((byte)(HT16K33_BLINK_CMD | HT16K33_BLINK_DISPLAYON | (b << 1))))
                 throw new I2CCommunicationException(DEFAULT_I2C_ERROR_MESSAGE);
         }
 
@@ -239,60 +239,60 @@ namespace MadeInTheUSB.Adafruit
                 buf.Add((uint8_t)(_displayBuffer[i] & 0xFF));    // 8 bit of columns
                 buf.Add((uint8_t)(_displayBuffer[i] >> 8));
             }
-            return i2c_WriteBuffer(buf.ToArray());
+            return this._i2CDevice.WriteBuffer(buf.ToArray());
         }
 
 
-         //MadeInTheUSB.Components.Interface.Ii2cOut
-        bool i2c_Send1ByteCommand(byte c)
-        {
-            var AppStatus = _i2CDevice.I2C_SetStart();
-            if (AppStatus != 0) return false;
+        // //MadeInTheUSB.Components.Interface.Ii2cOut
+        //bool i2c_Send1ByteCommand(byte c)
+        //{
+        //    var AppStatus = _i2CDevice.I2C_SetStart();
+        //    if (AppStatus != 0) return false;
 
-            AppStatus = _i2CDevice.I2C_SendDeviceAddrAndCheckACK((byte)(this.DeviceId), false);     // I2C ADDRESS (for write)
-            if (AppStatus != 0) return false;
-            //if (_i2CDevice.I2C_Ack != true) { _i2CDevice.I2C_SetStop(); return false; }
+        //    AppStatus = _i2CDevice.I2C_SendDeviceAddrAndCheckACK((byte)(this.DeviceId), false);     // I2C ADDRESS (for write)
+        //    if (AppStatus != 0) return false;
+        //    //if (_i2CDevice.I2C_Ack != true) { _i2CDevice.I2C_SetStop(); return false; }
 
-            AppStatus = _i2CDevice.I2C_SendByteAndCheckACK(c);
-            if (AppStatus != 0) return false;
-            if (_i2CDevice.I2C_Ack != true) { _i2CDevice.I2C_SetStop(); return false; }
+        //    AppStatus = _i2CDevice.I2C_SendByteAndCheckACK(c);
+        //    if (AppStatus != 0) return false;
+        //    if (_i2CDevice.I2C_Ack != true) { _i2CDevice.I2C_SetStop(); return false; }
 
-            AppStatus = _i2CDevice.I2C_SetStop();
-            if (AppStatus != 0) return false;
+        //    AppStatus = _i2CDevice.I2C_SetStop();
+        //    if (AppStatus != 0) return false;
 
-            return true;
-        }
+        //    return true;
+        //}
 
-        bool i2c_Send2ByteCommand(byte c0, byte c1)
-        {
-            throw new NotImplementedException();
-        }
+        //bool i2c_Send2ByteCommand(byte c0, byte c1)
+        //{
+        //    throw new NotImplementedException();
+        //}
 
-        bool i2c_WriteBuffer(byte[] buffer)
-        {
-            var AppStatus = _i2CDevice.I2C_SetStart();
-            if (AppStatus != 0) return false;
+        //bool i2c_WriteBuffer(byte[] buffer)
+        //{
+        //    var AppStatus = _i2CDevice.I2C_SetStart();
+        //    if (AppStatus != 0) return false;
 
-            AppStatus = _i2CDevice.I2C_SendDeviceAddrAndCheckACK((byte)(this.DeviceId), false);     // I2C ADDRESS (for write)
-            if (AppStatus != 0) return false;
-            if (_i2CDevice.I2C_Ack != true) { _i2CDevice.I2C_SetStop(); return false; }
+        //    AppStatus = _i2CDevice.I2C_SendDeviceAddrAndCheckACK((byte)(this.DeviceId), false);     // I2C ADDRESS (for write)
+        //    if (AppStatus != 0) return false;
+        //    if (_i2CDevice.I2C_Ack != true) { _i2CDevice.I2C_SetStop(); return false; }
 
-            foreach(var c in buffer) {
-                AppStatus = _i2CDevice.I2C_SendByteAndCheckACK(c);
-                if (AppStatus != 0) return false;
-                if (_i2CDevice.I2C_Ack != true) { _i2CDevice.I2C_SetStop(); return false; }
-            }
+        //    foreach(var c in buffer) {
+        //        AppStatus = _i2CDevice.I2C_SendByteAndCheckACK(c);
+        //        if (AppStatus != 0) return false;
+        //        if (_i2CDevice.I2C_Ack != true) { _i2CDevice.I2C_SetStop(); return false; }
+        //    }
 
-            AppStatus = _i2CDevice.I2C_SetStop();
-            if (AppStatus != 0) return false;
+        //    AppStatus = _i2CDevice.I2C_SetStop();
+        //    if (AppStatus != 0) return false;
 
-            return true;
-        }
+        //    return true;
+        //}
 
-        bool i2c_WriteReadBuffer(byte[] writeBuffer, byte[] readBuffer)
-        {
-            throw new NotImplementedException();
-        }
+        //bool i2c_WriteReadBuffer(byte[] writeBuffer, byte[] readBuffer)
+        //{
+        //    throw new NotImplementedException();
+        //}
     }
 }
 

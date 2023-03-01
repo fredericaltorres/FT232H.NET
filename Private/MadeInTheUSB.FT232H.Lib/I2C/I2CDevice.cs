@@ -2,6 +2,7 @@
 //#define FT2232H
 //#define FT4232H
 using FTD2XX_NET;
+using System;
 using System.Threading;
 
 namespace MadeInTheUSB.FT232H
@@ -9,6 +10,8 @@ namespace MadeInTheUSB.FT232H
     public class I2CDevice
     {
         FTD2XX_NET.FTDI myFtdiDevice;
+
+        public int I2CDeviceId;
 
         FTDI.FT_STATUS ftStatus = FTDI.FT_STATUS.FT_OK;
 
@@ -434,8 +437,6 @@ namespace MadeInTheUSB.FT232H
 
         public byte I2C_SendDeviceAddrAndCheckACK(byte Address, bool Read)
         {
-
-
             byte ADbusVal = 0;
             byte ADbusDir = 0;
             _numBytesToSend = 0;
@@ -1006,6 +1007,73 @@ namespace MadeInTheUSB.FT232H
                 return (ftStatus == FTDI.FT_STATUS.FT_OK);
             }
             else return true;
+        }
+
+        public bool Send1ByteCommand(byte c)
+        {
+            var appStatus = 0;
+            try
+            {
+                appStatus = this.I2C_SetStart();
+                if (appStatus != 0) return false;
+
+                appStatus = this.I2C_SendDeviceAddrAndCheckACK((byte)(this.I2CDeviceId), false);     // I2C ADDRESS (for write)
+                if (appStatus != 0) return false;
+                if (!this.I2C_Ack) return false;
+
+                appStatus = this.I2C_SendByteAndCheckACK(c);
+                if (appStatus != 0) return false;
+                if (this.I2C_Ack != true) return false;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+            finally
+            {
+                appStatus = this.I2C_SetStop();
+            }
+            return (appStatus == 0);
+        }
+
+        bool i2c_Send2ByteCommand(byte c0, byte c1)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool WriteBuffer(byte[] buffer)
+        {
+            var appStatus = 0;
+            try
+            {
+                appStatus = this.I2C_SetStart();
+                if (appStatus != 0) return false;
+
+                appStatus = this.I2C_SendDeviceAddrAndCheckACK((byte)(this.I2CDeviceId), false);
+                if (appStatus != 0) return false;
+                if (!this.I2C_Ack) return false;
+
+                foreach (var c in buffer)
+                {
+                    appStatus = this.I2C_SendByteAndCheckACK(c);
+                    if (appStatus != 0) return false;
+                    if (!this.I2C_Ack) return false;
+                }
+            }
+            catch(Exception ex)
+            {
+                return false;
+            }
+            finally
+            {
+                appStatus = this.I2C_SetStop();
+            }
+            return (appStatus == 0);
+        }
+
+        bool i2c_WriteReadBuffer(byte[] writeBuffer, byte[] readBuffer)
+        {
+            throw new NotImplementedException();
         }
     }
 }
