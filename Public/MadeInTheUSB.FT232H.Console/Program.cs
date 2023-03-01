@@ -19,7 +19,7 @@ namespace MadeInTheUSB.FT232H.Console
             if(ft232Device.Ok)
             {
                 System.Console.WriteLine(ft232Device.ToString());
-                //foreach(var p in ft232Device.Properties) System.Console.WriteLine($"{p.Key}: {p.Value}");
+                foreach(var p in ft232Device.Properties) System.Console.WriteLine($"{p.Key}: {p.Value}");
             }
 
             var i2cDevice = new I2CDevice(ft232Device.ft232h);

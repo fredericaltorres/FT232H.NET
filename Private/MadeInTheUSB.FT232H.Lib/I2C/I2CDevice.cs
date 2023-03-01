@@ -36,7 +36,8 @@ namespace MadeInTheUSB.FT232H
         const byte MSB_FALLING_EDGE_CLOCK_BIT_OUT   = 0x13;
 
         // Clock
-        const uint ClockDivisor = 199;// for 100KHz
+        //const uint ClockDivisor = 199;// for 100KHz
+        const uint ClockDivisor = 199*7;// for 100KHz
 
         // Sending and receiving
         static uint _numBytesToSend = 0;
