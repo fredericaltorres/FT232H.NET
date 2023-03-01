@@ -231,6 +231,7 @@ namespace MadeInTheUSB.Adafruit
 
         public bool WriteDisplay()
         {
+            this._i2CDevice.Gpios.ProgressNext();
             var buf = new List<uint8_t>();
             byte addr = 0; // Start of screen
             buf.Add(addr);

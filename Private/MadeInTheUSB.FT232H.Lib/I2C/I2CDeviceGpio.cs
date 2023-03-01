@@ -63,7 +63,7 @@ namespace MadeInTheUSB.FT232H
 
         public void ProgressNext(bool clear = false)
         {
-            throw new NotImplementedException();
+            ProgressNextImpl.ProgressNext(this, clear);
         }
 
         public void SetGpioMask(byte mask)

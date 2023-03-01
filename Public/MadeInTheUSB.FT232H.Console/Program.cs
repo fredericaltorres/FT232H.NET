@@ -24,8 +24,9 @@ namespace MadeInTheUSB.FT232H.Console
 
             var i2cDevice = new I2CDevice(ft232Device.ft232h);
 
-            i2cDevice.Gpios.DigitalWrite(i2cDevice.Gpios.GpioStartIndex, PinState.High);
-            i2cDevice.Gpios.DigitalWrite(i2cDevice.Gpios.MaxGpio-1, PinState.High);
+            i2cDevice.Gpios.ProgressNext();
+            //i2cDevice.Gpios.DigitalWrite(i2cDevice.Gpios.GpioStartIndex, PinState.High);
+            //i2cDevice.Gpios.DigitalWrite(i2cDevice.Gpios.MaxGpio-1, PinState.High);
 
             I2CSample(i2cDevice);
             return;

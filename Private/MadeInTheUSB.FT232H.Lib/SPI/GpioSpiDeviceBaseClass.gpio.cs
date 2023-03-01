@@ -13,7 +13,40 @@ namespace MadeInTheUSB.FT232H
         public ISPI Spi;
     }
 
- 
+
+    public class ProgressNextImpl
+    {
+        static bool _progressModeInitialized = false;
+        static int _progressModeIndex = -1;
+        public static void ProgressNext(IDigitalWriteRead gpios, bool clear = false)
+        {
+            if (!_progressModeInitialized)
+            {
+                _progressModeInitialized = true;
+                for (int i = 0; i < gpios.MaxGpio; i++)
+                    gpios.DigitalWrite(i, PinState.Low);
+            }
+
+            if (clear)
+            {
+                for (int i = 0; i < gpios.MaxGpio; i++)
+                    gpios.DigitalWrite(i, PinState.Low);
+                _progressModeIndex = -1;
+            }
+            else
+            {
+                if (_progressModeIndex >= 0)
+                    gpios.DigitalWrite(_progressModeIndex, PinState.Low);
+                _progressModeIndex += 1;
+
+                if (_progressModeIndex == gpios.MaxGpio)
+                    _progressModeIndex = 0;
+
+                gpios.DigitalWrite(_progressModeIndex, PinState.High);
+            }
+        }
+    }
+
     /// <summary>
     /// Implement the IDigitalWriteRead for accessing the gpio 0..7 of the FT232H
     /// </summary>
@@ -127,33 +160,9 @@ namespace MadeInTheUSB.FT232H
             else
                 return -1;
         }
-
-        static bool _progressModeInitialized = false;
-        static int _progressModeIndex = -1;
         public void ProgressNext(bool clear = false)
         {
-            if (!_progressModeInitialized)
-            {
-                _progressModeInitialized = true;
-                AllGpios(false);
-            }
-
-            if (clear)
-            {
-                AllGpios(false);
-                _progressModeIndex = -1;
-            }
-            else
-            {
-                if (_progressModeIndex >= 0)
-                    this.DigitalWrite(_progressModeIndex, PinState.Low);
-                _progressModeIndex += 1;
-
-                if (_progressModeIndex == this.MaxGpio)
-                    _progressModeIndex = 0;
-
-                this.DigitalWrite(_progressModeIndex, PinState.High);
-            }
+            ProgressNextImpl.ProgressNext(this, clear);
         }
     }
 }
