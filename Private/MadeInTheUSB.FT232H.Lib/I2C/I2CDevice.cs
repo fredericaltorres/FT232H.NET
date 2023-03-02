@@ -11,7 +11,7 @@ namespace MadeInTheUSB.FT232H
     {
         FTD2XX_NET.FTDI _FtdiDevice;
 
-        public int I2CDeviceId;
+        
 
         FTDI.FT_STATUS ftStatus = FTDI.FT_STATUS.FT_OK;
 
@@ -1007,7 +1007,7 @@ namespace MadeInTheUSB.FT232H
             else return true;
         }
 
-        public bool Send1ByteCommand(byte c)
+        public bool Send1ByteCommand(int deviceId, byte c)
         {
             var appStatus = 0;
             try
@@ -1015,7 +1015,7 @@ namespace MadeInTheUSB.FT232H
                 appStatus = this.I2C_SetStart();
                 if (appStatus != 0) return false;
 
-                appStatus = this.I2C_SendDeviceAddrAndCheckACK((byte)(this.I2CDeviceId), false);     // I2C ADDRESS (for write)
+                appStatus = this.I2C_SendDeviceAddrAndCheckACK((byte)(deviceId), false);     // I2C ADDRESS (for write)
                 if (appStatus != 0) return false;
                 if (!this.Ack) return false;
 
@@ -1039,7 +1039,7 @@ namespace MadeInTheUSB.FT232H
             throw new NotImplementedException();
         }
 
-        public bool WriteBuffer(byte[] buffer)
+        public bool WriteBuffer(int deviceId, byte[] buffer)
         {
             var appStatus = 0;
             try
@@ -1047,7 +1047,7 @@ namespace MadeInTheUSB.FT232H
                 appStatus = this.I2C_SetStart();
                 if (appStatus != 0) return false;
 
-                appStatus = this.I2C_SendDeviceAddrAndCheckACK((byte)(this.I2CDeviceId), false);
+                appStatus = this.I2C_SendDeviceAddrAndCheckACK((byte)(deviceId), false);
                 if (appStatus != 0) return false;
                 if (!this.Ack) return false;
 

@@ -15,13 +15,18 @@ namespace MadeInTheUSB.FT232H.Console
     partial class Program
     {
         static LEDBackpack _ledMatrix00;
+        static LEDBackpack _ledMatrix01;
+        static MultiLEDBackpackManager _backpackManager;
 
         static void I2CSample(I2CDevice i2cDevice)
         {
-            _ledMatrix00 = new LEDBackpack(i2cDevice, 8, 8);
-            _ledMatrix00.Begin(0x71);
+            _backpackManager = new MultiLEDBackpackManager();
+
+            _ledMatrix00 = _backpackManager.Add(i2cDevice, 8, 8, 0x70);
+            _ledMatrix01 = _backpackManager.Add(i2cDevice, 8, 8, 0x71);
+
             i2cDevice.Gpios.ProgressNext(clear: true);
-            _ledMatrix00.SetBrightness(1);
+            _backpackManager.SetBrightness(1);
             Animate();
         }
 
@@ -89,25 +94,23 @@ namespace MadeInTheUSB.FT232H.Console
                 var images = new List<List<string>> { neutralBmp, smileBmp, neutralBmp, frownbmp };
                 foreach (var image in images)
                 {
-                    _ledMatrix00.Clear(refresh: false);
-                    _ledMatrix00.DrawBitmap(0, 0, ParseBinary(image), 8, 8, 1);
-                    _ledMatrix00.WriteDisplay();
+                    _backpackManager.Clear(refresh: false);
+                    _backpackManager.DrawBitmap(0, 0, ParseBinary(image), 8, 8, 1);
+                    _backpackManager.WriteDisplay();
                     Thread.Sleep(wait);
                 }
             }
         }
 
-        
-
         private static void SetDefaultOrientations()
         {
-            _ledMatrix00.SetRotation(0);
-            _ledMatrix00.SetRotation(2);
+            _backpackManager.SetRotation(0);
+            _backpackManager.SetRotation(2);
         }
 
         private static void SetBrightnesses()
         {
-            _ledMatrix00.SetBrightness(1);
+            _backpackManager.SetBrightness(1);
         }
 
         static void Animate()
@@ -118,16 +121,16 @@ namespace MadeInTheUSB.FT232H.Console
 
             DrawRoundRectDemo(wait, maxRepeat);
 
-            _ledMatrix00.SetRotation(0);
+            _backpackManager.SetRotation(0);
             DrawPixelDemo(maxRepeat, waitPixelDemo);
 
-            _ledMatrix00.SetRotation(1);
+            _backpackManager.SetRotation(1);
             DrawPixelDemo(maxRepeat, waitPixelDemo);
 
-            _ledMatrix00.SetRotation(2);
+            _backpackManager.SetRotation(2);
             DrawPixelDemo(maxRepeat, waitPixelDemo);
 
-            _ledMatrix00.SetRotation(3);
+            _backpackManager.SetRotation(3);
             DrawPixelDemo(maxRepeat, waitPixelDemo);
 
             SetDefaultOrientations();
@@ -141,16 +144,16 @@ namespace MadeInTheUSB.FT232H.Console
         private static void DrawRectDemo(int MAX_REPEAT, int wait)
         {
             ConsoleEx.Bar(0, 5, "DrawRect Demo", ConsoleColor.Yellow, ConsoleColor.Red);
-            _ledMatrix00.Clear();
+            _backpackManager.Clear();
 
             for (byte rpt = 0; rpt <= MAX_REPEAT; rpt += 3)
             {
-                _ledMatrix00.Clear();
+                _backpackManager.Clear();
                 var y = 0;
                 while (y <= 4)
                 {
-                    _ledMatrix00.DrawRect(y, y, 8 - (y * 2), 8 - (y * 2), true);
-                    _ledMatrix00.WriteDisplay();
+                    _backpackManager.DrawRect(y, y, 8 - (y * 2), 8 - (y * 2), true);
+                    _backpackManager.WriteDisplay();
                     Thread.Sleep(wait);
                     y += 1;
                 }
@@ -158,13 +161,13 @@ namespace MadeInTheUSB.FT232H.Console
                 y = 4;
                 while (y >= 1)
                 {
-                    _ledMatrix00.DrawRect(y, y, 8 - (y * 2), 8 - (y * 2), false);
-                    _ledMatrix00.WriteDisplay();
+                    _backpackManager.DrawRect(y, y, 8 - (y * 2), 8 - (y * 2), false);
+                    _backpackManager.WriteDisplay();
                     Thread.Sleep(wait);
                     y -= 1;
                 }
             }
-            _ledMatrix00.Clear(true);
+            _backpackManager.Clear(true);
         }
 
         private class Coordinate
@@ -175,7 +178,7 @@ namespace MadeInTheUSB.FT232H.Console
         private static void DrawCircleDemo(int wait)
         {
             ConsoleEx.Bar(0, 5, "DrawCircle Demo", ConsoleColor.Yellow, ConsoleColor.Red);
-            _ledMatrix00.Clear();
+            _backpackManager.Clear();
 
             var circleLocations = new List<Coordinate>()
             {
@@ -189,9 +192,9 @@ namespace MadeInTheUSB.FT232H.Console
             {
                 for (byte ray = 0; ray <= 4; ray++)
                 {
-                    _ledMatrix00.Clear();
-                    _ledMatrix00.DrawCircle(circleLocation.X, circleLocation.Y, ray, 1);
-                    _ledMatrix00.WriteDisplay();
+                    _backpackManager.Clear();
+                    _backpackManager.DrawCircle(circleLocation.X, circleLocation.Y, ray, 1);
+                    _backpackManager.WriteDisplay();
                     Thread.Sleep(wait * 2);
                 }
             }
@@ -200,8 +203,8 @@ namespace MadeInTheUSB.FT232H.Console
         private static void BrightnessDemo(int maxRepeat)
         {
             ConsoleEx.Bar(0, 5, "Brightness Demo", ConsoleColor.Yellow, ConsoleColor.Red);
-            _ledMatrix00.AnimateSetBrightness(maxRepeat - 2);
-            _ledMatrix00.Clear(true);
+            _backpackManager.AnimateSetBrightness(maxRepeat - 2);
+            _backpackManager.Clear(true);
         }
 
         private static void DrawPixelDemo(int maxRepeat, int wait = 13)
@@ -210,16 +213,16 @@ namespace MadeInTheUSB.FT232H.Console
             ConsoleEx.Bar(0, 5, "DrawPixel Demo", ConsoleColor.Yellow, ConsoleColor.Red);
             for (byte rpt = 0; rpt < maxRepeat; rpt += 2)
             {
-                _ledMatrix00.Clear();
+                _backpackManager.Clear();
                 Thread.Sleep(wait * 20);
                 for (var r = 0; r < _ledMatrix00.Height; r++)
                 {
                     for (var c = 0; c < _ledMatrix00.Width; c++)
                     {
-                        _ledMatrix00.DrawPixel(r, c, true);
+                        _backpackManager.DrawPixel(r, c, true);
                         if ((true) || (c % 2 != 0)) // Reduce the number of refresh and improve speed
                         {
-                            _ledMatrix00.WriteDisplay();
+                            _backpackManager.WriteDisplay();
                             Thread.Sleep(wait);
                         }
                     }
@@ -233,12 +236,12 @@ namespace MadeInTheUSB.FT232H.Console
 
             for (byte rpt = 0; rpt <= maxRepeat; rpt += 2)
             {
-                _ledMatrix00.Clear(true);
+                _backpackManager.Clear(true);
                 var yy = 0;
                 while (yy <= 3)
                 {
-                    _ledMatrix00.DrawRoundRect(yy, yy, 8 - (yy * 2), 8 - (yy * 2), 2, 1);
-                    _ledMatrix00.WriteDisplay();
+                    _backpackManager.DrawRoundRect(yy, yy, 8 - (yy * 2), 8 - (yy * 2), 2, 1);
+                    _backpackManager.WriteDisplay();
                     Thread.Sleep(wait);
                     yy += 1;
                 }
@@ -246,15 +249,16 @@ namespace MadeInTheUSB.FT232H.Console
                 yy = 2;
                 while (yy >= 0)
                 {
-                    _ledMatrix00.DrawRoundRect(yy, yy, 8 - (yy * 2), 8 - (yy * 2), 2, 0);
-                    _ledMatrix00.WriteDisplay();
+                    _backpackManager.DrawRoundRect(yy, yy, 8 - (yy * 2), 8 - (yy * 2), 2, 0);
+                    _backpackManager.WriteDisplay();
                     Thread.Sleep(wait);
                     yy -= 1;
                 }
-                _ledMatrix00.Clear(true);
+                _backpackManager.Clear(true);
                 Thread.Sleep(wait);
             }
         }
 
     }
 }
+

@@ -26,24 +26,6 @@ namespace MadeInTheUSB.FT232H.Console
 
             I2CSample(i2cDevice);
             
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
             return;
 
             // MCP3088 and MAX7219 is limited to 10Mhz
@@ -53,7 +35,7 @@ namespace MadeInTheUSB.FT232H.Console
             var spi                 = ft232hGpioSpiDevice.SPI;
             var gpios               = ft232hGpioSpiDevice.GPIO;
 
-            GpioSample(gpios, true);
+            GpioSample(gpios, false);
 
             // CheetahBoosterDemo(gpios, false);
 
