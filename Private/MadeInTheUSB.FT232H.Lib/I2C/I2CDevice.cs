@@ -37,6 +37,8 @@ namespace MadeInTheUSB.FT232H
 
 
         public enum ClockEnum  {
+
+            Clock300Khz_Divisor = 99,
             Clock600Khz_Divisor = 49,
             Clock12Mhz_Divisor = 24
         }
@@ -178,8 +180,9 @@ namespace MadeInTheUSB.FT232H
         }
 
         
-        public byte I2C_ReadByte(bool ACK)
+        public ReceivedData I2C_ReadByte(bool ACK)
         {
+            var r = new ReceivedData();
             byte ADbusVal = 0;
             byte ADbusDir = 0;
             uint numBytesToSend = 0;
@@ -250,35 +253,28 @@ namespace MadeInTheUSB.FT232H
 
             // send commands to chip
             I2C_Status = Send_Data(numBytesToSend, mpssebuffer);
-            if (!I2C_Status)
-            {
-                return 1;
-            }
+            if (!I2C_Status) return r;
 
             // get the byte which has been read from the driver's receive buffer
             var rd = Receive_Data(1);
             if (!rd.Status)
-            {
-                return 1;
-            }
+                if (!I2C_Status) return r;
 
-            // InputBuffer2[0] now contains the results
+            r = rd;
 
-            return 0;
+            return r;
         }
-
-
-        //###################################################################################################################################
-        // Sends I2C address followed by reading 2 bytes
-
-        public byte I2C_Read2BytesWithAddr(byte Address)
+        
+        public ReceivedData I2C_Read2BytesWithAddr(byte addrOrRegister)
         {
+            var r = new ReceivedData();
+
             byte ADbusVal = 0;
             byte ADbusDir = 0;
             uint numBytesToSend = 0;
 
-            Address <<= 1;
-            Address |= 0x01;
+            addrOrRegister <<= 1;
+            addrOrRegister |= 0x01;
 
             var _mpssebuffer = new byte[500];
 
@@ -286,7 +282,7 @@ namespace MadeInTheUSB.FT232H
             _mpssebuffer[numBytesToSend++] = MSB_FALLING_EDGE_CLOCK_BYTE_OUT;        // clock data byte out
             _mpssebuffer[numBytesToSend++] = 0x00;                                   // 
             _mpssebuffer[numBytesToSend++] = 0x00;                                   //  Data length of 0x0000 means 1 byte data to clock in
-            _mpssebuffer[numBytesToSend++] = Address;                                // 
+            _mpssebuffer[numBytesToSend++] = addrOrRegister;                                // 
 
             // Put line back to idle (data released, clock pulled low)
             ADbusVal = (byte)(0x00 | I2C_Data_SDAhi_SCLlo  | (GPIO_Low_Dat & 0xF8));
@@ -416,25 +412,18 @@ namespace MadeInTheUSB.FT232H
             // Send off the commands
             I2C_Status = Send_Data(numBytesToSend, _mpssebuffer);
             if (!I2C_Status)
-            {
-                return 1;
-            }
-
-            // Read back the ack from the address phase and the 2 bytes read
-            var rd = Receive_Data(3);
+                return r;
+            
+            var rd = Receive_Data(3); // Read back the ack from the address phase and the 2 bytes read
             if (!rd.Status)
-            {
-                return 1;
-            }
+                return r;
 
             this.Ack = rd.Ack;
-
-            // Get the two data bytes to put back to the calling function - InputBuffer2[0..1] now contains the results
             rd.InputBuffer[0] = rd.InputBuffer[1];
             rd.InputBuffer[1] = rd.InputBuffer[2];
+            rd.Status = true;
 
-            return 0;
-
+            return rd;
         }
 
 
@@ -900,16 +889,15 @@ namespace MadeInTheUSB.FT232H
         }
 
         // D2xx Layer
-
         // Read a specified number of bytes from the driver receive buffer
-
-
-        internal class ReceivedData
+        public class ReceivedData
         {
             public bool Status = false;
             public byte[] InputBuffer = new byte[500];
 
             public bool Ack => (this.InputBuffer[0] & 0x01) == 0;
+            // value = (System.UInt16)((buffer[0] << 8) + buffer[1]);
+            public UInt16 Read16Bits => (UInt16)((this.InputBuffer[0] << 8) + this.InputBuffer[1]);
         }
 
         private ReceivedData Receive_Data(uint BytesToRead)
@@ -1034,6 +1022,42 @@ namespace MadeInTheUSB.FT232H
             return (appStatus == 0);
         }
 
+        public int Send1ByteReadInt16Command(int deviceId, byte c)
+        {
+            Int16  r = -1;
+            var appStatus = 0;
+            try
+            {
+                appStatus = this.I2C_SetStart();
+                if (appStatus != 0) return r;
+
+                appStatus = this.I2C_SendDeviceAddrAndCheckACK((byte)(deviceId), false);
+                if (appStatus != 0) return r;
+                /// if (!this.Ack) return r;
+
+                var zz = I2C_SendByteAndCheckACK(c);
+
+                var rd = I2C_ReadByte(true);
+                if (!rd.Status) return r;
+
+                var rd2 = I2C_ReadByte(true);
+                if (!rd2.Status) return r;
+
+                rd.InputBuffer[1] = rd2.InputBuffer[0];
+                
+                return rd.Read16Bits;
+            }
+            catch (Exception ex)
+            {
+                return r;
+            }
+            finally
+            {
+                appStatus = this.I2C_SetStop();
+            }
+            return r;
+        }
+
         bool i2c_Send2ByteCommand(byte c0, byte c1)
         {
             throw new NotImplementedException();
@@ -1069,10 +1093,10 @@ namespace MadeInTheUSB.FT232H
             return (appStatus == 0);
         }
 
-        bool i2c_WriteReadBuffer(byte[] writeBuffer, byte[] readBuffer)
-        {
-            throw new NotImplementedException();
-        }
+        //bool i2c_WriteReadBuffer(byte[] writeBuffer, byte[] readBuffer)
+        //{
+        //    throw new NotImplementedException();
+        //}
     }
 }
 

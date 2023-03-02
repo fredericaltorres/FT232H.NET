@@ -48,6 +48,7 @@
     <Compile Include="I2C\Adafruit\I2CCommunicationException.cs" />
     <Compile Include="I2C\Adafruit\LEDBackpack.cs" />
     <Compile Include="I2C\Adafruit\MultiLEDBackpackManager.cs" />
+    <Compile Include="I2C\Sensor\TemperatureMCP9808\MCP9808 _Temperature Sensor.cs" />
     <Compile Include="SPI\ADC\MCP3008.cs" />
     <Compile Include="SPI\APA_102_RGB_LED\APA102LEDStrip.cs" />
     <Compile Include="SPI\MAX7219\MAX7219.cs" />

@@ -14,11 +14,14 @@ namespace MadeInTheUSB.FT232H.Console
 {
     partial class Program
     {
+
+
+
         static LEDBackpack _ledMatrix00;
         static LEDBackpack _ledMatrix01;
         static MultiLEDBackpackManager _backpackManager;
 
-        static void I2CSample(I2CDevice i2cDevice)
+        static void I2CSample_Adafruit8x8LedMatrix(I2CDevice i2cDevice)
         {
             _backpackManager = new MultiLEDBackpackManager();
 
@@ -258,7 +261,6 @@ namespace MadeInTheUSB.FT232H.Console
                 Thread.Sleep(wait);
             }
         }
-
     }
 }
 

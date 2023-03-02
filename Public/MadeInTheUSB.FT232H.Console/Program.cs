@@ -22,9 +22,11 @@ namespace MadeInTheUSB.FT232H.Console
                 foreach(var p in ft232Device.Properties) System.Console.WriteLine($"{p.Key}: {p.Value}");
             }
 
-            var i2cDevice = new I2CDevice(ft232Device.ft232h);
+            var i2cDevice = new I2CDevice(ft232Device.ft232h, I2CDevice.ClockEnum.Clock300Khz_Divisor);
 
-            I2CSample(i2cDevice);
+            MCP9808_TemperatureSensor_Sample(i2cDevice);
+
+            I2CSample_Adafruit8x8LedMatrix(i2cDevice);
             
             return;
 
