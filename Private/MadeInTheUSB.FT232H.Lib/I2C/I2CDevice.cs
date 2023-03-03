@@ -1033,9 +1033,16 @@ namespace MadeInTheUSB.FT232H
 
                 appStatus = this.I2C_SendDeviceAddrAndCheckACK((byte)(deviceId), false);
                 if (appStatus != 0) return r;
-                /// if (!this.Ack) return r;
+                if (!this.Ack) return r;
 
                 var zz = I2C_SendByteAndCheckACK(c);
+
+                appStatus = this.I2C_SetStart();
+                if (appStatus != 0) return r;
+
+                appStatus = this.I2C_SendDeviceAddrAndCheckACK((byte)(deviceId), true);
+                if (appStatus != 0) return r;
+                /// if (!this.Ack) return r;
 
                 var rd = I2C_ReadByte(true);
                 if (!rd.Status) return r;

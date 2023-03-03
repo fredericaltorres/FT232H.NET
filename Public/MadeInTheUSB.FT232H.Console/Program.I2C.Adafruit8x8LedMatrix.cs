@@ -26,7 +26,7 @@ namespace MadeInTheUSB.FT232H.Console
             _backpackManager = new MultiLEDBackpackManager();
 
             _ledMatrix00 = _backpackManager.Add(i2cDevice, 8, 8, 0x70);
-            _ledMatrix01 = _backpackManager.Add(i2cDevice, 8, 8, 0x71);
+            //_ledMatrix01 = _backpackManager.Add(i2cDevice, 8, 8, 0x71);
 
             i2cDevice.Gpios.ProgressNext(clear: true);
             _backpackManager.SetBrightness(1);

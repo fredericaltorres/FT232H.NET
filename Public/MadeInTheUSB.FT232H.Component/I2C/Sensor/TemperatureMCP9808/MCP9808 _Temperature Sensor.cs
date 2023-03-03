@@ -145,7 +145,6 @@ namespace MadeInTheUSB
             var r = this._i2cDevice.Send1ByteReadInt16Command(this.DeviceID, reg);
             
 
-            System.Threading.Thread.Sleep(40);
             return value;
         }
     }

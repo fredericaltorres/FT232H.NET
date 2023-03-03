@@ -46,6 +46,7 @@
   <ItemGroup>
     <Compile Include="AdafruitGFX\Adafruit_GFX.cs" />
     <Compile Include="I2C\Adafruit\I2CCommunicationException.cs" />
+    <Compile Include="I2C\Adafruit\IS31FL3731.LedDriver.cs" />
     <Compile Include="I2C\Adafruit\LEDBackpack.cs" />
     <Compile Include="I2C\Adafruit\MultiLEDBackpackManager.cs" />
     <Compile Include="I2C\Sensor\TemperatureMCP9808\MCP9808 _Temperature Sensor.cs" />

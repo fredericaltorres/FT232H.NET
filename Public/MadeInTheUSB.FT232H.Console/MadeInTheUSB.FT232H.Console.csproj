@@ -55,6 +55,7 @@
     <Compile Include="fDrive\FDriveDirectoryEntry.cs" />
     <Compile Include="fDrive\FDriveFat12BootSector.cs" />
     <Compile Include="GpioSpiDevice.cs" />
+    <Compile Include="Program.I2C.Adafruit9x16LedMatrixGray.cs" />
     <Compile Include="Program.I2C.MCP9808_TemperatureSensor.cs" />
     <Compile Include="Program.I2C.Adafruit8x8LedMatrix.cs" />
     <Compile Include="Program.MCP3008.ADC.cs" />
