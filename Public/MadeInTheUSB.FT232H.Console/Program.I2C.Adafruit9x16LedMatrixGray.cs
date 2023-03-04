@@ -23,15 +23,15 @@ namespace MadeInTheUSB.FT232H.Console
                 return;
 
             ledMatrix16x9.Clear();
-            ledMatrix16x9.DrawRect(0, 0, 8, 8, 100);
+            //ledMatrix16x9.DrawRect(0, 0, 8, 8, 100);
             ledMatrix16x9.UpdateDisplay(0);
 
-            BarScrollDemo(ledMatrix16x9);
-            FadeInFadeout(ledMatrix16x9);
+            //BarScrollDemo(ledMatrix16x9);
+            //FadeInFadeout(ledMatrix16x9);
             IntensistyScrollingDemo(ledMatrix16x9);
-            IntensistyScrollingDemo2(ledMatrix16x9);
-            LandscapeDemo(ledMatrix16x9);
-            IntensistyDemo(ledMatrix16x9);
+            //IntensistyScrollingDemo2(ledMatrix16x9);
+            //LandscapeDemo(ledMatrix16x9);
+            //IntensistyDemo(ledMatrix16x9);
         }
 
        
@@ -146,12 +146,9 @@ namespace MadeInTheUSB.FT232H.Console
             {
                 for (int y = 0; y < ledMatrix16x9.Height; y++)
                 {
-
                     ConsoleEx.Write(0, y + 4, string.Format("{0:00} - ", y), ConsoleColor.Cyan);
-
                     for (int x = 0; x < ledMatrix16x9.Width; x++)
                     {
-
                         var intensity = sweep[(x + y + incr) % modulo];
                         ledMatrix16x9.DrawPixel(x, y, intensity);
                         System.Console.Write("{0:000} ", intensity);

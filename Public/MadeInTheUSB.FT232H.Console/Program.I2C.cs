@@ -24,7 +24,11 @@ namespace MadeInTheUSB.FT232H.Console
             _ledMatrix00 = _multiLEDBackpackManager.Add(i2cDevice, 8, 8, 0x70); // 0x70 Small One
             //_ledMatrix01 = _multiLEDBackpackManager.Add(i2cDevice, 8, 8, 0x71);
 
-            Animate();
+            if(_ledMatrix00 != null)
+            {
+                Animate();
+            }
+            
         }
 
         private static List<string> smileBmp = new List<string>()
@@ -117,7 +121,6 @@ namespace MadeInTheUSB.FT232H.Console
             int maxRepeat = 5;
 
             DrawRoundRectDemo(wait, maxRepeat);
-            return;
 
             _multiLEDBackpackManager.SetRotation(0);
             DrawPixelDemo(maxRepeat, waitPixelDemo);

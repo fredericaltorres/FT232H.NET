@@ -2,7 +2,7 @@
 
 The .NET/Windows library FT232H.NET provides an abstraction to program
 * The SPI protocol
-* The I2C protocol (Not yet supported)
+* The I2C protocol
 * The GPIOs
  
 for the FTDI chip FT232H using the ([Adafruit Breakout FT232H](https://www.adafruit.com/product/2264)) or any other compatible breakout.
