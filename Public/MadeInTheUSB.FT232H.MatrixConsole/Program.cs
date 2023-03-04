@@ -15,7 +15,7 @@ using System.Diagnostics;
 namespace MadeInTheUSB.FT232H.MatrixConsole
 {
 
-    public class GpioSpiDevice : GpioSpiImplementationDeviceBaseClass
+    public class GpioSpiDevice : GpioSpiDeviceBaseClass
     {
         public GpioSpiDevice(MpsseSpiConfig spiConfig) : base(spiConfig)
         {

@@ -16,10 +16,10 @@ namespace MadeInTheUSB
             public short x;
             public short y;
         }
- 
+
         [DllImport("kernel32.dll", EntryPoint = "GetStdHandle", SetLastError = true, CharSet = CharSet.Auto, CallingConvention = CallingConvention.StdCall)]
         private static extern int GetStdHandle(int nStdHandle);
- 
+
         [DllImport("kernel32.dll", EntryPoint = "SetConsoleCursorPosition", SetLastError = true, CharSet = CharSet.Auto, CallingConvention = CallingConvention.StdCall)]
         private static extern int SetConsoleCursorPosition(int hConsoleOutput, POSITION dwCursorPosition);
 
@@ -28,18 +28,18 @@ namespace MadeInTheUSB
             const int STD_OUTPUT_HANDLE = -11;
             int hConsoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
             POSITION position;
-            position.x = (short) x;
-            position.y = (short) y;
+            position.x = (short)x;
+            position.y = (short)y;
             SetConsoleCursorPosition(hConsoleHandle, position);
         }
 
         public static void WriteMenu(int x, int y, string text)
         {
             if (x == -1)
-                x = (GetMaxCol() - text.Length)/2;
+                x = (GetMaxCol() - text.Length) / 2;
             Gotoxy(x, y);
             var i = 0;
-            while(i < text.Length)
+            while (i < text.Length)
             {
                 if (i < text.Length - 1)
                 {
@@ -91,7 +91,7 @@ namespace MadeInTheUSB
         public static int WindowHeight
         {
             get
-            {                
+            {
                 return 25;
             }
         }
@@ -112,7 +112,7 @@ namespace MadeInTheUSB
 
             Write("".PadLeft(GetMaxCol(), ' '), textColor, backGroundColor);
 
-            Gotoxy((GetMaxCol() - text.Length)/2, y);
+            Gotoxy((GetMaxCol() - text.Length) / 2, y);
             Write(text, textColor, backGroundColor);
         }
 
@@ -124,30 +124,31 @@ namespace MadeInTheUSB
         public static void Write(int x, int y, string text, ConsoleColor textColor, ConsoleColor? backGroundColor = null)
         {
             if (x == -1)
-                x = (GetMaxCol() - text.Length)/2;
+                x = (GetMaxCol() - text.Length) / 2;
             Gotoxy(x, y);
             Write(text, textColor, backGroundColor);
         }
 
         public static T WaitOnComponentToBePlugged<T>(string componentName, Func<T> initComponentCode)
         {
-            while(true) {
+            while (true)
+            {
 
                 var component = initComponentCode();
-                if(component != null)
+                if (component != null)
                     return component;
 
-                var r = ConsoleEx.Question(1, string.Format("Component {0} not found. R)etry A)bandon", componentName), new List<char> { 'R', 'A'});
-                if(r == 'A')
-                   return default(T);
+                var r = ConsoleEx.Question(1, string.Format("Component {0} not found. R)etry A)bandon", componentName), new List<char> { 'R', 'A' });
+                if (r == 'A')
+                    return default(T);
             }
         }
 
         public static char Question(int y, string message, List<char> answers)
         {
-            Write(0, y, "".PadLeft(80,' '), ConsoleColor.Yellow, ConsoleColor.Red);
-            Write(0, y, message+" ?", ConsoleColor.Yellow, ConsoleColor.Red);
-            Gotoxy(message.Length+2, y);
+            Write(0, y, "".PadLeft(80, ' '), ConsoleColor.Yellow, ConsoleColor.Red);
+            Write(0, y, message + " ?", ConsoleColor.Yellow, ConsoleColor.Red);
+            Gotoxy(message.Length + 2, y);
             while (true)
             {
                 var k = Console.ReadKey();
@@ -161,7 +162,7 @@ namespace MadeInTheUSB
 
         public static void Write(string text, ConsoleColor textColor, ConsoleColor? backGroundColor = null)
         {
-            var bTextColor       = Console.ForegroundColor;
+            var bTextColor = Console.ForegroundColor;
             var bBackGroundColor = Console.BackgroundColor;
 
             Console.ForegroundColor = textColor;
@@ -176,7 +177,7 @@ namespace MadeInTheUSB
 
         public static void Wait(int second)
         {
-            Thread.Sleep(second*1000);
+            Thread.Sleep(second * 1000);
         }
     }
 }

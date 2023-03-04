@@ -11,6 +11,10 @@ using MadeInTheUSB.FT232H.Components;
 
 namespace MadeInTheUSB.FT232H.Console
 {
+
+    // TODO https://www.youtube.com/watch?v=jgbUCkcGIZ4 NeoPixel
+    // https://github.com/kkrizka/adafruitft232h_i2c_adapter adafruitft232h_i2c_adapter
+    
     partial class Program
     {
         static void Main(string[] args)
@@ -21,18 +25,20 @@ namespace MadeInTheUSB.FT232H.Console
                 System.Console.WriteLine(ft232Device.ToString());
                 foreach(var p in ft232Device.Properties) System.Console.WriteLine($"{p.Key}: {p.Value}");
             }
-            var i2cDevice = new I2CDevice(ft232Device.ft232h, I2CDevice.ClockEnum.Clock300Khz_Divisor);
 
-            I2CSample_Adafruit8x8LedMatrix(i2cDevice);
+            var i2cDevice = new I2CDevice(ft232Device.ft232h, I2CDevice.ClockEnum.Clock600Khz_Divisor);
+            i2cDevice.Gpios.DigitalWrite(0, PinState.High);
+            i2cDevice.Gpios.DigitalWrite(i2cDevice.Gpios.MaxGpio-1, PinState.High);
+
+            I2CSample_AdaFruit8x8LedMatrix(i2cDevice);
+            //I2CSample_Adafruit9x16LedMatrixGray(i2cDevice);
+            
+            ///
+            // MCP9808_TemperatureSensor_Sample(i2cDevice);
             return;
 
-            I2CSample_Adafruit9x16LedMatrixGray(i2cDevice);
-
             
 
-            MCP9808_TemperatureSensor_Sample(i2cDevice);
-            
-            
             
 
             // MCP3088 and MAX7219 is limited to 10Mhz
@@ -42,8 +48,7 @@ namespace MadeInTheUSB.FT232H.Console
             var spi                 = ft232hGpioSpiDevice.SPI;
             var gpios               = ft232hGpioSpiDevice.GPIO;
 
-            GpioSample(gpios, false);
-
+            //GpioSample(gpios, true);
             // CheetahBoosterDemo(gpios, false);
 
             const int fatLinkedListSectorCount = 10;

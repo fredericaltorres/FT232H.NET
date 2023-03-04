@@ -90,8 +90,13 @@ namespace MadeInTheUSB.Adafruit
 
         public const int _displayBufferRowCount = 8;
         public byte[] _displayBuffer = new byte[_displayBufferRowCount];
-        
+
+
+        private int _I2CDeviceId;
+
+
         private readonly I2CDevice _i2CDevice;
+
 
         public LEDBackpack(I2CDevice i2cDevice, int16_t width, int16_t height): base(width, height)
         {
@@ -144,8 +149,7 @@ namespace MadeInTheUSB.Adafruit
         {
             try
             {
-                this.Begin(addr);
-                return true;
+                return this.Begin(addr);
             }
             catch (System.Exception ex)
             {
@@ -158,20 +162,20 @@ namespace MadeInTheUSB.Adafruit
             base.Rotation = (byte)v;
         }
 
-        public virtual void Begin(int addr = 0x70)
+        public bool Begin(int addr = 0x70)
         {
-            this._begin((byte)addr);
+            return this._begin((byte)addr);
         }
 
-        private void _begin(byte addr = 0x70)
+        private bool _begin(byte addr = 0x70)
         {
-            this.I2CDeviceId = addr;
-            this._i2CDevice.Send1ByteCommand(this.I2CDeviceId, HT16K33_CMD_TURN_OSCILLATOR_ON);
+            this._I2CDeviceId = addr;
+            if (!this._i2CDevice.Send1ByteCommand(this._I2CDeviceId, HT16K33_CMD_TURN_OSCILLATOR_ON)) return false;
             this.SetBlinkRate(HT16K33_BLINK_OFF);
-            this.SetBrightness(5); // 0 to 15
+            this.SetBrightness(5);
             this.Clear(true);
+            return true;
         }
-
 
         public void AnimateSetBrightness(int MAX_REPEAT, int onWaitTime = 20, int offWaitTime = 30)
         {
@@ -197,8 +201,6 @@ namespace MadeInTheUSB.Adafruit
 
         private byte _brightness;
 
-        public byte I2CDeviceId { get; private set; }
-
         public byte GetBrightness()
         {
             return this._brightness;
@@ -208,14 +210,14 @@ namespace MadeInTheUSB.Adafruit
         {
             if (b > 15) b = 15;
             this._brightness = b;
-            if (!this._i2CDevice.Send1ByteCommand(this.I2CDeviceId, (byte)(HT16K33_CMD_BRIGHTNESS | b)))
+            if (!this._i2CDevice.Send1ByteCommand(this._I2CDeviceId, (byte)(HT16K33_CMD_BRIGHTNESS | b)))
                 throw new I2CCommunicationException(DEFAULT_I2C_ERROR_MESSAGE);
         }
 
         public void SetBlinkRate(byte b)
         {
             if (b > 3) b = 0; // turn off if not sure  
-            if (!this._i2CDevice.Send1ByteCommand(this.I2CDeviceId, (byte)(HT16K33_BLINK_CMD | HT16K33_BLINK_DISPLAYON | (b << 1))))
+            if (!this._i2CDevice.Send1ByteCommand(this._I2CDeviceId, (byte)(HT16K33_BLINK_CMD | HT16K33_BLINK_DISPLAYON | (b << 1))))
                 throw new I2CCommunicationException(DEFAULT_I2C_ERROR_MESSAGE);
         }
 
@@ -231,7 +233,6 @@ namespace MadeInTheUSB.Adafruit
 
         public bool WriteDisplay()
         {
-            this._i2CDevice.Gpios.ProgressNext();
             var buf = new List<uint8_t>();
             byte addr = 0; // Start of screen
             buf.Add(addr);
@@ -240,7 +241,7 @@ namespace MadeInTheUSB.Adafruit
                 buf.Add((uint8_t)(_displayBuffer[i] & 0xFF));    // 8 bit of columns
                 buf.Add((uint8_t)(_displayBuffer[i] >> 8));
             }
-            return this._i2CDevice.WriteBuffer(this.I2CDeviceId, buf.ToArray());
+            return this._i2CDevice.WriteBuffer(this._I2CDeviceId, buf.ToArray());
         }
 
 

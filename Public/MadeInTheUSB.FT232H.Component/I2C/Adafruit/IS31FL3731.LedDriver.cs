@@ -291,7 +291,7 @@ namespace MadeInTheUSB.Adafruit
         {
             if (_frame != b)
             {
-                _frame = b;                
+                _frame = b;
                 return this._i2cDevice.WriteBuffer(this.DeviceId, new byte[2] { (byte)ISSI_COMMANDREGISTER, (byte)b });
             }
             else

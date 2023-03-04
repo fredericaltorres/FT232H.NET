@@ -48,6 +48,7 @@ namespace MadeInTheUSB.Adafruit
 
         public MultiLEDBackpackManager()
         {
+            
         }
 
         public List<LEDBackpack> Backpacks
@@ -55,17 +56,21 @@ namespace MadeInTheUSB.Adafruit
             get { return this._backpacks; }
         }
 
-        public LEDBackpack Add(I2CDevice i2cDevice, int16_t  width, int16_t height, int addr)
+
+        public LEDBackpack Add(I2CDevice i2c, int16_t  width, int16_t height, int addr)
         {
-            var b = new LEDBackpack(i2cDevice, width, height);
-            if (b.Detect((byte)addr)) { 
-                b.Begin(addr);
-                this._backpacks.Add(b);
-                return b;
+            var b = new LEDBackpack(i2c, width, height);
+            if (b.Detect((byte)addr)) {
+                if (b.Begin(addr))
+                {
+                    this._backpacks.Add(b);
+                    return b;
+                }
             }
-            else return null;
+            return null;
         }
-                
+
+
         public void DrawRoundRect(int x, int y, int w, int h, int r, int color)
         {
             foreach (var b in this._backpacks)

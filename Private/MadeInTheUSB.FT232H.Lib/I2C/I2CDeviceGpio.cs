@@ -63,7 +63,7 @@ namespace MadeInTheUSB.FT232H
 
         public void ProgressNext(bool clear = false)
         {
-            ProgressNextImpl.ProgressNext(this, clear);
+            //ProgressNextImpl.ProgressNext(this, clear);
         }
 
         public void SetGpioMask(byte mask)
@@ -81,7 +81,7 @@ namespace MadeInTheUSB.FT232H
             var r = WriteGPIOMask(_directions, _values);
             if (!r)
             {
-                throw new GpioException(nameof(SetPinMode));
+                throw new GpioException("SetPinMode");
             }
         }
 

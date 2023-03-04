@@ -7,7 +7,7 @@ using System.Text;
 namespace MadeInTheUSB.FT232H
 {
 
-    public class GpioSpiDevice : GpioSpiImplementationDeviceBaseClass
+    public class GpioSpiDevice : GpioSpiDeviceBaseClass
     {
         public GpioSpiDevice(MpsseSpiConfig spiConfig) : base(spiConfig)
         {
@@ -27,6 +27,7 @@ namespace MadeInTheUSB.FT232H
         public const int _2Mhz  = 02 * 1000 * 1000;
         public const int _4Mhz  = 04 * 1000 * 1000;
         public const int _8Mhz  = 08 * 1000 * 1000;
+
         public const int _0_5Mhz   = 01 * 1000 * 1000 / 2;
         public const int _0_25Mhz  = 01 * 1000 * 1000 / 4; // 31k
         public const int _TestMhz = 01*1000*1000;
