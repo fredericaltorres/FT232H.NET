@@ -169,7 +169,7 @@ namespace MadeInTheUSB
             }
         }
 
-        void startADCReading(uint16_t mux, bool continuous)
+        bool startADCReading(uint16_t mux, bool continuous)
         {
             // Start with default values
             uint16_t config =
@@ -201,30 +201,26 @@ namespace MadeInTheUSB
             config |= ADS1X15_REG_CONFIG_OS_SINGLE;
 
             // Write config register to the ADC
-            writeRegister(ADS1X15_REG_POINTER_CONFIG, config);
+            if (!writeRegister(ADS1X15_REG_POINTER_CONFIG, config)) return false;
 
             // Set ALERT/RDY to RDY mode.
-            writeRegister(ADS1X15_REG_POINTER_HITHRESH, 0x8000);
-            writeRegister(ADS1X15_REG_POINTER_LOWTHRESH, 0x0000);
+            if (!writeRegister(ADS1X15_REG_POINTER_HITHRESH, 0x8000)) return false;
+            if (!writeRegister(ADS1X15_REG_POINTER_LOWTHRESH, 0x0000)) return false;
+            return true;
         }
 
-        int16_t readADC_SingleEnded(uint8_t channel)
+        public int readADC_SingleEnded(uint8_t channel)
         {
             if (channel > 3)
-            {
-                return 0;
-            }
+                return -1;
 
-            startADCReading(MUX_BY_CHANNEL[channel], /*continuous=*/false);
+            if (!startADCReading(MUX_BY_CHANNEL[channel], /*continuous=*/false)) return -1; 
 
             // Wait for the conversion to complete
             while (!conversionComplete())
-                ;
-
-            // Read the conversion results
+            {
+            }
             return getLastConversionResults();
-
-            
         }
 
         int16_t getLastConversionResults()
@@ -268,13 +264,13 @@ namespace MadeInTheUSB
             return value;
         }
 
-        void writeRegister(uint8_t reg, uint16_t value)
+        bool writeRegister(uint8_t reg, uint16_t value)
         {
             var buffer = new byte[3];
             buffer[0] = reg;
             buffer[1] = (byte)(value >> 8);
             buffer[2] = (byte)(value & 0xFF);
-            this._i2cDevice.WriteBuffer(this.DeviceID, buffer);
+            return this._i2cDevice.WriteBuffer(this.DeviceID, buffer);
         }
 
         uint16_t readRegister(uint8_t reg)

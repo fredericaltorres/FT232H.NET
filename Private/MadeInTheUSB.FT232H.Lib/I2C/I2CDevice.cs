@@ -7,6 +7,9 @@ using System.Threading;
 
 namespace MadeInTheUSB.FT232H
 {
+    // https://www.ftdichip.com/Support/Documents/AppNotes/AN_135_MPSSE_Basics.pdf
+    // https://ftdichip.com/wp-content/uploads/2020/08/AN_177_User_Guide_For_LibMPSSE-I2C.pdf
+
     public class I2CDevice
     {
         FTD2XX_NET.FTDI _ftdiDevice;
@@ -37,6 +40,8 @@ namespace MadeInTheUSB.FT232H
 
         public enum ClockEnum
         {
+            Clock100Khz_Divisor = 299,  // (60*1000*1000)/ ((1+299)*2) == 100 000 -- 300 Khz
+            Clock150Khz_Divisor = 199,  // (60*1000*1000)/ ((1+199)*2) == 150 000 -- 300 Khz
             Clock300Khz_Divisor = 99,  // (60*1000*1000)/ ((1+99)*2) == 300 000 -- 300 Khz
             Clock600Khz_Divisor = 49,  // (60*1000*1000)/ ((1+49)*2) == 600 000 -- 600 Khz
             Clock12Mhz_Divisor = 24,   // (60*1000*1000)/ ((1+24)*2) == 1 200 000 -- 1.2 Mhz
@@ -303,6 +308,10 @@ namespace MadeInTheUSB.FT232H
             ftStatus |= _ftdiDevice.SetFlowControl(FTDI.FT_FLOW_CONTROL.FT_FLOW_RTS_CTS, 0x00, 0x00);
             ftStatus |= _ftdiDevice.SetBitMode(0x00, 0x00);
             ftStatus |= _ftdiDevice.SetBitMode(0x00, 0x02);         // MPSSE mode        
+
+            /// ftStatus |= _ftdiDevice.InTransferSize(65535); //ftStatus |= FT_SetUSBParameters(ftHandle, 65536, 65535);
+
+            //ftStatus |= FT_SetChars(ftHandle, false, 0, false, 0);
 
             if (ftStatus != FTDI.FT_STATUS.FT_OK)
                 return false;
