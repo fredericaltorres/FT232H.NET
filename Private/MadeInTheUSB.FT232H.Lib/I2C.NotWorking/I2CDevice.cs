@@ -165,6 +165,31 @@ namespace MadeInTheUSB.FT232H
             return r;
         }
 
+        public bool InitiateDetectionSequence(int deviceId)
+        {
+            var r = false;
+            var appStatus = 0;
+            try
+            {
+                appStatus = this.I2C_SetStart();
+                if (appStatus != 0) return r;
+
+                appStatus = this.I2C_SendDeviceAddrAndCheckACK((byte)(deviceId), false);
+                if (appStatus != 0) return r;
+                if (!this.Ack) return r;
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+            }
+            finally
+            {
+                appStatus = this.I2C_SetStop();
+            }
+            return r;
+        }
+
         public int Send1ByteReadInt16Command(int deviceId, byte c)
         {
             Int16 r = -1;
@@ -174,7 +199,7 @@ namespace MadeInTheUSB.FT232H
                 appStatus = this.I2C_SetStart();
                 if (appStatus != 0) return r;
 
-                appStatus = this.I2C_SendDeviceAddrAndCheckACK((byte)(deviceId), true);
+                appStatus = this.I2C_SendDeviceAddrAndCheckACK((byte)(deviceId), false);
                 if (appStatus != 0) return r;
                 if (!this.Ack) return r;
 

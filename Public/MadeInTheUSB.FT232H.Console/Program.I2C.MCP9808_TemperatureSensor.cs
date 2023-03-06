@@ -26,6 +26,8 @@ namespace MadeInTheUSB.FT232H.Console
             }
         }
 
+        /*
+        Not working
         static void PCF8574(I2CDevice i2cDevice)
         {
             var gpioExpander = new PCF8574(i2cDevice);
@@ -48,7 +50,7 @@ namespace MadeInTheUSB.FT232H.Console
             }
         }
 
-        // C:\DVT\MadeInTheUSB.Nusbio\MadeInTheUSB.2018.02.16\MadeInTheUSB\Nusbio.Samples.TRUNK\MadeInTheUSB.Nusbio.Components\LCD.Display\LiquidCrystal.Demo.cs
+        C:\DVT\MadeInTheUSB.Nusbio\MadeInTheUSB.2018.02.16\MadeInTheUSB\Nusbio.Samples.TRUNK\MadeInTheUSB.Nusbio.Components\LCD.Display\LiquidCrystal.Demo.cs
         static void LiquidCrystal(I2CDevice i2cDevice)
         {
             var lc = new LiquidCrystal_I2C_PCF8574(i2cDevice, 16, 2, deviceId: 0x3F);
@@ -60,8 +62,7 @@ namespace MadeInTheUSB.FT232H.Console
                 lc.Print("Hello World");
             }
         }
-
-        
+        */
 
         static void MCP9808_TemperatureSensor_Sample(I2CDevice i2cDevice)
         {

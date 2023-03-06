@@ -117,6 +117,9 @@ namespace MadeInTheUSB.Adafruit
             {
                 this.DeviceId = deviceAddress;
 
+                if(!this._i2cDevice.InitiateDetectionSequence(deviceAddress))
+                    return false;
+
                 this._frame = 0;
 
                 if (!WriteRegister8(ISSI_BANK_FUNCTIONREG, ISSI_REG_SHUTDOWN, 0x00)) return false; // shutdown
