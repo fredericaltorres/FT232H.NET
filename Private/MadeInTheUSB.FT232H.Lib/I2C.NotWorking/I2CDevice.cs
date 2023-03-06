@@ -14,8 +14,6 @@ namespace MadeInTheUSB.FT232H
     {
         FTD2XX_NET.FTDI _ftdiDevice;
 
-        //public int I2CDeviceId;
-
         FTDI.FT_STATUS ftStatus = FTDI.FT_STATUS.FT_OK;
 
         // ###### I2C Library defines ######
@@ -40,15 +38,16 @@ namespace MadeInTheUSB.FT232H
 
         public enum ClockEnum
         {
-            Clock100Khz_Divisor = 299,  // (60*1000*1000)/ ((1+299)*2) == 100 000 -- 300 Khz
-            Clock150Khz_Divisor = 199,  // (60*1000*1000)/ ((1+199)*2) == 150 000 -- 300 Khz
+            Clock75Khz_Divisor = 299,  // (60*1000*1000)/ ((1+399)*2) == 75 000 -- 75
+            Clock100Khz_Divisor = 299,  // (60*1000*1000)/ ((1+299)*2) == 100 000 -- 100 Khz
+            Clock150Khz_Divisor = 199,  // (60*1000*1000)/ ((1+199)*2) == 150 000 -- 150 Khz
             Clock300Khz_Divisor = 99,  // (60*1000*1000)/ ((1+99)*2) == 300 000 -- 300 Khz
             Clock600Khz_Divisor = 49,  // (60*1000*1000)/ ((1+49)*2) == 600 000 -- 600 Khz
             Clock12Mhz_Divisor = 24,   // (60*1000*1000)/ ((1+24)*2) == 1 200 000 -- 1.2 Mhz
             Clock24Mhz_Divisor = 12   // (60*1000*1000)/ ((1+12)*2) == 2 307 692 -- 2Mhz
         }
 
-        ClockEnum ClockSpeed = ClockEnum.Clock600Khz_Divisor;
+        public ClockEnum ClockSpeed = ClockEnum.Clock600Khz_Divisor;
 
         // Sending and receiving
         //static uint uint  _numBytesToSend = 0;
@@ -209,6 +208,37 @@ namespace MadeInTheUSB.FT232H
             return r;
         }
 
+        public int Read1ByteCommand(int deviceId)
+        {
+            Int16 r = -1;
+            var appStatus = 0;
+            try
+            {
+                appStatus = this.I2C_SetStart();
+                if (appStatus != 0) return r;
+
+                appStatus = this.I2C_SendDeviceAddrAndCheckACK((byte)(deviceId), true);
+                if (appStatus != 0) return r;
+                /// if (!this.Ack) return r;
+
+                var rd = I2C_ReadByte2(true);
+                if (!rd.Status) return r;
+
+                r = rd.InputBuffer[1];
+
+                return r;
+            }
+            catch (Exception ex)
+            {
+                return r;
+            }
+            finally
+            {
+                appStatus = this.I2C_SetStop();
+            }
+            return r;
+        }
+
         private ReceivedData Receive_Data2(uint BytesToRead)
         {
             var r = new ReceivedData();
@@ -282,7 +312,8 @@ namespace MadeInTheUSB.FT232H
         {
             this._ftdiDevice = ftdiDevice;
             this.ClockSpeed = clockSpeed;
-            this.I2C_ConfigureMpsse();
+            if (!this.ConfigureMpsse())
+                throw new ApplicationException($"Mpsse configuration failed");
             _gpios = new GpioI2CImplementationDevice(this);
         }
 
@@ -296,7 +327,7 @@ namespace MadeInTheUSB.FT232H
             return (AppStatus == 0);
         }
 
-        public bool I2C_ConfigureMpsse()
+        public bool ConfigureMpsse()
         {
             byte ADbusVal = 0;
             byte ADbusDir = 0;
@@ -636,35 +667,25 @@ namespace MadeInTheUSB.FT232H
             // Send off the commands
             I2C_Status = Send_Data(_numBytesToSend, _mpsseBuffer);
             if (!I2C_Status)
-            {
                 return 1;
-            }
 
             // Read back the ack from the address phase and the 2 bytes read
             I2C_Status = Receive_Data(3);
             if (!I2C_Status)
-            {
                 return 1;
-            }
 
             // Check if address phase was acked
             if ((_inputBuffer2[0] & 0x01) == 0)
-            {
                 Ack = true;
-            }
             else
-            {
                 Ack = false;
-            }
 
             // Get the two data bytes to put back to the calling function - InputBuffer2[0..1] now contains the results
             _inputBuffer2[0] = _inputBuffer2[1];
             _inputBuffer2[1] = _inputBuffer2[2];
 
             return 0;
-
         }
-
 
         //###################################################################################################################################
 
@@ -1106,9 +1127,7 @@ namespace MadeInTheUSB.FT232H
             var _mpsseBuffer = new byte[500];
 
 #if (FT4232H)
-
-           return 1;
-           
+            return 1;
 #else
             _mpsseBuffer[_numBytesToSend++] = 0x82;       // ACbus GPIO command
             _mpsseBuffer[_numBytesToSend++] = ACbusVal;   // Set data value
@@ -1153,11 +1172,6 @@ namespace MadeInTheUSB.FT232H
             return 0;
 #endif
         }
-
-
-
-
-
 
         //###################################################################################################################################
         //###################################################################################################################################

@@ -47,12 +47,14 @@ namespace MadeInTheUSB
     /// <summary>
     /// PCF8574 Remote 8-Bit I/O Expander for I2C Bus
     /// http://www.ti.com/lit/ds/symlink/pcf8574.pdf
+    /// https://learn.adafruit.com/adafruit-pcf8574
     /// </summary>
     public class LiquidCrystal_I2C_PCF8574 : LiquidCrystalBase
     {
-        protected const byte En = 4; // B00000100  // Enable bit
-        protected const byte Rw = 2; // B00000010  // Read/Write bit
-        protected const byte Rs = 1; // B00000001  // Register select bit
+        protected const byte EnableBitMode = 4; // B00000100  // Enable bit
+        protected const byte ReadWriteMode = 2; // B00000010  // Read/Write bit
+        protected const byte RegisterSelectMode = 1; // B00000001  // Register select bit
+        protected const byte CommandMode = 0;
 
         /// <summary>
         /// The PCF8574 i2c serial extender only support speed up to
@@ -137,6 +139,9 @@ namespace MadeInTheUSB
 
         public override bool Begin(uint8_t cols, uint8_t lines, int16_t dotsize = -1)
         {
+            if (this._i2cDevice.ClockSpeed != I2CDevice.ClockEnum.Clock100Khz_Divisor)
+                throw new ArgumentException($"{this.GetType().FullName} requires I2C Clock:{I2CDevice.ClockEnum.Clock100Khz_Divisor}");
+
             var r = true;
 
             if (dotsize == -1)
@@ -358,7 +363,7 @@ namespace MadeInTheUSB
 
         private void Command(uint8_t value)
         {
-            Send((byte)value, (byte)0);
+            Send((byte)value, (byte)(CommandMode));
         }
 
         private size_t Write(int value)
@@ -368,7 +373,7 @@ namespace MadeInTheUSB
 
         public size_t Write(uint8_t value)
         {
-            Send(value, Rs);
+            Send(value, RegisterSelectMode);
             return 0;
         }
 
@@ -396,7 +401,7 @@ namespace MadeInTheUSB
                 Write4bits_FAST((byte)((highnib) | mode), (byte)((lownib) | mode));
             #else
                 Write4bits((highnib) | mode);
-                Write4bits((lownib) | mode);
+                Write4bits((lownib)  | mode);
             #endif
         }
         
@@ -451,8 +456,8 @@ namespace MadeInTheUSB
             var buffer = new List<byte>()
             {
                 (uint8_t)(_data | _backlightval),
-                (uint8_t)((_data | En) | _backlightval), // pusle on 
-                (uint8_t)((_data & ~En) | _backlightval) // pusle off 
+                (uint8_t)((_data | EnableBitMode) | _backlightval), // pusle on 
+                (uint8_t)((_data & ~EnableBitMode) | _backlightval) // pusle off 
             };
             //var r1 = Ii2cOutImpl.i2c_WriteBuffer(buffer.ToArray());
             this._i2cDevice.WriteBuffer(this.DeviceID, buffer.ToArray());
@@ -489,12 +494,12 @@ namespace MadeInTheUSB
         void PulseEnable(uint8_t _data)
         {
            // trace("pu1-", _data | En);
-            ExpanderWrite(_data | En);	// En high
+            ExpanderWrite(_data | EnableBitMode);	// En high
 
             //DelayMicroseconds(1);		// enable pulse must be >450ns
 
             //trace("pu2-", _data & ~En);
-            ExpanderWrite(_data & ~En);	// En low
+            ExpanderWrite(_data & ~EnableBitMode);	// En low
 
             //DelayMicroseconds(1);		// commands need > 37us to settle
         }

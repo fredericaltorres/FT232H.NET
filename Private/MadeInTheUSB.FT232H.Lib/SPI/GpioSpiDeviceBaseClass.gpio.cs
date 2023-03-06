@@ -13,10 +13,17 @@ namespace MadeInTheUSB.FT232H
         public ISPI Spi;
     }
 
+    public enum GpioMode
+    {
+        OUTPUT, 
+        INPUT,
+        INPUT_PULL_UP,
+    }
+
     /// <summary>
     /// Implement the IDigitalWriteRead for accessing the gpio 0..7 of the FT232H
     /// </summary>
-    public abstract partial class GpioSpiDeviceBaseClass : FT232HDeviceBaseClass, IDisposable, IDigitalWriteRead, ISPI
+    public abstract partial class SpiDeviceBaseClass : FT232HDeviceBaseClass, IDisposable, IDigitalWriteRead, ISPI
     {
         private const int _gpioStartIndex = 0;
         private const int _maxGpio = 8;

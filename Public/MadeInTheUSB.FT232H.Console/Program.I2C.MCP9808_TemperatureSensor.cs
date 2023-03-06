@@ -26,6 +26,27 @@ namespace MadeInTheUSB.FT232H.Console
             }
         }
 
+        static void PCF8574(I2CDevice i2cDevice)
+        {
+            var gpioExpander = new PCF8574(i2cDevice);
+            if (gpioExpander.Begin(0x3F))
+            {
+                for (var gpioIndex = 7; gpioIndex >= 0; gpioIndex--)
+                {
+                    gpioExpander.PinMode(gpioIndex, GpioMode.OUTPUT);
+                }
+                for (var gpioIndex = 7; gpioIndex >= 0; gpioIndex--)
+                {
+                    gpioExpander.DigitalWrite(gpioIndex, true);
+                    gpioExpander.DigitalWrite(gpioIndex, false);
+                }
+                for (var gpioIndex = 7; gpioIndex >= 0; gpioIndex--)
+                {
+                    gpioExpander.DigitalWrite(gpioIndex, true);
+                }
+                Thread.Sleep(1);
+            }
+        }
 
         // C:\DVT\MadeInTheUSB.Nusbio\MadeInTheUSB.2018.02.16\MadeInTheUSB\Nusbio.Samples.TRUNK\MadeInTheUSB.Nusbio.Components\LCD.Display\LiquidCrystal.Demo.cs
         static void LiquidCrystal(I2CDevice i2cDevice)
@@ -33,7 +54,7 @@ namespace MadeInTheUSB.FT232H.Console
             var lc = new LiquidCrystal_I2C_PCF8574(i2cDevice, 16, 2, deviceId: 0x3F);
             if (lc.Begin(16, 2))
             {
-               lc.Backlight();
+                lc.Backlight();
                 lc.SetCursor(0, 0);
                 lc.Cursor();
                 lc.Print("Hello World");

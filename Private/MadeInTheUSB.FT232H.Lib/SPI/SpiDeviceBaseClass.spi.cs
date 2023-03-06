@@ -9,7 +9,7 @@ namespace MadeInTheUSB.FT232H
     /// <summary>
     /// Implement the SPI methods
     /// </summary>
-    public abstract partial class GpioSpiDeviceBaseClass : FT232HDeviceBaseClass, IDisposable, IDigitalWriteRead, ISPI
+    public abstract partial class SpiDeviceBaseClass : FT232HDeviceBaseClass, IDisposable, IDigitalWriteRead, ISPI
     {
         /// <summary>
         /// FT232H has only one channel, channel 0
@@ -19,11 +19,11 @@ namespace MadeInTheUSB.FT232H
         private bool                      _isDisposed;
         private MpsseChannelConfiguration _ftdiMpsseChannelConfig;
 
-        protected GpioSpiDeviceBaseClass(MpsseSpiConfig spiConfig) : this(spiConfig, null)
+        protected SpiDeviceBaseClass(MpsseSpiConfig spiConfig) : this(spiConfig, null)
         {
             this.GpioInit();
         }
-        protected GpioSpiDeviceBaseClass(MpsseSpiConfig spiConfig, MpsseChannelConfiguration channelConfig)
+        protected SpiDeviceBaseClass(MpsseSpiConfig spiConfig, MpsseChannelConfiguration channelConfig)
         {
             this._ftdiMpsseChannelConfig = channelConfig ?? MpsseChannelConfiguration.FtdiMpsseChannelZeroConfiguration;
             this._spiConfig              = spiConfig;

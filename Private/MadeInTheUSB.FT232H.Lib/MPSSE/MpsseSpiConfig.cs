@@ -7,7 +7,7 @@ using System.Text;
 namespace MadeInTheUSB.FT232H
 {
 
-    public class GpioSpiDevice : GpioSpiDeviceBaseClass
+    public class GpioSpiDevice : SpiDeviceBaseClass
     {
         public GpioSpiDevice(MpsseSpiConfig spiConfig) : base(spiConfig)
         {

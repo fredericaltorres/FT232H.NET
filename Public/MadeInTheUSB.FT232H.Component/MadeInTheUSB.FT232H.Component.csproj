@@ -50,6 +50,7 @@
     <Compile Include="I2C\Adafruit\LEDBackpack.cs" />
     <Compile Include="I2C\Adafruit\MultiLEDBackpackManager.cs" />
     <Compile Include="I2C\ADC\ADS1015_ADC.cs" />
+    <Compile Include="I2C\LCD\PCF8574.cs" />
     <Compile Include="I2C\LCD\ILiquidCrystal_i2c.cs" />
     <Compile Include="I2C\LCD\LiquidCrystalBase.cs" />
     <Compile Include="I2C\Sensor\TemperatureMCP9808\MCP9808 _Temperature Sensor.cs" />
@@ -80,6 +81,8 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="I2C\GPIO Expander\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
