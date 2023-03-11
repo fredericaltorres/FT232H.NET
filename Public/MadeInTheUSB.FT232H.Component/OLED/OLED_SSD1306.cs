@@ -127,7 +127,7 @@ namespace MadeInTheUSB.Display
             // WriteDisplay Optimized: False does not work right first time called
             // when we have pixel. Can't understand why. This seems to fix the problem
             this.Fill(true, false);
-            this.Fill(true, false);
+            // this.Fill(true, false);
             this.Clear(true);
         }
     }

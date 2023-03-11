@@ -130,7 +130,7 @@ namespace MadeInTheUSB.Display
   
         // You may find a different size screen, but this one is 128 by 64 pixels
         public const int SH1106_X_PIXELS = 128;
-        public const int SH1106_Y_PIXELS = 64;
+        public const int SH1106_Y_PIXELS = 32;
         public const int SH1106_ROWS     = 8;
         public const int BUF_LEN         = 1024; // (1024*8)/128 == 64 Rows
 
@@ -178,45 +178,23 @@ namespace MadeInTheUSB.Display
 
         public void WriteDisplay(bool optimized = true)
         {
-            //var sw = StopWatch.StartNew();
-            //if (optimized)
-            //{
-            //    // Compute all the memory GotoXY and command packages and
-            //    // send all them in optimize way
-            //    var packagedBuffers = new List<SPIEngine.PackagedBuffer>();
-            //    for (int i = SH1106_ROWS - 1; i >= 0; i--)
-            //    {
-            //        packagedBuffers.Add(new SPIEngine.PackagedBuffer
-            //        {
-            //            Buffer = this.GotoXY(0, i, computeBuffer: true),
-            //            Command = SH1106_COMMAND
-            //        });
+            this.SendCommand(OLED_API_SSD1306_SETLOWCOLUMN | 0x0 );
+            this.SendCommand(OLED_API_SETHIGHCOLUMN | 0x0);
+            this.SendCommand(OLED_API_SETSTARTLINE | 0x0);
 
-            //        packagedBuffers.Add(new SPIEngine.PackagedBuffer
-            //        {
-            //            Buffer = BitUtil.SliceBuffer(this._buffer.ToList(), (i*SH1106_X_PIXELS), SH1106_X_PIXELS),
-            //            Command = SH1106_DATA
-            //        });
-            //    }
-            //    this._spiEngine.TransferNoMiso(SH1106_DATA, true, packagedBuffers);
-            //}
-            //else
-            this.SendCommand(OLED_API_SSD1306_SETLOWCOLUMN);
-            this.SendCommand(OLED_API_SETHIGHCOLUMN);
-            this.SendCommand(OLED_API_SETSTARTLINE);
+            var zz = SH1106_X_PIXELS / 8;
+            
 
             for (int i = SH1106_ROWS - 1; i >= 0; i--)
-                {
-                //this.GotoXY(0, i);
-                    var buffer = new List<byte>();
-                    var slicedBuffer = BitUtil.SliceBuffer(this._buffer.ToList(), (i*SH1106_X_PIXELS), SH1106_X_PIXELS);
+            {
+                // this.GotoXY(0, i);
+                var buffer = new List<byte>();
+                var slicedBuffer = BitUtil.SliceBuffer(this._buffer.ToList(), (i*zz), zz);
+                buffer.Add(OLED_API_SETSTARTLINE);
+                buffer.AddRange(slicedBuffer);
 
-                    buffer.Add(OLED_API_SETSTARTLINE);
-                    buffer.AddRange(slicedBuffer);
-
-                    this._i2cDevice.WriteBuffer(this.DeviceId, buffer.ToArray());
-                    
-                }
+                this._i2cDevice.WriteBuffer(this.DeviceId, buffer.ToArray());
+            }
             //sw.Stop();
             //Debug.WriteLine("WriteDisplay {0}", sw.ElapsedMilliseconds);
         }
@@ -277,12 +255,19 @@ namespace MadeInTheUSB.Display
                 x = x + 2; // Panel is 128 pixels wide, controller RAM has space for 132,
                 // it's centered so add an offset to ram address.
             }
-            var buffer = BitUtil.ByteBuffer(
 
-                0xB0 + y,       // Set row
-                x & 0xF ,       // Set lower column address
-                0x10 | (x >> 4) // Set higher column address
-            );
+            var buffer = new List<byte>() {
+                SH1106_COMMAND,
+                (byte)(0xB0 + y),       // Set row
+                (byte)(x & 0xF) ,       // Set lower column address
+                (byte)(0x10 | (x >> 4)) // Set higher column address
+            };
+            //var buffer = BitUtil.ByteBuffer(
+
+            //    0xB0 + y,       // Set row
+            //    x & 0xF ,       // Set lower column address
+            //    0x10 | (x >> 4) // Set higher column address
+            //);
 
             if (!computeBuffer)
             {
@@ -301,7 +286,11 @@ namespace MadeInTheUSB.Display
         protected void SendCommand(int command)
         {
             //this._spiEngine.TransferNoMiso(SH1106_COMMAND, SH1106_DATA, true, new List<byte>() {(byte)command});
-            this._i2cDevice.Send1ByteCommand(this.DeviceId, (byte)command);
+            var buffer = new List<byte>()
+            {
+                SH1106_COMMAND, (byte)command
+            };
+            this._i2cDevice.WriteBuffer(this.DeviceId, buffer.ToArray());
         }
 
         //public void DisplayUserMessage(string title, string text)
