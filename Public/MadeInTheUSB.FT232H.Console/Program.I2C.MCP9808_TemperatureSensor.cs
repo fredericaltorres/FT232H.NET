@@ -9,6 +9,7 @@ using static FTD2XX_NET.FTDI;
 using MadeInTheUSB.FT232H.Components.APA102;
 using DynamicSugar;
 using MadeInTheUSB.Adafruit;
+using MadeInTheUSB.Display;
 
 namespace MadeInTheUSB.FT232H.Console
 {
@@ -64,10 +65,23 @@ namespace MadeInTheUSB.FT232H.Console
         }
         */
 
-        static void MCP9808_TemperatureSensor_Sample(I2CDevice i2cDevice)
+        
+
+
+        static void OLED_SSD1306_Sample(I2CDevice i2cDevice)
+        {
+            var oled = new OLED_SSD1306(i2cDevice, 128, 32);
+            oled.Begin();
+            oled.DrawLine(0, 0, 128, 0, true);
+            oled.WriteDisplay();
+        }
+
+            static void MCP9808_TemperatureSensor_Sample(I2CDevice i2cDevice)
         {
             var ts = new MCP9808_TemperatureSensor(i2cDevice);
-            ts.Begin();
+            if (!ts.Begin())
+                return;
+
             while (true)
             {
                 if(System.Console.KeyAvailable)

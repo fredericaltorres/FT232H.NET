@@ -54,6 +54,9 @@
     <Compile Include="I2C\LCD\ILiquidCrystal_i2c.cs" />
     <Compile Include="I2C\LCD\LiquidCrystalBase.cs" />
     <Compile Include="I2C\Sensor\TemperatureMCP9808\MCP9808 _Temperature Sensor.cs" />
+    <Compile Include="OLED\OLED.cs" />
+    <Compile Include="OLED\OLED_SH1106.cs" />
+    <Compile Include="OLED\OLED_SSD1306.cs" />
     <Compile Include="SPI\ADC\MCP3008.cs" />
     <Compile Include="SPI\APA_102_RGB_LED\APA102LEDStrip.cs" />
     <Compile Include="SPI\MAX7219\MAX7219.cs" />

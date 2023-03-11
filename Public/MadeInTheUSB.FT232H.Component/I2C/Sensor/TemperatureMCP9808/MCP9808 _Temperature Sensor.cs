@@ -95,6 +95,9 @@ namespace MadeInTheUSB
             try
             {
                 this.DeviceID = deviceAddress;
+                if (!this._i2cDevice.InitiateDetectionSequence(deviceAddress))
+                    return false;
+
                 if (read16(MCP9808_REG_MANUF_ID) != MCP9808_REG_MANUF_ID_ANSWER) return false;
                 if (read16(MCP9808_REG_DEVICE_ID) != MCP9808_REG_DEVICE_ID_ANSWER) return false;
                 return true;

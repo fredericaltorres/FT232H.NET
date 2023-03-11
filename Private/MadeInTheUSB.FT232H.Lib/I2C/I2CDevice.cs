@@ -10,6 +10,11 @@ namespace MadeInTheUSB.FT232H
     // https://www.ftdichip.com/Support/Documents/AppNotes/AN_135_MPSSE_Basics.pdf
     // https://ftdichip.com/wp-content/uploads/2020/08/AN_177_User_Guide_For_LibMPSSE-I2C.pdf
 
+    // PROBLEM
+    // https://www.ftdicommunity.com/index.php?topic=241.0
+
+    // C:\DVT\Adafruit_Blinka\src\adafruit_blinka\microcontroller\ftdi_mpsse\mpsse\i2c.py
+
     public class I2CDevice
     {
         FTD2XX_NET.FTDI _ftdiDevice;
@@ -174,7 +179,7 @@ namespace MadeInTheUSB.FT232H
                 appStatus = this.I2C_SetStart();
                 if (appStatus != 0) return r;
 
-                appStatus = this.I2C_SendDeviceAddrAndCheckACK((byte)(deviceId), false);
+                appStatus = this.I2C_SendDeviceAddrAndCheckACK((byte)(deviceId), false); 
                 if (appStatus != 0) return r;
                 if (!this.Ack) return r;
 
@@ -383,7 +388,7 @@ namespace MadeInTheUSB.FT232H
             _mpsseBuffer[_numBytesToSend++] = 0xAA;
             I2C_Status = Send_Data(_numBytesToSend, _mpsseBuffer);
             if (!I2C_Status) return false;
-            //NumBytesToRead = 2;
+
             var rd = Receive_Data2(2);
             if (!rd.Status) return false;
 
@@ -391,17 +396,13 @@ namespace MadeInTheUSB.FT232H
             {
                 // Bad Command Echo successful
             }
-            else
-            {
-                return false;
-            }
+            else return false;
 
             /***** Synchronize the MPSSE interface by sending bad command 0xAB *****/
             _numBytesToSend = 0;
             _mpsseBuffer[_numBytesToSend++] = 0xAB;
             I2C_Status = Send_Data(_numBytesToSend, _mpsseBuffer);
             if (!I2C_Status) return false;
-            //NumBytesToRead = 2;
             rd = Receive_Data2(2);
             if (!rd.Status) return false;
 
@@ -409,15 +410,19 @@ namespace MadeInTheUSB.FT232H
             {
                 // Bad Command Echo successful
             }
-            else
-            {
-                return false;
-            }
+            else return false;
 
             _numBytesToSend = 0;
-            _mpsseBuffer[_numBytesToSend++] = 0x8A; 	// Disable clock divide by 5 for 60Mhz master clock
+            _mpsseBuffer[_numBytesToSend++] = 0x8A; // Disable clock divide by 5 for 60Mhz master clock
             _mpsseBuffer[_numBytesToSend++] = 0x97;	// Turn off adaptive clocking
-            _mpsseBuffer[_numBytesToSend++] = 0x8C; 	// Enable 3 phase data clock, used by I2C to allow data on both clock edges
+            _mpsseBuffer[_numBytesToSend++] = 0x8C; // Enable 3 phase data clock, used by I2C to allow data on both clock edges
+
+            // Variant
+            // https://www.ftdichip.com/Support/Documents/AppNotes/AN_135_MPSSE_Basics.pdf
+            // _mpsseBuffer[_numBytesToSend++] = 0x8D; // // Disable three-phase clocking
+
+
+
             // The SK clock frequency can be worked out by below algorithm with divide by 5 set as off
             // SK frequency  = 60MHz /((1 +  [(1 +0xValueH*256) OR 0xValueL])*2)
             _mpsseBuffer[_numBytesToSend++] = 0x86; 	//Command to set clock divisor
@@ -430,30 +435,23 @@ namespace MadeInTheUSB.FT232H
             _mpsseBuffer[_numBytesToSend++] = 0x07;       // ... Low byte (ADx) enables - bits 0, 1 and 2 and ... 
             _mpsseBuffer[_numBytesToSend++] = 0x00;       //...High byte (ACx) enables - all off
 
-            ADbusVal = (byte)(0x00 | I2C_Data_SDAhi_SCLhi | (GPIO_Low_Dat & 0xF8)); // SDA and SCL both output high (open drain)
+            ADbusVal = (byte)(0x00 | I2C_Data_SDAhi_SCLhi  | (GPIO_Low_Dat & 0xF8)); // SDA and SCL both output high (open drain)
             ADbusDir = (byte)(0x00 | I2C_Dir_SDAout_SCLout | (GPIO_Low_Dir & 0xF8));
 #else
             ADbusVal = (byte)(0x00 | I2C_Data_SDAlo_SCLlo | (GPIO_Low_Dat & 0xF8));  	// SDA and SCL set low but as input to mimic open drain
             ADbusDir = (byte)(0x00 | I2C_Dir_SDAin_SCLin | (GPIO_Low_Dir & 0xF8));	//
 
 #endif
-
             _mpsseBuffer[_numBytesToSend++] = 0x80; 	//Command to set directions of lower 8 pins and force value on bits set as output 
             _mpsseBuffer[_numBytesToSend++] = (byte)(ADbusVal);
             _mpsseBuffer[_numBytesToSend++] = (byte)(ADbusDir);
 
-
             I2C_Status = Send_Data(_numBytesToSend, _mpsseBuffer);
             if (!I2C_Status)
-            {
                 return false;
-            }
             else
-            {
                 return true;
-            }
         }
-
         
         public byte I2C_ReadByte(bool ACK)
         {
@@ -733,7 +731,7 @@ namespace MadeInTheUSB.FT232H
             _mpsseBuffer[_numBytesToSend++] = address;           //  Byte to send
 
             // Put line back to idle (data released, clock pulled low)
-            ADbusVal = (byte)(0x00 | I2C_Data_SDAhi_SCLlo | (GPIO_Low_Dat & 0xF8));
+            ADbusVal = (byte)(0x00 | I2C_Data_SDAhi_SCLlo  | (GPIO_Low_Dat & 0xF8));
             ADbusDir = (byte)(0x00 | I2C_Dir_SDAout_SCLout | (GPIO_Low_Dir & 0xF8));// make data input
             _mpsseBuffer[_numBytesToSend++] = 0x80;                                   // Command - set low byte
             _mpsseBuffer[_numBytesToSend++] = ADbusVal;                               // Set the values
@@ -1163,7 +1161,6 @@ namespace MadeInTheUSB.FT232H
                 return 1;
             else
                 return 0;
-
 #endif
         }
 
