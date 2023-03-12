@@ -71,19 +71,20 @@ namespace MadeInTheUSB.Display
         {
         }
 
+        private bool Is64RowsDevice => this.Height == 64;
+
         public override void Begin(bool invert = false, uint8_t contrast = 128, uint8_t Vpp = 0)
         {
             if (!this._i2cDevice.InitiateDetectionSequence(this.DeviceId))
                 return;
                 
-            // LCD init section:
             uint8_t invertSetting = (uint8_t)(invert ? 0xA7 : 0xA6);
             Vpp &= 0x03;
 	
-            this.SendCommand(OLED_API_DISPLAYOFF); /* 0xAE */
-            this.SendCommand(OLED_API_SETDISPLAYCLOCKDIV, 0x80); /* 0xD5 */
-            this.SendCommand(OLED_API_SETMULTIPLEX, this.Height-1); /* 0xA8 */
-            this.SendCommand(OLED_API_SETSTARTLINE | 0x0); // 0xD3
+            this.SendCommand(OLED_API_DISPLAYOFF);
+            this.SendCommand(OLED_API_SETDISPLAYCLOCKDIV, 0x80);
+            this.SendCommand(OLED_API_SETMULTIPLEX, this.Is64RowsDevice ? 0x3F : 0x1F);
+            this.SendCommand(OLED_API_SETSTARTLINE | 0x0);
             this.SendCommand(OLED_API_CHARGEPUMP);
 
             int vccstate = OLED_API_SWITCHCAPVCC;
@@ -92,12 +93,14 @@ namespace MadeInTheUSB.Display
             else
                 SendCommand(0x14);
 
+            SendCommand(OLED_API_SETMULTIPLEX, this.Height-1); // 64MUX for 128 x 64 version - 32MUX for 128 x 32 version
             SendCommand(OLED_API_MEMORYMODE, 0x00); // 0x20
+
             SendCommand(OLED_API_SSD1306_SET_SEGMENT_REMAP | 0x1);
             SendCommand(OLED_API_COMSCANDEC);
 
-            //#elif defined SSD1306_128_64
-            SendCommand(OLED_API_SETCOMPINS, 0x12);                    // 0xDA
+            SendCommand(OLED_API_SETCOMPINS, this.Is64RowsDevice ? 0x12: 0x02);
+
             SendCommand(OLED_API_SETCONTRAST);                   // 0x81
             if (vccstate == OLED_API_EXTERNALVCC)
                 SendCommand(0x9F);

@@ -90,6 +90,13 @@ namespace MadeInTheUSB.Display
         protected const int OLED_API_MEMORYMODE                           = 0x20;
         protected const int OLED_API_COLUMNADDR                           = 0x21;
         protected const int OLED_API_PAGE_ADDR                            = 0x22;
+
+        protected int START_PAGE_ADDR = 0;
+        protected int END_PAGE_ADDR(int height)
+        {
+            return this.Height == 64 ? 7 : 3;
+        }
+
         protected const int OLED_API_COMSCANINC                           = 0xC0;
         protected const int OLED_API_COMSCANDEC                           = 0xC8;
         protected const int OLED_API_SSD1306_SET_SEGMENT_REMAP            = 0xA0;
@@ -114,25 +121,20 @@ namespace MadeInTheUSB.Display
             SSD1306
         }
 
-        public int PIN_DC;				//0x01	// D8
+        //public int PIN_DC;				//0x01	// D8
 
         public int DeviceId;
 
         public const int SH1106_COMMAND = 0;
+        public const int SH1106_DATA = 1;
 
-
-        public byte SH1106_DATA
-        {
-            get { return (byte)PIN_DC; }   
-        }
-
-        public bool Debug;
+        //public bool Debug;
   
         // You may find a different size screen, but this one is 128 by 64 pixels
         public const int SH1106_X_PIXELS = 128;
         public const int SH1106_Y_PIXELS = 32;
         public const int SH1106_ROWS     = 8;
-        public const int BUF_LEN         = 1024; // (1024*8)/128 == 64 Rows
+        public const int BUF_LEN         = 512; // (512*8)/128 == 32 Rows
 
         // Functions GotoXY, writeBitmap, renderString, writeLine and writeRect
         // will return SH1106_SUCCESS if they succeed and SH1106_ERROR if they fail.
@@ -173,23 +175,78 @@ namespace MadeInTheUSB.Display
         public void Contrast(byte val)
         {
             this.SendCommand(0x81);
-            this.SendCommand(val);               
+            this.SendCommand(val);
         }
 
         public void WriteDisplay(bool optimized = true)
+        {
+            //this.SendCommand(OLED_API_SSD1306_SETLOWCOLUMN | 0x0);
+            //this.SendCommand(OLED_API_SETHIGHCOLUMN | 0x0);
+            //this.SendCommand(OLED_API_SETSTARTLINE | 0x0);
+            var buffer = new List<int>() {
+                OLED_API_PAGE_ADDR,
+                START_PAGE_ADDR,            // Page start address
+                END_PAGE_ADDR(this.Height), // Page end address
+                OLED_API_COLUMNADDR,        // Column start address
+                0,
+                127,
+            };
+            this.SendCommand(buffer.ToArray());
+            //this.SendCommand(this.Width-1);
+
+            var WIRE_MAX = 32;
+            //var count = this.Width * ((this.Height + 7) / 8);
+            var count = this.Width * ((this.Height + 7) / 8);
+            uint16_t bytesOut = 1;
+            var bytePerRows = 16;
+            var x = 0;
+            
+            while (true)
+            {
+                var tmpBuffer = this._buffer.ToList().Skip(x * bytePerRows).Take(bytePerRows).ToList();
+                if (tmpBuffer.Count == 0)
+                    break;
+                var buffer2 = new List<byte>();
+                buffer2.Add(OLED_API_SETSTARTLINE); // 0x40
+                buffer2.AddRange(tmpBuffer);
+                this._i2cDevice.WriteBuffer(this.DeviceId, buffer2.ToArray());
+                x += 1;
+            }
+            /*
+            var zz = SH1106_X_PIXELS;
+
+            for (int i = SH1106_ROWS - 1; i >= 0; i--)
+            {
+                //this.GotoXY(0, i);
+                var buffer = new List<byte>();
+                var slicedBuffer = BitUtil.SliceBuffer(this._buffer.ToList(), (i * zz), zz);
+
+                iBuffer.Add(OLED_API_SETSTARTLINE);
+                iBuffer.Add(+++);
+                iBuffer.AddRange(slicedBuffer);
+
+                this._i2cDevice.WriteBuffer(this.DeviceId, iBuffer.ToArray());
+            }*/
+
+            //sw.Stop();
+            //Debug.WriteLine("WriteDisplay {0}", sw.ElapsedMilliseconds);
+        }
+
+
+        public void WriteDisplay2(bool optimized = true)
         {
             this.SendCommand(OLED_API_SSD1306_SETLOWCOLUMN | 0x0 );
             this.SendCommand(OLED_API_SETHIGHCOLUMN | 0x0);
             this.SendCommand(OLED_API_SETSTARTLINE | 0x0);
 
-            var zz = SH1106_X_PIXELS / 8;
+            var zz = SH1106_X_PIXELS;
             
-
             for (int i = SH1106_ROWS - 1; i >= 0; i--)
             {
-                // this.GotoXY(0, i);
+                //this.GotoXY(0, i);
                 var buffer = new List<byte>();
                 var slicedBuffer = BitUtil.SliceBuffer(this._buffer.ToList(), (i*zz), zz);
+
                 buffer.Add(OLED_API_SETSTARTLINE);
                 buffer.AddRange(slicedBuffer);
 
@@ -206,12 +263,26 @@ namespace MadeInTheUSB.Display
                 WriteDisplay();
         }
 
-        public void SetPixel(int x, int y, bool on)
+
+        public void SetPixel2(int x, int y, bool on)
         {
-	        if (x >= SH1106_X_PIXELS || y >= SH1106_Y_PIXELS) 
+            if (x >= SH1106_X_PIXELS || y >= SH1106_Y_PIXELS)
                 return;
 
-            //y = (SH1106_Y_PIXELS-1) - y;
+            // find page (y / 8)
+            var page = y >> 3;
+            // which pixel (y % 8)
+            var pixel = 1 << (y - (page << 3));
+            // update counter
+            var _counter = x + (page << 7);
+            // save pixel
+            _buffer[_counter++] |= (byte)pixel;
+        }
+
+        public void SetPixel(int x, int y, bool on)
+        {
+	        if (x >= SH1106_X_PIXELS || y >= SH1106_Y_PIXELS)
+                return;
 
             uint8_t bank    = (byte)(y / 8);
 	        uint8_t bitMask = (byte)(1 << (y % 8));
@@ -221,8 +292,6 @@ namespace MadeInTheUSB.Display
 		        b |= bitMask;
 	        else
 		        b &= ~bitMask;
-
-            //Console.WriteLine("({0:000}, {1:000})[{2:000}]bank:{3:0}, {4}", x, y, index, bank, BitUtil.BitRpr(b));
 
             this._buffer[index] = (byte)b;
         }

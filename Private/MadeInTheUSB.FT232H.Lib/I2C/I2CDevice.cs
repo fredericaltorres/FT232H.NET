@@ -13,6 +13,9 @@ namespace MadeInTheUSB.FT232H
     // PROBLEM
     // https://www.ftdicommunity.com/index.php?topic=241.0
 
+    // Look into the I2C FT232H Implementation
+    //https://github.com/chadwyck-w/FT232H-MPSSE-I2C-SSD1306-OLED/blob/master/i2c_lib.c
+
     // C:\DVT\Adafruit_Blinka\src\adafruit_blinka\microcontroller\ftdi_mpsse\mpsse\i2c.py
 
     public class I2CDevice

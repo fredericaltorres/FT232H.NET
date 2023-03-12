@@ -72,7 +72,9 @@ namespace MadeInTheUSB.FT232H.Console
         {
             var oled = new OLED_SSD1306(i2cDevice, 128, 32);
             oled.Begin();
-            oled.DrawLine(0, 0, 128, 0, true);
+            oled.SetPixel(8, 8, 1==1);
+            oled.SetPixel(16, 16, 1 == 1);
+            oled.SetPixel(32, 31, 1 == 1);
             oled.WriteDisplay();
         }
 
