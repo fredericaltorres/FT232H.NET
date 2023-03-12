@@ -10,7 +10,7 @@
        The Wheel() function comes from the Adafruit code 
        https://github.com/adafruit/Adafruit_NeoPixel
 
-   Copyright (C) 2015 MadeInTheUSB LLC
+   Copyright (C) 2015, 2023 MadeInTheUSB LLC
    Ported to C# and Nusbio by FT for MadeInTheUSB
 
    The MIT License (MIT)

@@ -5,7 +5,7 @@
 
     NusbioLedMatrix (MAX7219)
     Ported to C# and Nusbio by FT for MadeInTheUSB
-    Copyright (C) 2015 MadeInTheUSB LLC
+    Copyright (C) 2015, 2023 MadeInTheUSB LLC
     
     Based on the library MAX7219
     A library for controling Leds with a MAX7219/MAX7222

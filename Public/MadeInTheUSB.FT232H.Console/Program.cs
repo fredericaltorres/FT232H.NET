@@ -11,7 +11,6 @@ using MadeInTheUSB.FT232H.Components;
 
 namespace MadeInTheUSB.FT232H.Console
 {
-
     // TODO https://www.youtube.com/watch?v=jgbUCkcGIZ4 NeoPixel
     // https://github.com/kkrizka/adafruitft232h_i2c_adapter adafruitft232h_i2c_adapter
     
@@ -37,9 +36,6 @@ namespace MadeInTheUSB.FT232H.Console
             // PCF8574(i2cDevice);
             // ADS1015_ADC_ADC(i2cDevice);
             return;
-
-            
-
             
 
             // MCP3088 and MAX7219 is limited to 10Mhz

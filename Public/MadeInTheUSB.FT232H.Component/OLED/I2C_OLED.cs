@@ -1,6 +1,6 @@
 /*
     
-   Copyright (C) 2015 MadeInTheUSB LLC
+   Copyright (C) 2015, 2023 MadeInTheUSB LLC
    Ported to C# and Nusbio by FT for MadeInTheUSB
 
    The MIT License (MIT)
@@ -44,19 +44,16 @@
        https://github.com/stanleyhuangyc/MultiLCD/tree/master/MicroLCD
        officeboy/sh1106
        https://github.com/officeboy/sh1106/blob/master/firmware/sh1106.cpp
+       https://github.com/Matiasus/SSD1306  (Matiasus )
+
 */
 
 using System;
-using System.Diagnostics;
-using MadeInTheUSB;
 using MadeInTheUSB.Adafruit;
 using System.Linq;
-
-using int16_t  = System.Int16; // Nice C# feature allowing to use same Arduino/C type
 using uint16_t = System.UInt16;
-using uint8_t  = System.Byte;
-using size_t   = System.Int16;
-using MadeInTheUSB.WinUtil;
+using uint8_t = System.Byte;
+using size_t = System.Int16;
 using System.Collections.Generic;
 using MadeInTheUSB.FT232H;
 
@@ -66,11 +63,8 @@ namespace MadeInTheUSB.Display
     /// SSD1306 - https://www.adafruit.com/datasheets/SSD1306.pdf
     /// https://github.com/chadwyck-w/FT232H-MPSSE-I2C-SSD1306-OLED/blob/master/i2c_lib.c
     /// </summary>
-    public class OLED : Adafruit_GFX
+    public class I2C_OLED : Adafruit_GFX
     {
-        public const int CHARACTER_WIDTH = 6;
-        public const int ASCII_TABLE_OFFSET = 0x20;
-
         protected const int OLED_API_SETCONTRAST                          = 0x81;
         protected const int OLED_API_DISPLAYALLON_RESUME                  = 0xA4;
         protected const int OLED_API_DISPLAYALLON                         = 0xA5;
@@ -89,8 +83,11 @@ namespace MadeInTheUSB.Display
         protected const int OLED_API_SETSTARTLINE                         = 0x40;
         protected const int OLED_API_MEMORYMODE                           = 0x20;
         protected const int OLED_API_COLUMNADDR                           = 0x21;
-        protected const int OLED_API_PAGE_ADDR                            = 0x22;
 
+        protected const int OLED_API_COLUMNADDR_START = 0;
+        protected const int OLED_API_COLUMNADDR_END = 128-1;
+
+        protected const int OLED_API_PAGE_ADDR                            = 0x22;
         protected int START_PAGE_ADDR = 0;
         protected int END_PAGE_ADDR(int height)
         {
@@ -103,7 +100,6 @@ namespace MadeInTheUSB.Display
         protected const int OLED_API_CHARGEPUMP                           = 0x8D;
         protected const int OLED_API_EXTERNALVCC                          = 0x01;
         protected const int OLED_API_SWITCHCAPVCC                         = 0x02;
-        
         protected const int OLED_API_ACTIVATE_SCROLL                      = 0x2F;
         protected const int OLED_API_DEACTIVATE_SCROLL                    = 0x2E;
         protected const int OLED_API_SET_VERTICAL_SCROLL_AREA             = 0xA3;
@@ -120,8 +116,6 @@ namespace MadeInTheUSB.Display
             SH1106,
             SSD1306
         }
-
-        //public int PIN_DC;				//0x01	// D8
 
         public int DeviceId;
 
@@ -152,7 +146,7 @@ namespace MadeInTheUSB.Display
         protected I2CDevice _i2cDevice;
 
 
-        public OLED(I2CDevice i2cDevice, int width, int height, OledDriver driver = OledDriver.SH1106, bool debug = false) : base((Int16)width, (Int16)height)
+        public I2C_OLED(I2CDevice i2cDevice, int width, int height, OledDriver driver = OledDriver.SH1106, bool debug = false) : base((Int16)width, (Int16)height)
         {
             this.Driver            = driver;
             this.Width             = width;
@@ -176,12 +170,9 @@ namespace MadeInTheUSB.Display
             this.SendCommand(val);
         }
 
-        public void WriteDisplay(bool optimized = true)
+        public void WriteDisplay()
         {
-            var WIRE_MAX = 32;
-            var count = this.Width * ((this.Height + 7) / 8);
-            uint16_t bytesOut = 1;
-            var bytePerRows = 16*2;
+            var bytePerRows = 16 * 2;
             var x = 0;
             
             while (true)
@@ -190,53 +181,11 @@ namespace MadeInTheUSB.Display
                 if (tmpBuffer.Count == 0)
                     break;
                 var buffer2 = new List<byte>();
-                buffer2.Add(OLED_API_SETSTARTLINE); // 0x40
+                buffer2.Add(OLED_API_SETSTARTLINE);
                 buffer2.AddRange(tmpBuffer);
                 this._i2cDevice.WriteBuffer(this.DeviceId, buffer2.ToArray());
                 x += 1;
             }
-            /*
-            var zz = SH1106_X_PIXELS;
-
-            for (int i = SH1106_ROWS - 1; i >= 0; i--)
-            {
-                //this.GotoXY(0, i);
-                var buffer = new List<byte>();
-                var slicedBuffer = BitUtil.SliceBuffer(this._buffer.ToList(), (i * zz), zz);
-
-                iBuffer.Add(OLED_API_SETSTARTLINE);
-                iBuffer.Add(+++);
-                iBuffer.AddRange(slicedBuffer);
-
-                this._i2cDevice.WriteBuffer(this.DeviceId, iBuffer.ToArray());
-            }*/
-
-            //sw.Stop();
-            //Debug.WriteLine("WriteDisplay {0}", sw.ElapsedMilliseconds);
-        }
-
-
-        public void WriteDisplay2(bool optimized = true)
-        {
-            this.SendCommand(OLED_API_SSD1306_SETLOWCOLUMN | 0x0 );
-            this.SendCommand(OLED_API_SETHIGHCOLUMN | 0x0);
-            this.SendCommand(OLED_API_SETSTARTLINE | 0x0);
-
-            var zz = SH1106_X_PIXELS;
-            
-            for (int i = SH1106_ROWS - 1; i >= 0; i--)
-            {
-                //this.GotoXY(0, i);
-                var buffer = new List<byte>();
-                var slicedBuffer = BitUtil.SliceBuffer(this._buffer.ToList(), (i*zz), zz);
-
-                buffer.Add(OLED_API_SETSTARTLINE);
-                buffer.AddRange(slicedBuffer);
-
-                this._i2cDevice.WriteBuffer(this.DeviceId, buffer.ToArray());
-            }
-            //sw.Stop();
-            //Debug.WriteLine("WriteDisplay {0}", sw.ElapsedMilliseconds);
         }
         
         public void SetBuffer(int index, byte val, bool refresh = false)
@@ -246,26 +195,13 @@ namespace MadeInTheUSB.Display
                 WriteDisplay();
         }
 
-
-        public void SetPixel2(int x, int y, bool on)
-        {
-            if (x >= SH1106_X_PIXELS || y >= SH1106_Y_PIXELS)
-                return;
-
-            // find page (y / 8)
-            var page = y >> 3;
-            // which pixel (y % 8)
-            var pixel = 1 << (y - (page << 3));
-            // update counter
-            var _counter = x + (page << 7);
-            // save pixel
-            _buffer[_counter++] |= (byte)pixel;
-        }
-
         public void SetPixel(int x, int y, bool on)
         {
 	        if (x >= SH1106_X_PIXELS || y >= SH1106_Y_PIXELS)
                 return;
+
+            if (y < 0) y = 0;
+            if (x < 0) x = 0;
 
             uint8_t bank    = (byte)(y / 8);
 	        uint8_t bitMask = (byte)(1 << (y % 8));
@@ -285,49 +221,17 @@ namespace MadeInTheUSB.Display
             for (var i = 0; i < BUF_LEN; i++)
                 this._buffer[i] = 0xFF;
             if (refresh)
-                this.WriteDisplay(optimized: false);
+                this.WriteDisplay();
         }
 
         public void Clear(bool refresh = false)
         {
             this._buffer = new uint8_t[BUF_LEN];
             if (refresh)
-                this.WriteDisplay(optimized: true);
+                this.WriteDisplay();
         }
         
-        public List<byte> GotoXY(int x, int y, bool computeBuffer = false)
-        {
-            if (x >= SH1106_X_PIXELS || y >= SH1106_ROWS)
-                throw new ArgumentException("Invalid x or y");
-
-	        this._position = (SH1106_X_PIXELS * y) + x;
-
-            if (this.Driver == OledDriver.SH1106)
-            {
-                x = x + 2; // Panel is 128 pixels wide, controller RAM has space for 132,
-                // it's centered so add an offset to ram address.
-            }
-
-            var buffer = new List<byte>() {
-                SH1106_COMMAND,
-                (byte)(0xB0 + y),       // Set row
-                (byte)(x & 0xF) ,       // Set lower column address
-                (byte)(0x10 | (x >> 4)) // Set higher column address
-            };
-            //var buffer = BitUtil.ByteBuffer(
-
-            //    0xB0 + y,       // Set row
-            //    x & 0xF ,       // Set lower column address
-            //    0x10 | (x >> 4) // Set higher column address
-            //);
-
-            if (!computeBuffer)
-            {
-                this._i2cDevice.WriteBuffer(this.DeviceId, buffer.ToArray()); //SH1106_COMMAND
-            }
-
-            return buffer;
-        }
+        
 
         protected void SendCommand(params int [] commands)
         {
@@ -337,46 +241,31 @@ namespace MadeInTheUSB.Display
 
         protected void SendCommand(int command)
         {
-            //this._spiEngine.TransferNoMiso(SH1106_COMMAND, SH1106_DATA, true, new List<byte>() {(byte)command});
-            var buffer = new List<byte>()
-            {
-                SH1106_COMMAND, (byte)command
-            };
-            this._i2cDevice.WriteBuffer(this.DeviceId, buffer.ToArray());
+            this._i2cDevice.WriteBuffer(this.DeviceId, new List<byte>() { SH1106_COMMAND, (byte)command }.ToArray());
         }
-
-        //public void DisplayUserMessage(string title, string text)
-        //{
-        //    this.Clear();
-        //    this.DrawRect(0, 0, this.Width, this.Height, true);
-        //    for (var i = 0; i < 4; i++)
-        //    {
-        //        this.DrawLine(0, i*2, this.Width, i*2, true);
-        //    }
-        //    this.WriteString(-1, 0, " "+title+" ");
-        //    this.WriteString(-1, 3*8, text);
-        //    this.WriteDisplay();
-        //}
         
         public void WriteString(int x, int y, string s, bool clearText = false)
         {
-            // We cannot set y to a specific location. We can only set it
-            // to a multiple 8
+            // We cannot set y to a specific location. We can only set it to a multiple 8
             y = (y / 8) * 8; // y can only be a multiple of 8
 
             if (x == -1) // Center
             {
-                x = ((this.Width - (s.Length*CHARACTER_WIDTH)) / 2);
+                x = ((this.Width - (s.Length * ASCII_CHAR_TABLE_CHAR_WIDTH)) / 2);
             }
 
             x = this.Width - x - 1;
 
-            foreach (var c in s)
-            {
-                var code            = ((int)c) - ASCII_TABLE_OFFSET;
-                var charDefinition  = ASCII[code];
+            var chars = s.ToArray().ToList();
+            chars.Reverse(); // 2023/03 For this implementation I had to reverse the chars list, but it is working
 
-                for (var r = 0; r < CHARACTER_WIDTH; r++)
+            foreach (var c in chars)
+            {
+                var code            = ((int)c) - ASCII_CHAR_TABLE_OFFSET;
+                var charDefinition  = ASCII_CHAR_TABLE[code];
+
+                // 2023/03 For this implementation I had to reverse the chars implementation
+                for (var r = ASCII_CHAR_TABLE_CHAR_WIDTH-1; r >= 0;  r--)
                 {
                     uint8_t bank                 = (byte)(y / 8);
                     this._position               = (SH1106_X_PIXELS * bank) + x;
@@ -397,11 +286,14 @@ namespace MadeInTheUSB.Display
             }
             oledDisplay.WriteString(-1, 0, title);
             if(text != null) 
-                oledDisplay.WriteString(-1, 3 * 8, text);
+                oledDisplay.WriteString(-1, (2 * 8), text);
             oledDisplay.WriteDisplay();
         }
 
-        public List<List<byte>> ASCII = new List<List<uint8_t>>()
+        public const int ASCII_CHAR_TABLE_CHAR_WIDTH = 6;
+        public const int ASCII_CHAR_TABLE_OFFSET = 0x20;
+
+        public static readonly List<List<byte>> ASCII_CHAR_TABLE = new List<List<uint8_t>>()
         {
             new List<byte> {0x00,0x00,0x00,0x00,0x00,0x00},   //   0x20 32
             new List<byte> {0x00,0x00,0x00,0x6f,0x00,0x00},   // ! 0x21 33

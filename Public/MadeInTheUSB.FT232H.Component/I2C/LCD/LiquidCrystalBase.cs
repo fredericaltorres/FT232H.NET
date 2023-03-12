@@ -2,7 +2,7 @@
    This class is based on the Arduino LiquidCrystal Library.
    Thanks to whoever wrote this library. There is no copyright mentioned in the source code. 
     
-   Copyright (C) 2015 MadeInTheUSB LLC
+   Copyright (C) 2015, 2023 MadeInTheUSB LLC
    Ported to C# and Nusbio by FT for MadeInTheUSB
 
    The MIT License (MIT)

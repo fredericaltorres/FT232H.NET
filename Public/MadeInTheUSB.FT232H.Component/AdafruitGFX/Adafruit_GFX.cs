@@ -1,6 +1,6 @@
 /*
     Ported to C# and Nusbio by FT for MadeInTheUSB
-    Copyright (C) 2015 MadeInTheUSB LLC
+    Copyright (C) 2015, 2023 MadeInTheUSB LLC
  
     Adafruit 8x8 LED matrix with backpack
     This program control Adafruit 8x8 LED matrix with backpack

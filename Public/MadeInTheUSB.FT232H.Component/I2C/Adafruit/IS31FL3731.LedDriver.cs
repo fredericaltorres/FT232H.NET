@@ -1,6 +1,6 @@
 /*
     Written by FT for MadeInTheUSB
-    Copyright (C) 2015 MadeInTheUSB LLC
+    Copyright (C) 2015, 2023 MadeInTheUSB LLC
 
     The MIT License (MIT)
 
