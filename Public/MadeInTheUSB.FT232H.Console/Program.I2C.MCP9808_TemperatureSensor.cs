@@ -10,6 +10,7 @@ using MadeInTheUSB.FT232H.Components.APA102;
 using DynamicSugar;
 using MadeInTheUSB.Adafruit;
 using MadeInTheUSB.Display;
+using System.Diagnostics;
 
 namespace MadeInTheUSB.FT232H.Console
 {
@@ -64,18 +65,49 @@ namespace MadeInTheUSB.FT232H.Console
             }
         }
         */
+        public static void RectangleDemo(OLED oled, int wait)
+        {
+            System.Console.Clear();
+            ConsoleEx.TitleBar(0, "Rectangle demo");
+            ConsoleEx.WriteMenu(-1, 6, "Q)uit");
+            oled.Clear();
+            if (wait > 0)
+                oled.DrawWindow("Rectangle Demo", "Slow Speed");
+            else
+                oled.DrawWindow("Rectangle Demo", "Full Speed");
+            Thread.Sleep(1000 * 2);
 
-        
+            var sw = Stopwatch.StartNew();
+
+            for (var j = 1; j < oled.Height; j++)
+            {
+                oled.Clear(refresh: false);
+                for (var i = 0; i < oled.Height; i += j)
+                {
+                    oled.DrawRect(i, i, oled.Width - (i * 2), oled.Height - (i * 2), true);
+                    System.Console.WriteLine("Rectangle {0:000},{1:000} {2:000},{3:000}", i, i, oled.Width - (i * 2), oled.Height - (i * 2));
+                }
+                oled.WriteDisplay();
+                if (wait > 0)
+                    Thread.Sleep(wait);
+            }
+            sw.Stop();
+            oled.DrawWindow("Rectangle demo", "The End.");
+            System.Console.WriteLine("Execution Time:{0}. Hit space to continue", sw.ElapsedMilliseconds);
+            var k = System.Console.ReadKey();
+        }
 
 
         static void OLED_SSD1306_Sample(I2CDevice i2cDevice)
         {
             var oled = new OLED_SSD1306(i2cDevice, 128, 32);
             oled.Begin();
-            oled.SetPixel(8, 8, 1==1);
+            oled.DrawRect(0, 0, oled.Width, oled.Height, true);
+            oled.DrawCircle(64, 16, 6, true);
             oled.SetPixel(16, 16, 1 == 1);
             oled.SetPixel(32, 31, 1 == 1);
             oled.WriteDisplay();
+            RectangleDemo(oled, 10);
         }
 
             static void MCP9808_TemperatureSensor_Sample(I2CDevice i2cDevice)

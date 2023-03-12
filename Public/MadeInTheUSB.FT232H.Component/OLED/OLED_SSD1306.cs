@@ -120,8 +120,20 @@ namespace MadeInTheUSB.Display
             // SendCommand(OLED_API_DEACTIVATE_SCROLL);
 
             SendCommand(OLED_API_SH1106_PAGE_ADDR);                 // 0xB0
-            SendCommand(OLED_API_SETHIGHCOLUMN);                 // 0x10
-            SendCommand(0x01);                 // 0x10
+            SendCommand(OLED_API_SETHIGHCOLUMN, 0x01);                 // 0x10
+
+            SendCommand(OLED_API_PAGE_ADDR, START_PAGE_ADDR, END_PAGE_ADDR(this.Height));
+            SendCommand(OLED_API_COLUMNADDR, 0, 127);
+
+            //var buffer = new List<int>() {
+            //    OLED_API_PAGE_ADDR,
+            //    START_PAGE_ADDR,            // Page start address
+            //    END_PAGE_ADDR(this.Height), // Page end address
+            //    OLED_API_COLUMNADDR,        // Column start address
+            //    0,
+            //    127,
+            //};
+            //this.SendCommand(buffer.ToArray());
 
             SendCommand(OLED_API_DISPLAYON);//--turn on oled panel
 
@@ -129,9 +141,9 @@ namespace MadeInTheUSB.Display
             
             // WriteDisplay Optimized: False does not work right first time called
             // when we have pixel. Can't understand why. This seems to fix the problem
-            this.Fill(true, false);
-            // this.Fill(true, false);
-            this.Clear(true);
+            //this.Fill(true, false);
+            //// this.Fill(true, false);
+            //this.Clear(true);
         }
     }
 }

@@ -141,8 +141,6 @@ namespace MadeInTheUSB.Display
         public const int SH1106_SUCCESS = 1;
         public const int SH1106_ERROR   = 0;
 
-        private int _column;
-	    private int _line;
         private int _position;
 
         private uint8_t[] _buffer = new uint8_t[BUF_LEN];
@@ -180,25 +178,10 @@ namespace MadeInTheUSB.Display
 
         public void WriteDisplay(bool optimized = true)
         {
-            //this.SendCommand(OLED_API_SSD1306_SETLOWCOLUMN | 0x0);
-            //this.SendCommand(OLED_API_SETHIGHCOLUMN | 0x0);
-            //this.SendCommand(OLED_API_SETSTARTLINE | 0x0);
-            var buffer = new List<int>() {
-                OLED_API_PAGE_ADDR,
-                START_PAGE_ADDR,            // Page start address
-                END_PAGE_ADDR(this.Height), // Page end address
-                OLED_API_COLUMNADDR,        // Column start address
-                0,
-                127,
-            };
-            this.SendCommand(buffer.ToArray());
-            //this.SendCommand(this.Width-1);
-
             var WIRE_MAX = 32;
-            //var count = this.Width * ((this.Height + 7) / 8);
             var count = this.Width * ((this.Height + 7) / 8);
             uint16_t bytesOut = 1;
-            var bytePerRows = 16;
+            var bytePerRows = 16*2;
             var x = 0;
             
             while (true)
