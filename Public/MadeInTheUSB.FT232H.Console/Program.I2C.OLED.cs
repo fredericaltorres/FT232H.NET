@@ -16,7 +16,7 @@ namespace MadeInTheUSB.FT232H.Console
 {
     partial class Program
     {
-        static void DrawCircleFractal(I2C_OLED_SSD1306_LOW_LEVEL _oledDisplay, int x, int y, int r, int sleep = 20)
+        static void DrawCircleFractal(I2C_OLED _oledDisplay, int x, int y, int r, int sleep = 20)
         {
             _oledDisplay.DrawCircle(x, y, r, true);
             _oledDisplay.DrawCircle(x + r, y, r / 2, true);
@@ -25,7 +25,7 @@ namespace MadeInTheUSB.FT232H.Console
             Thread.Sleep(sleep);
         }
 
-        public static void OledCircleFractalDemo(I2C_OLED_SSD1306_LOW_LEVEL oled, bool clearScreen)
+        public static void OledCircleFractalDemo(I2C_OLED oled, bool clearScreen)
         {
             System.Console.Clear();
             ConsoleEx.TitleBar(0, "Circle fractal demo");
@@ -66,7 +66,7 @@ namespace MadeInTheUSB.FT232H.Console
             Thread.Sleep(1000 * 2);
         }
 
-        public static void OledCircleDemo(I2C_OLED_SSD1306_LOW_LEVEL oled)
+        public static void OledCircleDemo(I2C_OLED oled)
         {
             System.Console.Clear();
             ConsoleEx.TitleBar(0, "Circle Demo");
@@ -90,7 +90,7 @@ namespace MadeInTheUSB.FT232H.Console
             Thread.Sleep(1000 * 2);
         }
 
-        public static void OledRectangleDemo(I2C_OLED_SSD1306_LOW_LEVEL oled, int wait)
+        public static void OledRectangleDemo(I2C_OLED oled, int wait)
         {
             System.Console.Clear();
             ConsoleEx.TitleBar(0, "Rectangle demo");
@@ -122,7 +122,7 @@ namespace MadeInTheUSB.FT232H.Console
 
         static void OLED_SSD1306_Sample(I2CDevice i2cDevice)
         {
-            var oled = new I2C_OLED_SSD1306_HIGH_LEVEL(i2cDevice, 128, 32);
+            var oled = new I2C_OLED_SSD1306(i2cDevice, 128, 32);
             if (oled.Begin())
             {
                 OledRectangleDemo(oled, 20);

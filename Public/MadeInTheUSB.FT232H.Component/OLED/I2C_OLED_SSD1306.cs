@@ -54,9 +54,84 @@ namespace MadeInTheUSB.Display
     /// <summary>
     /// SSD1306 - https://www.adafruit.com/datasheets/SSD1306.pdf
     /// </summary>
-    public class I2C_OLED_SSD1306_HIGH_LEVEL : I2C_OLED_SSD1306_LOW_LEVEL
+    public class I2C_OLED_SSD1306 : I2C_OLED
     {
-        public I2C_OLED_SSD1306_HIGH_LEVEL(I2CDevice i2cDevice, int width, int height, bool debug = false) : base(i2cDevice, width, height, new System.Collections.Generic.List<uint8_t>() { (byte)SSD1306_API.SETSTARTLINE }, OledDriver.SSD1306)
+        public enum SSD1306_VCC
+        {
+            EXTERNAL_VCC = 0x01,
+            SWITCH_CAP_VCC = 0x02,
+        }
+
+        public enum SSD1306_MEMORY_MODE
+        {
+            HORIZONTAL_MODE = 0x0,
+            VERTICAL_MODE = 0x1,
+            PAGE_ADDRESSING_MODE_RESET = 2,
+        }
+
+        public enum SSD1306_API
+        {
+            SETCONTRAST = 0x81,
+            DISPLAYALLON_RESUME = 0xA4,
+            DISPLAYALLON = 0xA5,
+            NORMALDISPLAY = 0xA6,
+            INVERTDISPLAY = 0xA7,
+            DISPLAYOFF = 0xAE,
+            DISPLAYON = 0xAF,
+            SETDISPLAYOFFSET = 0xD3,
+            SETCOMPINS = 0xDA,
+                SETCOMPINS_64_ROWS_PARAMETER = 0x12,
+                SETCOMPINS_32_ROWS_PARAMETER = 0x02,
+
+            SETVCOMDETECT = 0xDB,
+            SETVCOMDETECT_PARAMETER = 0x40,
+            SETDISPLAYCLOCKDIV = 0xD5,
+                SETDISPLAYCLOCKDIV_PARAMETER = 0x80,
+
+            SETPRECHARGE = 0xD9,
+            SETMULTIPLEX = 0xA8,
+
+            SSD1306_SETLOWCOLUMN = 0x00,
+            SETHIGHCOLUMN = 0x10,
+                SETHIGHCOLUMN_PARAMETER = 0x01,
+
+            SETSTARTLINE = 0x40,
+            MEMORYMODE = 0x20,
+
+            COLUMNADDR = 0x21,
+            COLUMNADDR_START = 0,
+            COLUMNADDR_END = 128 - 1,
+            COMSCANINC = 0xC0,
+            COMSCANDEC = 0xC8,
+            SSD1306_SET_SEGMENT_REMAP = 0xA0 + 1,
+            CHARGEPUMP = 0x8D,
+
+            EXTERNAL_VCC = 0x01,
+            SWITCH_CAP_VCC = 0x02,
+            _0x10 = 0x10,
+            _0x14 = 0x14,
+            _0x9F = 0x9F,
+            _0xCF = 0xCF,
+            _0x22 = 0x22,
+            _0xF1 = 0xF1,
+
+            ACTIVATE_SCROLL = 0x2F,
+            DEACTIVATE_SCROLL = 0x2E,
+            SET_VERTICAL_SCROLL_AREA = 0xA3,
+            RIGHT_HORIZONTAL_SCROLL = 0x26,
+            LEFT_HORIZONTAL_SCROLL = 0x27,
+            VERTICAL_AND_RIGHT_HORIZONTAL_SCROLL = 0x29,
+            VERTICAL_AND_LEFT_HORIZONTAL_SCROLL = 0x2A,
+            SH1106_SETLOWCOLUMN = 0x02,
+            SH1106_PAGE_ADDR = 0xB0,
+            SH1106_SET_SEGMENT_REMAP = 0xA1,
+            PAGE_ADDR = 0x22,
+            START_PAGE_ADDR = 0,
+            END_PAGE_ADDR_32_ROWS = 3,/*(int height) this.Height == 64 ? 7 : 3;*/
+            END_PAGE_ADDR_64_ROWS = 7,/*(int height) this.Height == 64 ? 7 : 3;*/
+        };
+
+        public I2C_OLED_SSD1306(I2CDevice i2cDevice, int width, int height, bool debug = false) : base(i2cDevice, width, height, new System.Collections.Generic.List<uint8_t>() { (byte)SSD1306_API.SETSTARTLINE }, OledDriver.SSD1306)
         {
         }
 
