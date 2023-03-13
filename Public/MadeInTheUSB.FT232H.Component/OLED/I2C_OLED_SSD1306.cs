@@ -62,6 +62,11 @@ namespace MadeInTheUSB.Display
 
         private bool Is64RowsDevice => this.Height == 64;
 
+        private SSD1306_VCC _vccState = SSD1306_VCC.SWITCH_CAP_VCC;
+        private bool IsExternalVcc => this._vccState == SSD1306_VCC.EXTERNAL_VCC;
+
+        //if (_vccState == SSD1306_API.EXTERNAL_VCC)
+
         public bool Begin(bool invert = false, uint8_t contrast = 128, uint8_t Vpp = 0)
         {
             if (!this._i2cDevice.InitiateDetectionSequence(this.DeviceId))
@@ -71,31 +76,16 @@ namespace MadeInTheUSB.Display
             this.SendCommand(SSD1306_API.SETDISPLAYCLOCKDIV, (byte)SSD1306_API.SETDISPLAYCLOCKDIV_PARAMETER);
             this.SendCommand(SSD1306_API.SETSTARTLINE | 0x0);
             this.SendCommand(SSD1306_API.CHARGEPUMP);
-            
-            var vccstate = SSD1306_API.SWITCH_CAP_VCC;
-            if (vccstate == SSD1306_API.EXTERNAL_VCC)
-                this.SendCommand(SSD1306_API._0x10);
-            else
-                this.SendCommand(SSD1306_API._0x14);
-
+            this.SendCommand(this.IsExternalVcc ? SSD1306_API._0x10 : SSD1306_API._0x14);
             this.SendCommand(SSD1306_API.SETMULTIPLEX, this.Height-1); // 64MUX for 128 x 64 version - 32MUX for 128 x 32 version
-            this.SendCommand(SSD1306_API.MEMORYMODE, (byte)SSD1306_API.MEMORYMODE_PARAMETER);
+            this.SendCommand(SSD1306_API.MEMORYMODE, (byte)SSD1306_MEMORY_MODE.HORIZONTAL_MODE);
             this.SendCommand(SSD1306_API.SSD1306_SET_SEGMENT_REMAP); // | 0x1
             this.SendCommand(SSD1306_API.COMSCANDEC);
             this.SendCommand(SSD1306_API.SETCOMPINS, (byte)(this.Is64RowsDevice ? SSD1306_API.SETCOMPINS_64_ROWS_PARAMETER: SSD1306_API.SETCOMPINS_32_ROWS_PARAMETER));
-            this.SendCommand(SSD1306_API.SETCONTRAST); 
-
-            if (vccstate == SSD1306_API.EXTERNAL_VCC)
-                this.SendCommand(SSD1306_API._0x9F);
-            else
-                this.SendCommand(SSD1306_API._0xCF);
-
+            this.SendCommand(SSD1306_API.SETCONTRAST);
+            this.SendCommand(this.IsExternalVcc ? SSD1306_API._0x9F : SSD1306_API._0xCF);
             this.SendCommand(SSD1306_API.SETPRECHARGE);
-            if (vccstate == SSD1306_API.EXTERNAL_VCC)
-                this.SendCommand(SSD1306_API._0x22);
-            else
-                this.SendCommand(SSD1306_API._0xF1);
-
+            this.SendCommand(this.IsExternalVcc ? SSD1306_API._0x22 : SSD1306_API._0xF1);
             this.SendCommand(SSD1306_API.SETVCOMDETECT, (byte)SSD1306_API.SETVCOMDETECT_PARAMETER);
             this.SendCommand(SSD1306_API.DISPLAYALLON_RESUME);
             this.SendCommand(SSD1306_API.NORMALDISPLAY);

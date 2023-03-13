@@ -67,6 +67,20 @@ namespace MadeInTheUSB.Display
     /// </summary>
     public class I2C_OLED : Adafruit_GFX
     {
+        public enum SSD1306_VCC
+        {
+            EXTERNAL_VCC = 0x01,
+            SWITCH_CAP_VCC = 0x02,
+        }
+
+        public enum SSD1306_MEMORY_MODE
+        {
+            HORIZONTAL_MODE = 0x0,
+            VERTICAL_MODE = 0x1,
+            PAGE_ADDRESSING_MODE_RESET = 2
+        }
+
+
         public enum SSD1306_API
         {
             SETCONTRAST = 0x81,
@@ -79,7 +93,7 @@ namespace MadeInTheUSB.Display
             SETDISPLAYOFFSET = 0xD3,
             SETCOMPINS = 0xDA,
                 SETCOMPINS_64_ROWS_PARAMETER = 0x12,
-                SETCOMPINS_32_ROWS_PARAMETER =     0x02,
+                SETCOMPINS_32_ROWS_PARAMETER = 0x02,
 
             SETVCOMDETECT = 0xDB,
             SETVCOMDETECT_PARAMETER = 0x40,
@@ -87,9 +101,7 @@ namespace MadeInTheUSB.Display
                 SETDISPLAYCLOCKDIV_PARAMETER =  0x80,
 
             SETPRECHARGE = 0xD9,
-
             SETMULTIPLEX = 0xA8,
-            
 
             SSD1306_SETLOWCOLUMN = 0x00,
             SETHIGHCOLUMN = 0x10,
@@ -98,7 +110,7 @@ namespace MadeInTheUSB.Display
 
             SETSTARTLINE = 0x40,
             MEMORYMODE = 0x20,
-            MEMORYMODE_PARAMETER = 0x0,
+
             COLUMNADDR = 0x21,
             COLUMNADDR_START = 0,
             COLUMNADDR_END = 128 - 1,
