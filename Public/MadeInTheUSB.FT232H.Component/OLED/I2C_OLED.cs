@@ -89,8 +89,7 @@ namespace MadeInTheUSB.Display
             SETPRECHARGE = 0xD9,
 
             SETMULTIPLEX = 0xA8,
-            SETMULTIPLEX_64_ROWS = 0x3F,
-            SETMULTIPLEX_32_ROWS = 0x1F,
+            
 
             SSD1306_SETLOWCOLUMN = 0x00,
             SETHIGHCOLUMN = 0x10,

@@ -69,7 +69,6 @@ namespace MadeInTheUSB.Display
 	
             this.SendCommand(SSD1306_API.DISPLAYOFF);
             this.SendCommand(SSD1306_API.SETDISPLAYCLOCKDIV, (byte)SSD1306_API.SETDISPLAYCLOCKDIV_PARAMETER);
-            this.SendCommand(SSD1306_API.SETMULTIPLEX, (byte)(this.Is64RowsDevice ? SSD1306_API.SETMULTIPLEX_64_ROWS : SSD1306_API.SETMULTIPLEX_32_ROWS));
             this.SendCommand(SSD1306_API.SETSTARTLINE | 0x0);
             this.SendCommand(SSD1306_API.CHARGEPUMP);
             
@@ -107,11 +106,7 @@ namespace MadeInTheUSB.Display
             this.SendCommand(SSD1306_API.DISPLAYON);
 
             this.Clear(true);
-            // WriteDisplay Optimized: False does not work right first time called
-            // when we have pixel. Can't understand why. This seems to fix the problem
-            //this.Fill(true, false);
-            //// this.Fill(true, false);
-            //this.Clear(true);
+            
             return true;
         }
     }
