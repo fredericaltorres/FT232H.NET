@@ -54,9 +54,9 @@ namespace MadeInTheUSB.Display
     /// <summary>
     /// SSD1306 - https://www.adafruit.com/datasheets/SSD1306.pdf
     /// </summary>
-    public class I2C_OLED_SSD1306 : I2C_OLED
+    public class I2C_OLED_SSD1306_HIGH_LEVEL : I2C_OLED_SSD1306_LOW_LEVEL
     {
-        public I2C_OLED_SSD1306(I2CDevice i2cDevice, int width, int height, bool debug = false) : base(i2cDevice, width, height, OledDriver.SSD1306)
+        public I2C_OLED_SSD1306_HIGH_LEVEL(I2CDevice i2cDevice, int width, int height, bool debug = false) : base(i2cDevice, width, height, OledDriver.SSD1306)
         {
         }
 

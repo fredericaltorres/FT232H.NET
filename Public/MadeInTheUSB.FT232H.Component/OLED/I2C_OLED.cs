@@ -65,7 +65,7 @@ namespace MadeInTheUSB.Display
     /// SSD1306 - https://www.adafruit.com/datasheets/SSD1306.pdf
     /// https://github.com/chadwyck-w/FT232H-MPSSE-I2C-SSD1306-OLED/blob/master/i2c_lib.c
     /// </summary>
-    public class I2C_OLED : Adafruit_GFX
+    public class I2C_OLED_SSD1306_LOW_LEVEL : Adafruit_GFX
     {
         public enum SSD1306_VCC
         {
@@ -178,12 +178,12 @@ namespace MadeInTheUSB.Display
         protected I2CDevice _i2cDevice;
 
 
-        public I2C_OLED(I2CDevice i2cDevice, int width, int height, OledDriver driver = OledDriver.SH1106, bool debug = false) : base((Int16)width, (Int16)height)
+        public I2C_OLED_SSD1306_LOW_LEVEL(I2CDevice i2cDevice, int width, int height, OledDriver driver = OledDriver.SSD1306, bool debug = false) : base((Int16)width, (Int16)height)
         {
-            this.Driver            = driver;
-            this.Width             = (short)width;
-            this.Height            = (short)height;
-            this.DeviceId = ((this.Height == 32) ? 0x3C : 0x3D);
+            this.Driver     = driver;
+            this.Width      = (short)width;
+            this.Height     = (short)height;
+            this.DeviceId   = ((this.Height == 32) ? 0x3C : 0x3D);
             this._i2cDevice = i2cDevice;
         }
 
@@ -196,10 +196,10 @@ namespace MadeInTheUSB.Display
             this.SetPixel(x, y, color == 1);
         }
 
-        public void Contrast(byte val)
-        {
-            this.SendCommand(SSD1306_API.SETCONTRAST, val);
-        }
+        //public void Contrast(byte val)
+        //{
+        //    this.SendCommand(SSD1306_API.SETCONTRAST, val);
+        //}
 
         public void WriteDisplay()
         {
@@ -264,23 +264,10 @@ namespace MadeInTheUSB.Display
 
         protected void SendCommand(SSD1306_API command, params int [] commands)
         {
-            var cmd = new StringBuilder();
-            cmd.Append($"SendCommand(SSD1306_API.{command}");
-
             SendCommandOneByte((byte)command);
-
             if (commands.Length > 0)
-            {
-                cmd.Append($", ");
                 foreach (var c in commands)
-                {
-                    cmd.Append($"0x{c:X}, ");
                     SendCommandOneByte(c);
-                }
-                cmd.Remove(cmd.Length-2, 2);
-            }
-            cmd.Append($");");
-            //Debug.WriteLine(cmd.ToString());
         }
 
         protected void SendCommandOneByte(int command)
