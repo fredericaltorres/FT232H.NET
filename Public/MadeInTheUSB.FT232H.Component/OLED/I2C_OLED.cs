@@ -56,8 +56,6 @@ using uint8_t = System.Byte;
 using size_t = System.Int16;
 using System.Collections.Generic;
 using MadeInTheUSB.FT232H;
-using System.Text;
-using System.Diagnostics;
 
 namespace MadeInTheUSB.Display
 {
@@ -79,7 +77,6 @@ namespace MadeInTheUSB.Display
             VERTICAL_MODE = 0x1,
             PAGE_ADDRESSING_MODE_RESET = 2
         }
-
 
         public enum SSD1306_API
         {
@@ -161,30 +158,29 @@ namespace MadeInTheUSB.Display
         public const int SH1106_Y_PIXELS    = 32;
         public const int SH1106_ROWS        = 8;
         public const int BUF_LEN            =  512; // (512*8)/128 == 32 Rows
-        private uint8_t[] _buffer = new uint8_t[BUF_LEN];
+        private uint8_t[] _buffer           = new uint8_t[BUF_LEN];
 
-        // Functions GotoXY, writeBitmap, renderString, writeLine and writeRect
-        // will return SH1106_SUCCESS if they succeed and SH1106_ERROR if they fail.
         public const int SH1106_SUCCESS = 1;
         public const int SH1106_ERROR   = 0;
 
         private int _position;
-               
-
-        //public int Width, Height;
 
         public OledDriver Driver = OledDriver.SH1106;
 
+        private List<byte> _writeDisplayCommands = new List<byte>();
+
         protected I2CDevice _i2cDevice;
 
-
-        public I2C_OLED_SSD1306_LOW_LEVEL(I2CDevice i2cDevice, int width, int height, OledDriver driver = OledDriver.SSD1306, bool debug = false) : base((Int16)width, (Int16)height)
+        public I2C_OLED_SSD1306_LOW_LEVEL(I2CDevice i2cDevice, int width, int height,
+            List<byte> writeDisplayCommands,
+            OledDriver driver = OledDriver.SSD1306, bool debug = false) : base((Int16)width, (Int16)height)
         {
             this.Driver     = driver;
             this.Width      = (short)width;
             this.Height     = (short)height;
             this.DeviceId   = ((this.Height == 32) ? 0x3C : 0x3D);
             this._i2cDevice = i2cDevice;
+            this._writeDisplayCommands = writeDisplayCommands;
         }
 
         public virtual void Begin(bool invert = false, uint8_t contrast = 128, uint8_t Vpp = 0)
@@ -212,7 +208,8 @@ namespace MadeInTheUSB.Display
                 if (tmpBuffer.Count == 0)
                     break;
                 var buffer2 = new List<byte>();
-                buffer2.Add((byte)SSD1306_API.SETSTARTLINE);
+                
+                buffer2.AddRange(_writeDisplayCommands);
                 buffer2.AddRange(tmpBuffer);
                 this._i2cDevice.WriteBuffer(this.DeviceId, buffer2.ToArray());
                 x += 1;
@@ -262,9 +259,9 @@ namespace MadeInTheUSB.Display
                 this.WriteDisplay();
         }
 
-        protected void SendCommand(SSD1306_API command, params int [] commands)
+        protected void SendCommand(byte command, params int [] commands)
         {
-            SendCommandOneByte((byte)command);
+            SendCommandOneByte(command);
             if (commands.Length > 0)
                 foreach (var c in commands)
                     SendCommandOneByte(c);

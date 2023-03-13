@@ -56,7 +56,7 @@ namespace MadeInTheUSB.Display
     /// </summary>
     public class I2C_OLED_SSD1306_HIGH_LEVEL : I2C_OLED_SSD1306_LOW_LEVEL
     {
-        public I2C_OLED_SSD1306_HIGH_LEVEL(I2CDevice i2cDevice, int width, int height, bool debug = false) : base(i2cDevice, width, height, OledDriver.SSD1306)
+        public I2C_OLED_SSD1306_HIGH_LEVEL(I2CDevice i2cDevice, int width, int height, bool debug = false) : base(i2cDevice, width, height, new System.Collections.Generic.List<uint8_t>() { (byte)SSD1306_API.SETSTARTLINE }, OledDriver.SSD1306)
         {
         }
 
@@ -66,6 +66,11 @@ namespace MadeInTheUSB.Display
         private bool IsExternalVcc => this._vccState == SSD1306_VCC.EXTERNAL_VCC;
 
         //if (_vccState == SSD1306_API.EXTERNAL_VCC)
+
+        protected void SendCommand(SSD1306_API command, params int[] commands)
+        {
+            base.SendCommand((byte)command, commands);
+        }
 
         public bool Begin(bool invert = false, uint8_t contrast = 128, uint8_t Vpp = 0)
         {
