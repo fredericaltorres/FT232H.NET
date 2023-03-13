@@ -61,9 +61,40 @@ namespace MadeInTheUSB.FT232H
             return (byte)values;
         }
 
+        private void AllGpios(bool on)
+        {
+            for (int i = 0; i < this.MaxGpio; i++)
+                this.DigitalWrite(i, on ? PinState.High : PinState.Low);
+        }
+
+
+
+        static bool _progressModeInitialized = false;
+        static int _progressModeIndex = -1;
         public void ProgressNext(bool clear = false)
         {
-            //ProgressNextImpl.ProgressNext(this, clear);
+            if (!_progressModeInitialized)
+            {
+                _progressModeInitialized = true;
+                AllGpios(false);
+            }
+
+            if (clear)
+            {
+                AllGpios(false);
+                _progressModeIndex = -1;
+            }
+            else
+            {
+                if (_progressModeIndex >= 0)
+                    this.DigitalWrite(_progressModeIndex, PinState.Low);
+                _progressModeIndex += 1;
+
+                if (_progressModeIndex == this.MaxGpio)
+                    _progressModeIndex = 0;
+
+                this.DigitalWrite(_progressModeIndex, PinState.High);
+            }
         }
 
         public void SetGpioMask(byte mask)

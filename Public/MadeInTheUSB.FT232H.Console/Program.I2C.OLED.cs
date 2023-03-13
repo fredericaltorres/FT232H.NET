@@ -16,12 +16,13 @@ namespace MadeInTheUSB.FT232H.Console
 {
     partial class Program
     {
-        static void DrawCircleFractal(I2C_OLED _oledDisplay, int x, int y, int r)
+        static void DrawCircleFractal(I2C_OLED _oledDisplay, int x, int y, int r, int sleep = 20)
         {
             _oledDisplay.DrawCircle(x, y, r, true);
             _oledDisplay.DrawCircle(x + r, y, r / 2, true);
             _oledDisplay.DrawCircle(x - r, y, r / 2, true);
             _oledDisplay.WriteDisplay();
+            Thread.Sleep(sleep);
         }
 
         public static void OledCircleFractalDemo(I2C_OLED oled, bool clearScreen)
@@ -30,9 +31,8 @@ namespace MadeInTheUSB.FT232H.Console
             ConsoleEx.TitleBar(0, "Circle fractal demo");
             ConsoleEx.WriteMenu(-1, 6, "Q)uit");
             var rnd = new Random();
-            var wait = 00;
-
-            var sw = Stopwatch.StartNew();
+            oled.Clear(refresh: true);
+            Thread.Sleep(1000 * 2);
 
             oled.Clear(refresh: true);
             var r = 16;
@@ -40,49 +40,54 @@ namespace MadeInTheUSB.FT232H.Console
             var y = oled.Height / 2 - 1;
             var maxStep = 16;
 
-            for (var i = 0; i < maxStep; i += r / 4)
+            foreach (var loop in DS.Range(2))
             {
-                if (clearScreen) oled.Clear(false);
-                DrawCircleFractal(oled, x + i, y - i, r);
+                for (var i = 0; i < maxStep; i += r / 4)
+                {
+                    if (clearScreen) oled.Clear(false);
+                    DrawCircleFractal(oled, x + i, y - i, r);
+                }
+                for (var i = 0; i < maxStep; i += r / 4)
+                {
+                    if (clearScreen) oled.Clear(false);
+                    DrawCircleFractal(oled, x - i, y + i, r);
+                }
+                for (var i = 0; i < maxStep; i += r / 4)
+                {
+                    if (clearScreen) oled.Clear(false);
+                    DrawCircleFractal(oled, x + i, y + i, r);
+                }
+                for (var i = 0; i < maxStep; i += r / 4)
+                {
+                    if (clearScreen) oled.Clear(false);
+                    DrawCircleFractal(oled, x - i, y - i, r);
+                }
             }
-            for (var i = 0; i < maxStep; i += r / 4)
-            {
-                if (clearScreen) oled.Clear(false);
-                DrawCircleFractal(oled, x - i, y + i, r);
-            }
-            for (var i = 0; i < maxStep; i += r / 4)
-            {
-                if (clearScreen) oled.Clear(false);
-                DrawCircleFractal(oled, x + i, y + i, r);
-            }
-            for (var i = 0; i < maxStep; i += r / 4)
-            {
-                if (clearScreen) oled.Clear(false);
-                DrawCircleFractal(oled, x - i, y - i, r);
-            }
-            sw.Stop();
-            System.Console.WriteLine(sw.ElapsedMilliseconds);
+            Thread.Sleep(1000 * 2);
         }
 
-        public static void OledCircleDemo(I2C_OLED _oledDisplay)
+        public static void OledCircleDemo(I2C_OLED oled)
         {
             System.Console.Clear();
             ConsoleEx.TitleBar(0, "Circle Demo");
             ConsoleEx.WriteMenu(0, 1, "Q)uit");
             var rnd = new Random();
+            oled.Clear(refresh: true);
+            Thread.Sleep(1000 * 2);
 
-            _oledDisplay.Clear(refresh: true);
+            oled.Clear(refresh: true);
             for (var i = 0; i < 16; i += 1)
             {
                 var r = rnd.Next(2, 16);
-                var x = rnd.Next(r + 1, _oledDisplay.Width - r);
-                var y = rnd.Next(r + 1, _oledDisplay.Height - r);
-                _oledDisplay.DrawCircle(x, y, r, true);
-                _oledDisplay.WriteDisplay();
+                var x = rnd.Next(r + 1, oled.Width - r);
+                var y = rnd.Next(r + 1, oled.Height - r);
+                oled.DrawCircle(x, y, r, true);
+                oled.WriteDisplay();
 
                 System.Console.WriteLine("Circle {0:000},{1:000} r:{2:000}", x, y, r);
                 Thread.Sleep(125);
             }
+            Thread.Sleep(1000 * 2);
         }
 
         public static void OledRectangleDemo(I2C_OLED oled, int wait)
@@ -112,6 +117,7 @@ namespace MadeInTheUSB.FT232H.Console
             sw.Stop();
             oled.DrawWindow(windowTitle, "The End.");
             System.Console.WriteLine("Execution Time:{0}. Hit space to continue", sw.ElapsedMilliseconds);
+            Thread.Sleep(1000 * 2);
         }
 
         static void OLED_SSD1306_Sample(I2CDevice i2cDevice)
@@ -119,9 +125,11 @@ namespace MadeInTheUSB.FT232H.Console
             var oled = new I2C_OLED_SSD1306(i2cDevice, 128, 32);
             if (oled.Begin())
             {
-                OledRectangleDemo(oled, 10);
+                OledRectangleDemo(oled, 20);
                 OledCircleDemo(oled);
                 OledCircleFractalDemo(oled, true);
+                OledCircleFractalDemo(oled, !true);
+                oled.Clear(true);
             }
         }
     }

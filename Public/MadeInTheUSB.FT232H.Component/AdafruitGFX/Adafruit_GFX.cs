@@ -85,7 +85,8 @@ namespace MadeInTheUSB.Adafruit
     {
         private int16_t WIDTH = 8;   // This is the 'raw' Display w/h - never changes
         private int16_t HEIGHT = 8;   // This is the 'raw' Display w/h - never changes
-        public int16_t Width, Height;
+        public int16_t Width;
+        public int16_t Height;
         internal uint8_t _rotation;
         UInt16 _textcolor, _textbgcolor;
         int16_t cursor_x, cursor_y;

@@ -67,43 +67,44 @@ namespace MadeInTheUSB.Display
             if (!this._i2cDevice.InitiateDetectionSequence(this.DeviceId))
                 return false;
 	
-            this.SendCommand(OLED_API_DISPLAYOFF);
-            this.SendCommand(OLED_API_SETDISPLAYCLOCKDIV, 0x80);
-            this.SendCommand(OLED_API_SETMULTIPLEX, this.Is64RowsDevice ? 0x3F : 0x1F);
-            this.SendCommand(OLED_API_SETSTARTLINE | 0x0);
-            this.SendCommand(OLED_API_CHARGEPUMP);
-
-            int vccstate = OLED_API_SWITCHCAPVCC;
-            if (vccstate == OLED_API_EXTERNALVCC)
-                SendCommand(0x10);
+            this.SendCommand(SSD1306_API.DISPLAYOFF);
+            this.SendCommand(SSD1306_API.SETDISPLAYCLOCKDIV, (byte)SSD1306_API.SETDISPLAYCLOCKDIV_PARAMETER);
+            this.SendCommand(SSD1306_API.SETMULTIPLEX, (byte)(this.Is64RowsDevice ? SSD1306_API.SETMULTIPLEX_64_ROWS : SSD1306_API.SETMULTIPLEX_32_ROWS));
+            this.SendCommand(SSD1306_API.SETSTARTLINE | 0x0);
+            this.SendCommand(SSD1306_API.CHARGEPUMP);
+            
+            var vccstate = SSD1306_API.SWITCH_CAP_VCC;
+            if (vccstate == SSD1306_API.EXTERNAL_VCC)
+                this.SendCommand(SSD1306_API._0x10);
             else
-                SendCommand(0x14);
+                this.SendCommand(SSD1306_API._0x14);
 
-            SendCommand(OLED_API_SETMULTIPLEX, this.Height-1); // 64MUX for 128 x 64 version - 32MUX for 128 x 32 version
-            SendCommand(OLED_API_MEMORYMODE, 0x00);
-            SendCommand(OLED_API_SSD1306_SET_SEGMENT_REMAP | 0x1);
-            SendCommand(OLED_API_COMSCANDEC);
-            SendCommand(OLED_API_SETCOMPINS, this.Is64RowsDevice ? 0x12: 0x02);
-            SendCommand(OLED_API_SETCONTRAST);
-            if (vccstate == OLED_API_EXTERNALVCC)
-                SendCommand(0x9F);
+            this.SendCommand(SSD1306_API.SETMULTIPLEX, this.Height-1); // 64MUX for 128 x 64 version - 32MUX for 128 x 32 version
+            this.SendCommand(SSD1306_API.MEMORYMODE, (byte)SSD1306_API.MEMORYMODE_PARAMETER);
+            this.SendCommand(SSD1306_API.SSD1306_SET_SEGMENT_REMAP); // | 0x1
+            this.SendCommand(SSD1306_API.COMSCANDEC);
+            this.SendCommand(SSD1306_API.SETCOMPINS, (byte)(this.Is64RowsDevice ? SSD1306_API.SETCOMPINS_64_ROWS_PARAMETER: SSD1306_API.SETCOMPINS_32_ROWS_PARAMETER));
+            this.SendCommand(SSD1306_API.SETCONTRAST); 
+
+            if (vccstate == SSD1306_API.EXTERNAL_VCC)
+                this.SendCommand(SSD1306_API._0x9F);
             else
-                SendCommand(0xCF);
+                this.SendCommand(SSD1306_API._0xCF);
 
-            SendCommand(OLED_API_SETPRECHARGE);
-            if (vccstate == OLED_API_EXTERNALVCC)
-                SendCommand(0x22); 
+            this.SendCommand(SSD1306_API.SETPRECHARGE);
+            if (vccstate == SSD1306_API.EXTERNAL_VCC)
+                this.SendCommand(SSD1306_API._0x22);
             else
-                SendCommand(0xF1); 
+                this.SendCommand(SSD1306_API._0xF1);
 
-            SendCommand(OLED_API_SETVCOMDETECT, 0x40);
-            SendCommand(OLED_API_DISPLAYALLON_RESUME);
-            SendCommand(OLED_API_NORMALDISPLAY);
-            SendCommand(OLED_API_SH1106_PAGE_ADDR);
-            SendCommand(OLED_API_SETHIGHCOLUMN, 0x01);
-            SendCommand(OLED_API_PAGE_ADDR, START_PAGE_ADDR, END_PAGE_ADDR(this.Height));
-            SendCommand(OLED_API_COLUMNADDR, OLED_API_COLUMNADDR_START, OLED_API_COLUMNADDR_END);
-            SendCommand(OLED_API_DISPLAYON);
+            this.SendCommand(SSD1306_API.SETVCOMDETECT, (byte)SSD1306_API.SETVCOMDETECT_PARAMETER);
+            this.SendCommand(SSD1306_API.DISPLAYALLON_RESUME);
+            this.SendCommand(SSD1306_API.NORMALDISPLAY);
+            this.SendCommand(SSD1306_API.SH1106_PAGE_ADDR);
+            this.SendCommand(SSD1306_API.SETHIGHCOLUMN, (byte)SSD1306_API.SETHIGHCOLUMN_PARAMETER);
+            this.SendCommand(SSD1306_API.PAGE_ADDR,  (byte)SSD1306_API.START_PAGE_ADDR,  (byte)(this.Is64RowsDevice ? SSD1306_API.END_PAGE_ADDR_64_ROWS: SSD1306_API.END_PAGE_ADDR_32_ROWS));
+            this.SendCommand(SSD1306_API.COLUMNADDR, (byte)SSD1306_API.COLUMNADDR_START, (byte)SSD1306_API.COLUMNADDR_END);
+            this.SendCommand(SSD1306_API.DISPLAYON);
 
             this.Clear(true);
             // WriteDisplay Optimized: False does not work right first time called

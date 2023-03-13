@@ -56,6 +56,8 @@ using uint8_t = System.Byte;
 using size_t = System.Int16;
 using System.Collections.Generic;
 using MadeInTheUSB.FT232H;
+using System.Text;
+using System.Diagnostics;
 
 namespace MadeInTheUSB.Display
 {
@@ -65,51 +67,73 @@ namespace MadeInTheUSB.Display
     /// </summary>
     public class I2C_OLED : Adafruit_GFX
     {
-        protected const int OLED_API_SETCONTRAST                          = 0x81;
-        protected const int OLED_API_DISPLAYALLON_RESUME                  = 0xA4;
-        protected const int OLED_API_DISPLAYALLON                         = 0xA5;
-        protected const int OLED_API_NORMALDISPLAY                        = 0xA6;
-        protected const int OLED_API_INVERTDISPLAY                        = 0xA7;
-        protected const int OLED_API_DISPLAYOFF                           = 0xAE;
-        protected const int OLED_API_DISPLAYON                            = 0xAF;
-        protected const int OLED_API_SETDISPLAYOFFSET                     = 0xD3;
-        protected const int OLED_API_SETCOMPINS                           = 0xDA;
-        protected const int OLED_API_SETVCOMDETECT                        = 0xDB;
-        protected const int OLED_API_SETDISPLAYCLOCKDIV                   = 0xD5;
-        protected const int OLED_API_SETPRECHARGE                         = 0xD9;
-        protected const int OLED_API_SETMULTIPLEX                         = 0xA8;
-        protected const int OLED_API_SSD1306_SETLOWCOLUMN                 = 0x00;
-        protected const int OLED_API_SETHIGHCOLUMN                        = 0x10;
-        protected const int OLED_API_SETSTARTLINE                         = 0x40;
-        protected const int OLED_API_MEMORYMODE                           = 0x20;
-        protected const int OLED_API_COLUMNADDR                           = 0x21;
-
-        protected const int OLED_API_COLUMNADDR_START = 0;
-        protected const int OLED_API_COLUMNADDR_END = 128-1;
-
-        protected const int OLED_API_PAGE_ADDR                            = 0x22;
-        protected int START_PAGE_ADDR = 0;
-        protected int END_PAGE_ADDR(int height)
+        public enum SSD1306_API
         {
-            return this.Height == 64 ? 7 : 3;
-        }
+            SETCONTRAST = 0x81,
+            DISPLAYALLON_RESUME = 0xA4,
+            DISPLAYALLON = 0xA5,
+            NORMALDISPLAY = 0xA6,
+            INVERTDISPLAY = 0xA7,
+            DISPLAYOFF = 0xAE,
+            DISPLAYON = 0xAF,
+            SETDISPLAYOFFSET = 0xD3,
+            SETCOMPINS = 0xDA,
+                SETCOMPINS_64_ROWS_PARAMETER = 0x12,
+                SETCOMPINS_32_ROWS_PARAMETER =     0x02,
 
-        protected const int OLED_API_COMSCANINC                           = 0xC0;
-        protected const int OLED_API_COMSCANDEC                           = 0xC8;
-        protected const int OLED_API_SSD1306_SET_SEGMENT_REMAP            = 0xA0;
-        protected const int OLED_API_CHARGEPUMP                           = 0x8D;
-        protected const int OLED_API_EXTERNALVCC                          = 0x01;
-        protected const int OLED_API_SWITCHCAPVCC                         = 0x02;
-        protected const int OLED_API_ACTIVATE_SCROLL                      = 0x2F;
-        protected const int OLED_API_DEACTIVATE_SCROLL                    = 0x2E;
-        protected const int OLED_API_SET_VERTICAL_SCROLL_AREA             = 0xA3;
-        protected const int OLED_API_RIGHT_HORIZONTAL_SCROLL              = 0x26;
-        protected const int OLED_API_LEFT_HORIZONTAL_SCROLL               = 0x27;
-        protected const int OLED_API_VERTICAL_AND_RIGHT_HORIZONTAL_SCROLL = 0x29;
-        protected const int OLED_API_VERTICAL_AND_LEFT_HORIZONTAL_SCROLL  = 0x2A;
-        protected const int OLED_API_SH1106_SETLOWCOLUMN                  = 0x02;
-        protected const int OLED_API_SH1106_PAGE_ADDR                     = 0xB0;
-        protected const int OLED_API_SH1106_SET_SEGMENT_REMAP             = 0xA1;
+            SETVCOMDETECT = 0xDB,
+            SETVCOMDETECT_PARAMETER = 0x40,
+            SETDISPLAYCLOCKDIV = 0xD5,
+                SETDISPLAYCLOCKDIV_PARAMETER =  0x80,
+
+            SETPRECHARGE = 0xD9,
+
+            SETMULTIPLEX = 0xA8,
+            SETMULTIPLEX_64_ROWS = 0x3F,
+            SETMULTIPLEX_32_ROWS = 0x1F,
+
+            SSD1306_SETLOWCOLUMN = 0x00,
+            SETHIGHCOLUMN = 0x10,
+            SETHIGHCOLUMN_PARAMETER = 0x01,
+
+
+            SETSTARTLINE = 0x40,
+            MEMORYMODE = 0x20,
+            MEMORYMODE_PARAMETER = 0x0,
+            COLUMNADDR = 0x21,
+            COLUMNADDR_START = 0,
+            COLUMNADDR_END = 128 - 1,
+            COMSCANINC = 0xC0,
+            COMSCANDEC = 0xC8,
+            SSD1306_SET_SEGMENT_REMAP = 0xA0 + 1,
+            CHARGEPUMP = 0x8D,
+
+            EXTERNAL_VCC = 0x01,
+            SWITCH_CAP_VCC = 0x02,
+            _0x10 = 0x10,
+            _0x14 = 0x14,
+            _0x9F = 0x9F,
+            _0xCF = 0xCF,
+            _0x22 = 0x22,
+            _0xF1 = 0xF1,
+
+            ACTIVATE_SCROLL = 0x2F,
+            DEACTIVATE_SCROLL = 0x2E,
+            SET_VERTICAL_SCROLL_AREA = 0xA3,
+            RIGHT_HORIZONTAL_SCROLL = 0x26,
+            LEFT_HORIZONTAL_SCROLL = 0x27,
+            VERTICAL_AND_RIGHT_HORIZONTAL_SCROLL = 0x29,
+            VERTICAL_AND_LEFT_HORIZONTAL_SCROLL = 0x2A,
+            SH1106_SETLOWCOLUMN = 0x02,
+            SH1106_PAGE_ADDR = 0xB0,
+            SH1106_SET_SEGMENT_REMAP = 0xA1,
+            PAGE_ADDR = 0x22,
+            START_PAGE_ADDR = 0,
+            END_PAGE_ADDR_32_ROWS = 3,/*(int height) this.Height == 64 ? 7 : 3;*/
+            END_PAGE_ADDR_64_ROWS = 7,/*(int height) this.Height == 64 ? 7 : 3;*/
+
+        };
+        
 
         public enum OledDriver 
         {
@@ -119,16 +143,14 @@ namespace MadeInTheUSB.Display
 
         public int DeviceId;
 
-        public const int SH1106_COMMAND = 0;
-        public const int SH1106_DATA = 1;
+        public const int SH1106_COMMAND     = 0;
+        public const int SH1106_DATA        = 1;
 
-        //public bool Debug;
-  
-        // You may find a different size screen, but this one is 128 by 64 pixels
-        public const int SH1106_X_PIXELS = 128;
-        public const int SH1106_Y_PIXELS = 32;
-        public const int SH1106_ROWS     = 8;
-        public const int BUF_LEN         = 512; // (512*8)/128 == 32 Rows
+        public const int SH1106_X_PIXELS    = 128;
+        public const int SH1106_Y_PIXELS    = 32;
+        public const int SH1106_ROWS        = 8;
+        public const int BUF_LEN            =  512; // (512*8)/128 == 32 Rows
+        private uint8_t[] _buffer = new uint8_t[BUF_LEN];
 
         // Functions GotoXY, writeBitmap, renderString, writeLine and writeRect
         // will return SH1106_SUCCESS if they succeed and SH1106_ERROR if they fail.
@@ -136,10 +158,9 @@ namespace MadeInTheUSB.Display
         public const int SH1106_ERROR   = 0;
 
         private int _position;
+               
 
-        private uint8_t[] _buffer = new uint8_t[BUF_LEN];
-
-        public int Width, Height;
+        //public int Width, Height;
 
         public OledDriver Driver = OledDriver.SH1106;
 
@@ -149,8 +170,8 @@ namespace MadeInTheUSB.Display
         public I2C_OLED(I2CDevice i2cDevice, int width, int height, OledDriver driver = OledDriver.SH1106, bool debug = false) : base((Int16)width, (Int16)height)
         {
             this.Driver            = driver;
-            this.Width             = width;
-            this.Height            = height;
+            this.Width             = (short)width;
+            this.Height            = (short)height;
             this.DeviceId = ((this.Height == 32) ? 0x3C : 0x3D);
             this._i2cDevice = i2cDevice;
         }
@@ -166,8 +187,7 @@ namespace MadeInTheUSB.Display
 
         public void Contrast(byte val)
         {
-            this.SendCommand(0x81);
-            this.SendCommand(val);
+            this.SendCommand(SSD1306_API.SETCONTRAST, val);
         }
 
         public void WriteDisplay()
@@ -181,7 +201,7 @@ namespace MadeInTheUSB.Display
                 if (tmpBuffer.Count == 0)
                     break;
                 var buffer2 = new List<byte>();
-                buffer2.Add(OLED_API_SETSTARTLINE);
+                buffer2.Add((byte)SSD1306_API.SETSTARTLINE);
                 buffer2.AddRange(tmpBuffer);
                 this._i2cDevice.WriteBuffer(this.DeviceId, buffer2.ToArray());
                 x += 1;
@@ -230,16 +250,29 @@ namespace MadeInTheUSB.Display
             if (refresh)
                 this.WriteDisplay();
         }
-        
-        
 
-        protected void SendCommand(params int [] commands)
+        protected void SendCommand(SSD1306_API command, params int [] commands)
         {
-            foreach (var c in commands)
-                SendCommand(c);
+            var cmd = new StringBuilder();
+            cmd.Append($"SendCommand(SSD1306_API.{command}");
+
+            SendCommandOneByte((byte)command);
+
+            if (commands.Length > 0)
+            {
+                cmd.Append($", ");
+                foreach (var c in commands)
+                {
+                    cmd.Append($"0x{c:X}, ");
+                    SendCommandOneByte(c);
+                }
+                cmd.Remove(cmd.Length-2, 2);
+            }
+            cmd.Append($");");
+            //Debug.WriteLine(cmd.ToString());
         }
 
-        protected void SendCommand(int command)
+        protected void SendCommandOneByte(int command)
         {
             this._i2cDevice.WriteBuffer(this.DeviceId, new List<byte>() { SH1106_COMMAND, (byte)command }.ToArray());
         }
