@@ -3,6 +3,7 @@
 //#define FT4232H
 using FTD2XX_NET;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 
 namespace MadeInTheUSB.FT232H
@@ -171,6 +172,17 @@ namespace MadeInTheUSB.FT232H
             r = rd;
 
             return r;
+        }
+
+        
+        public int DetectI2CDevice(List<byte> deviceIds)
+        {
+            foreach(var deviceId in deviceIds)
+            {
+                if (InitiateDetectionSequence(deviceId))
+                    return deviceId;
+            }
+            return -1;
         }
 
         public bool InitiateDetectionSequence(int deviceId)

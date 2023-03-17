@@ -56,6 +56,7 @@ using uint8_t = System.Byte;
 using size_t = System.Int16;
 using System.Collections.Generic;
 using MadeInTheUSB.FT232H;
+using static MadeInTheUSB.Display.I2C_OLED_SSD1306;
 
 namespace MadeInTheUSB.Display
 {
@@ -79,7 +80,7 @@ namespace MadeInTheUSB.Display
         public const int SH1106_X_PIXELS    = 128;
         public const int SH1106_Y_PIXELS    = 32;
         public const int SH1106_ROWS        = 8;
-        public const int BUF_LEN            =  512; // (512*8)/128 == 32 Rows
+        public const int BUF_LEN            =  512*2; // (512*8)/128 == 32 Rows
         private uint8_t[] _buffer           = new uint8_t[BUF_LEN];
 
         public const int SH1106_SUCCESS = 1;
@@ -100,7 +101,9 @@ namespace MadeInTheUSB.Display
             this.Driver     = driver;
             this.Width      = (short)width;
             this.Height     = (short)height;
-            this.DeviceId   = ((this.Height == 32) ? 0x3C : 0x3D);
+
+            
+
             this._i2cDevice = i2cDevice;
             this._writeDisplayCommands = writeDisplayCommands;
         }
@@ -114,16 +117,13 @@ namespace MadeInTheUSB.Display
             this.SetPixel(x, y, color == 1);
         }
 
-        //public void Contrast(byte val)
-        //{
-        //    this.SendCommand(SSD1306_API.SETCONTRAST, val);
-        //}
-
         public void WriteDisplay()
         {
             var bytePerRows = 16 * 2;
             var x = 0;
-            
+            this.SendCommand((byte)SSD1306_API.COLUMNADDR, (byte)SSD1306_API.COLUMNADDR_START, (byte)SSD1306_API.COLUMNADDR_END);
+            this.SendCommand((byte)SSD1306_API.PAGE_ADDR, (byte)SSD1306_API.START_PAGE_ADDR, (byte)SSD1306_API.END_PAGE_ADDR_64_ROWS);
+
             while (true)
             {
                 var tmpBuffer = this._buffer.ToList().Skip(x * bytePerRows).Take(bytePerRows).ToList();

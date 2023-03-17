@@ -122,9 +122,12 @@ namespace MadeInTheUSB.FT232H.Console
 
         static void OLED_SSD1306_Sample(I2CDevice i2cDevice)
         {
-            var oled = new I2C_OLED_SSD1306(i2cDevice, 128, 32);
+            var oled = new I2C_OLED_SSD1306(i2cDevice, 128 , 32);
             if (oled.Begin())
             {
+                oled.DrawLine(0, 0, oled.Width, oled.Height, 1);
+                oled.WriteDisplay();
+                oled.DrawWindow(" Hello ",  "Fast Speed");
                 OledRectangleDemo(oled, 20);
                 OledCircleDemo(oled);
                 OledCircleFractalDemo(oled, true);
