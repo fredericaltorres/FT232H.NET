@@ -211,6 +211,49 @@ namespace MadeInTheUSB.FT232H
             return r;
         }
 
+        public List<byte> Send1ByteReadXByteCommand(int deviceId, byte c, int byteToRead)
+        {
+            List<byte> r = null;
+            var appStatus = 0;
+            try
+            {
+                appStatus = this.I2C_SetStart();
+                if (appStatus != 0) return r;
+
+                appStatus = this.I2C_SendDeviceAddrAndCheckACK((byte)(deviceId), false);
+                if (appStatus != 0) return r;
+                if (!this.Ack) return r;
+
+                var zz = I2C_SendByteAndCheckACK(c);
+
+                appStatus = this.I2C_SetStart();
+                if (appStatus != 0) return r;
+
+                appStatus = this.I2C_SendDeviceAddrAndCheckACK((byte)(deviceId), true);
+                if (appStatus != 0) return r;
+
+                var tmpByteList = new List<byte>();
+
+                for(var x = 0; x< byteToRead; x++)
+                {
+                    var rd = I2C_ReadByte2(true);
+                    tmpByteList.Add(rd.Read1Byte);
+                    if (!rd.Status) return r;
+                }
+
+                return tmpByteList;
+            }
+            catch (Exception ex)
+            {
+                return r;
+            }
+            finally
+            {
+                appStatus = this.I2C_SetStop();
+            }
+            return r;
+        }
+
         public int Send1ByteRead1ByteCommand(int deviceId, byte c)
         {
             Int16 r = -1;

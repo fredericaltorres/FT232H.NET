@@ -522,10 +522,10 @@ namespace MadeInTheUSB
         uint8_t readGesture()
         {
             uint8_t toRead;
-            uint8_t buf[256];
-            unsigned long t = 0;
+            uint8_t [] buf = new uint8_t[256];
+            int t = 0;
             uint8_t gestureReceived;
-            while (1)
+            while (true)
             {
                 int up_down_diff = 0;
                 int left_right_diff = 0;
@@ -534,15 +534,15 @@ namespace MadeInTheUSB
                     return 0;
 
                 delay(30);
-                toRead = this.read8(APDS9960_GFLVL);
+                toRead = this.read8(Registers.APDS9960_GFLVL);
 
                 // produces sideffects needed for readGesture to work
-                this.read(APDS9960_GFIFO_U, buf, toRead);
+                this.read(Registers.APDS9960_GFIFO_U, buf, toRead);
 
-                if (abs((int)buf[0] - (int)buf[1]) > 13)
+                if (Math.Abs((int)buf[0] - (int)buf[1]) > 13)
                     up_down_diff += (int)buf[0] - (int)buf[1];
 
-                if (abs((int)buf[2] - (int)buf[3]) > 13)
+                if (Math.Abs((int)buf[2] - (int)buf[3]) > 13)
                     left_right_diff += (int)buf[2] - (int)buf[3];
 
                 if (up_down_diff != 0)
@@ -590,9 +590,9 @@ namespace MadeInTheUSB
                 }
 
                 if (up_down_diff != 0 || left_right_diff != 0)
-                    t = millis();
+                    t = Environment.TickCount;
 
-                if (gestureReceived || millis() - t > 300)
+                if (gestureReceived > 0 || Environment.TickCount - t > 300)
                 {
                     resetCounts();
                     return gestureReceived;
@@ -625,8 +625,8 @@ namespace MadeInTheUSB
          */
         void enableColor(bool en)
         {
-            _enable.AEN = en;
-            write8(APDS9960_ENABLE, _enable.get());
+            _enable.AEN = (byte)(en?1:0);
+            write8(Registers.APDS9960_ENABLE, _enable.get());
         }
 
         /*!
@@ -635,8 +635,8 @@ namespace MadeInTheUSB
          */
         bool colorDataReady()
         {
-            _status.set(this.read8(APDS9960_STATUS));
-            return _status.AVALID;
+            _status.set(this.read8(Registers.APDS9960_STATUS));
+            return _status.AVALID == 1;
         }
 
         /*!
@@ -650,14 +650,12 @@ namespace MadeInTheUSB
          *  @param  *c
          *          Clear channel value
          */
-        void getColorData(uint16_t* r, uint16_t* g, uint16_t* b,
-                                             uint16_t* c)
+        void getColorData(ref uint16_t r, ref uint16_t g, ref uint16_t b, ref uint16_t c)
         {
-
-            *c = read16R(APDS9960_CDATAL);
-            *r = read16R(APDS9960_RDATAL);
-            *g = read16R(APDS9960_GDATAL);
-            *b = read16R(APDS9960_BDATAL);
+            c = read16R(Registers.APDS9960_CDATAL);
+            r = read16R(Registers.APDS9960_RDATAL);
+            g = read16R(Registers.APDS9960_GDATAL);
+            b = read16R(Registers.APDS9960_BDATAL);
         }
 
         /*!
@@ -745,7 +743,7 @@ namespace MadeInTheUSB
          */
         void clearInterrupt()
         {
-            this.write(APDS9960_AICLEAR, NULL, 0);
+            this.write(Registers.APDS9960_AICLEAR, null, 0);
         }
 
         /*!
@@ -797,14 +795,15 @@ namespace MadeInTheUSB
          */
         uint32_t read32(uint8_t reg)
         {
-            uint8_t ret[4];
-            uint32_t ret32;
-            this.read(reg, ret, 4);
-            ret32 = ret[3];
-            ret32 |= (uint32_t)ret[2] << 8;
-            ret32 |= (uint32_t)ret[1] << 16;
-            ret32 |= (uint32_t)ret[0] << 24;
-            return ret32;
+            //uint8_t ret[4];
+            //uint32_t ret32;
+            //this.read(reg, ret, 4);
+            //ret32 = ret[3];
+            //ret32 |= (uint32_t)ret[2] << 8;
+            //ret32 |= (uint32_t)ret[1] << 16;
+            //ret32 |= (uint32_t)ret[0] << 24;
+            //return ret32;
+            return 0;
         }
 
         /*!
@@ -815,12 +814,16 @@ namespace MadeInTheUSB
          */
         uint16_t read16(uint8_t reg)
         {
-            uint8_t ret[2];
+            var ret = new List<byte>();
             this.read(reg, ret, 2);
 
-            return (ret[0] << 8) | ret[1];
+            return (uint16_t)((ret[0] << 8) | ret[1]);
         }
 
+        uint16_t read16R(Registers reg)
+        {
+            return read16R((byte)reg);
+        }
         /*!
          *  @brief  Reads 16 bites from specified register
          *  @param  reg
@@ -829,10 +832,15 @@ namespace MadeInTheUSB
          */
         uint16_t read16R(uint8_t reg)
         {
-            uint8_t ret[2];
+            var ret = new List<byte>();
             this.read(reg, ret, 2);
 
-            return (ret[1] << 8) | ret[0];
+            return (uint16_t)((ret[1] << 8) | ret[0]);
+        }
+
+        uint8_t read(Registers reg, List<byte> buf, uint8_t num)
+        {
+            return read((byte)reg, buf, num);
         }
 
         /*!
@@ -845,11 +853,20 @@ namespace MadeInTheUSB
          *          Number of bytes
          *  @return Position after reading
          */
-        uint8_t read(uint8_t reg, uint8_t* buf, uint8_t num)
+        uint8_t read(uint8_t reg, List<byte> buf, uint8_t num)
         {
-            buf[0] = reg;
-            i2c_dev->write_then_read(buf, 1, buf, num);
+            buf = this._i2cDevice.Send1ByteReadXByteCommand(this.DeviceID, reg, num);
             return num;
+
+            //buf[0] = reg;
+            //i2c_dev->write_then_read(buf, 1, buf, num);
+            //return num;
+
+        }
+
+        void write(Registers reg, List<byte> buf, uint8_t num)
+        {
+            write((byte)reg, buf, num);
         }
 
         /*!
@@ -861,15 +878,14 @@ namespace MadeInTheUSB
          *  @param  num
          *          Number of bytes
          */
-        void write(uint8_t reg, uint8_t* buf, uint8_t num)
+        void write(uint8_t reg, List<byte> buf, uint8_t num)
         {
-            uint8_t prefix[1] = { reg };
-            i2c_dev->write(buf, num, true, prefix, 1);
+            //uint8_t prefix[1] = { reg };
+            //i2c_dev->write(buf, num, true, prefix, 1);
+            var l = new List<byte>() { reg };
+            l.AddRange(buf);
+            this._i2cDevice.WriteBuffer(this.DeviceID, l.ToArray());
         }
-
-
-
-
     }
 }
 
