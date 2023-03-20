@@ -123,9 +123,16 @@ namespace MadeInTheUSB.FT232H.Console
         static void APDS_9900_DigitalInfraredGestureSensor(I2CDevice i2cDevice)
         {
             var sensor = new APDS_9900_DigitalInfraredGestureSensor(i2cDevice);
-            if (sensor.Begin())
+            if (sensor.begin())
             {
-                
+                System.Console.Clear();
+                ConsoleEx.TitleBar(0, "Proximity Sensor");
+                ConsoleEx.WriteMenu(-1, 6, "Q)uit");
+                while(true)
+                {
+                    System.Console.WriteLine($"readProximity: {sensor.readProximity()}");
+                    Thread.Sleep(1111);
+                }
             }
         }
 

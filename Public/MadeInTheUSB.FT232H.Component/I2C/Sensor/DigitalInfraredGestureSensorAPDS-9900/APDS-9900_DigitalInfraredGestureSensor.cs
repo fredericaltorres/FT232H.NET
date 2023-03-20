@@ -171,7 +171,7 @@ namespace MadeInTheUSB
          *  @param  en
          *          Enable (True/False)
          */
-        void enable(bool en)
+        public void enable(bool en)
         {
             _enable.PON = (byte)(en ? 1:0);
             this.write8(Registers.APDS9960_ENABLE, _enable.get());
@@ -189,7 +189,7 @@ namespace MadeInTheUSB
          *          Wire object
          *  @return True if initialization was successful, otherwise false.
          */
-        bool begin(uint16_t iTimeMS = 10, apds9960AGain_t aGain = apds9960AGain_t.APDS9960_AGAIN_4X, uint8_t addr = APDS9960_ADDRESS)
+        public bool begin(uint16_t iTimeMS = 10, apds9960AGain_t aGain = apds9960AGain_t.APDS9960_AGAIN_4X, uint8_t addr = APDS9960_ADDRESS)
         {
             this.DeviceID = addr;
             if (!this._i2cDevice.InitiateDetectionSequence(addr))
@@ -240,7 +240,7 @@ namespace MadeInTheUSB
          *  @param  iTimeMS
          *          Integration time
          */
-        void setADCIntegrationTime(uint16_t iTimeMS)
+        public void setADCIntegrationTime(uint16_t iTimeMS)
         {
             double temp;
 
@@ -261,7 +261,7 @@ namespace MadeInTheUSB
          *  @brief  Returns the integration time for the ADC of the APDS9960, in millis
          *  @return Integration time
          */
-        double getADCIntegrationTime()
+        public double getADCIntegrationTime()
         {
             double temp;
 
@@ -279,7 +279,7 @@ namespace MadeInTheUSB
          *  @param  aGain
          *          Gain
          */
-        void setADCGain(apds9960AGain_t aGain)
+        public void setADCGain(apds9960AGain_t aGain)
         {
             _control.AGAIN = (byte)aGain;
 
@@ -291,7 +291,7 @@ namespace MadeInTheUSB
          *  @brief  Returns the ADC gain
          *  @return ADC gain
          */
-        apds9960AGain_t getADCGain()
+        public apds9960AGain_t getADCGain()
         {
             return (apds9960AGain_t)(read8(Registers.APDS9960_CONTROL) & 0x03);
         }
@@ -301,7 +301,7 @@ namespace MadeInTheUSB
          *  @param  pGain
          *          Gain
          */
-        void setProxGain(apds9960PGain_t pGain)
+        public void setProxGain(apds9960PGain_t pGain)
         {
             _control.PGAIN = (byte)pGain;
 
@@ -313,7 +313,7 @@ namespace MadeInTheUSB
          *  @brief  Returns the Proximity gain on the APDS9960
          *  @return Proxmity gain
          */
-        apds9960PGain_t getProxGain()
+        public apds9960PGain_t getProxGain()
         {
             return (apds9960PGain_t)((read8(Registers.APDS9960_CONTROL) & 0x0C) >> 2);
         }
@@ -325,7 +325,7 @@ namespace MadeInTheUSB
          *  @param  pulses
          *          Number of pulses
          */
-        void setProxPulse(apds9960PPulseLen_t pLen, uint8_t pulses)
+        public void setProxPulse(apds9960PPulseLen_t pLen, uint8_t pulses)
         {
             if (pulses < 1)
                 pulses = 1;
@@ -344,7 +344,7 @@ namespace MadeInTheUSB
          *  @param  en
          *          Enable (True/False)
          */
-        void enableProximity(bool en)
+        public void enableProximity(bool en)
         {
             _enable.PEN = (byte)(en ? 1: 0);
 
@@ -354,7 +354,7 @@ namespace MadeInTheUSB
         /*!
          *  @brief  Enable proximity interrupts
          */
-        void enableProximityInterrupt()
+        public void enableProximityInterrupt()
         {
             _enable.PIEN = 1;
             write8(Registers.APDS9960_ENABLE, _enable.get());
@@ -364,7 +364,7 @@ namespace MadeInTheUSB
         /*!
          *  @brief  Disable proximity interrupts
          */
-        void disableProximityInterrupt()
+        public void disableProximityInterrupt()
         {
             _enable.PIEN = 0;
             write8(Registers.APDS9960_ENABLE, _enable.get());
@@ -379,7 +379,7 @@ namespace MadeInTheUSB
          *  @param  persistence
          *          Persistence
          */
-        void setProximityInterruptThreshold(uint8_t low,
+        public void setProximityInterruptThreshold(uint8_t low,
                                                                uint8_t high,
                                                                uint8_t persistence)
         {
@@ -396,23 +396,23 @@ namespace MadeInTheUSB
          *  @brief  Returns proximity interrupt status
          *  @return True if enabled, false otherwise.
          */
-        bool getProximityInterrupt()
+        public bool getProximityInterrupt()
         {
             _status.set(this.read8(Registers.APDS9960_STATUS));
             return _status.PINT == 1;
-        };
+        }
 
         /*!
          *  @brief  Read proximity data
          *  @return Proximity
          */
-        uint8_t readProximity() { return read8(Registers.APDS9960_PDATA); }
+        public uint8_t readProximity() { return read8(Registers.APDS9960_PDATA); }
 
         /*!
          *  @brief  Returns validity status of a gesture
          *  @return Status (True/False)
          */
-        bool gestureValid()
+        public bool gestureValid()
         {
             _gstatus.set(this.read8(Registers.APDS9960_GSTATUS));
             return _gstatus.GVALID == 1;
@@ -424,7 +424,7 @@ namespace MadeInTheUSB
          *          Dimensions (APDS9960_DIMENSIONS_ALL, APDS9960_DIMENSIONS_UP_DOWN,
          *          APGS9960_DIMENSIONS_LEFT_RIGHT)
          */
-        void setGestureDimensions(uint8_t dims)
+        public void setGestureDimensions(uint8_t dims)
         {
             _gconf3.GDIMS = dims;
             this.write8(Registers.APDS9960_GCONF3, _gconf3.get());
@@ -436,7 +436,7 @@ namespace MadeInTheUSB
          *          Threshold (APDS9960_GFIFO_1, APDS9960_GFIFO_4, APDS9960_GFIFO_8,
          *          APDS9960_GFIFO_16)
          */
-        void setGestureFIFOThreshold(uint8_t thresh)
+        public void setGestureFIFOThreshold(uint8_t thresh)
         {
             _gconf1.GFIFOTH = thresh;
             this.write8(Registers.APDS9960_GCONF1, _gconf1.get());
@@ -448,7 +448,7 @@ namespace MadeInTheUSB
          *          Gain (APDS9960_GAIN_1, APDS9960_GAIN_2, APDS9960_GAIN_4,
          *          APDS9960_GAIN_8)
          */
-        void setGestureGain(uint8_t gain)
+        public void setGestureGain(uint8_t gain)
         {
             _gconf2.GGAIN = gain;
             this.write8(Registers.APDS9960_GCONF2, _gconf2.get());
@@ -459,7 +459,7 @@ namespace MadeInTheUSB
          *  @param  thresh
          *          Threshold
          */
-        void setGestureProximityThreshold(uint8_t thresh)
+        public void setGestureProximityThreshold(uint8_t thresh)
         {
             this.write8(Registers.APDS9960_GPENTH, thresh);
         }
@@ -475,7 +475,7 @@ namespace MadeInTheUSB
          *  @param  offset_right
          *          Right offset
          */
-        void setGestureOffset(uint8_t offset_up, uint8_t offset_down,
+        public void setGestureOffset(uint8_t offset_up, uint8_t offset_down,
                                                  uint8_t offset_left,
                                                  uint8_t offset_right)
         {
@@ -490,7 +490,7 @@ namespace MadeInTheUSB
          *  @param  en
          *          Enable (True/False)
          */
-        void enableGesture(bool en)
+        public void enableGesture(bool en)
         {
             if (!en)
             {
@@ -505,7 +505,7 @@ namespace MadeInTheUSB
         /*!
          *  @brief  Resets gesture counts
          */
-        void resetCounts()
+        public void resetCounts()
         {
             gestCnt = 0;
             UCount = 0;
@@ -519,10 +519,10 @@ namespace MadeInTheUSB
          *  @return Received gesture (APDS9960_DOWN APDS9960_UP, APDS9960_LEFT
          *          APDS9960_RIGHT)
          */
-        uint8_t readGesture()
+        public uint8_t readGesture()
         {
             uint8_t toRead;
-            uint8_t [] buf = new uint8_t[256];
+            List<uint8_t> buf = new List<uint8_t>();
             int t = 0;
             uint8_t gestureReceived;
             while (true)
@@ -607,15 +607,14 @@ namespace MadeInTheUSB
          *  @param  boost
          *          LED Boost
          */
-        void setLED(apds9960LedDrive_t drive,
-                                       apds9960LedBoost_t boost)
+        public void setLED(apds9960LedDrive_t drive, apds9960LedBoost_t boost)
         {
             // set BOOST
-            _config2.LED_BOOST = boost;
-            write8(APDS9960_CONFIG2, _config2.get());
+            _config2.LED_BOOST = (byte)boost;
+            write8(Registers.APDS9960_CONFIG2, _config2.get());
 
-            _control.LDRIVE = drive;
-            write8(APDS9960_CONTROL, _control.get());
+            _control.LDRIVE = (byte)drive;
+            write8(Registers.APDS9960_CONTROL, _control.get());
         }
 
         /*!
@@ -623,7 +622,7 @@ namespace MadeInTheUSB
          *  @param  en
          *          Enable (True/False)
          */
-        void enableColor(bool en)
+        public void enableColor(bool en)
         {
             _enable.AEN = (byte)(en?1:0);
             write8(Registers.APDS9960_ENABLE, _enable.get());
@@ -633,7 +632,7 @@ namespace MadeInTheUSB
          *  @brief  Returns status of color data
          *  @return True if color data ready, False otherwise
          */
-        bool colorDataReady()
+        public bool colorDataReady()
         {
             _status.set(this.read8(Registers.APDS9960_STATUS));
             return _status.AVALID == 1;
@@ -650,7 +649,7 @@ namespace MadeInTheUSB
          *  @param  *c
          *          Clear channel value
          */
-        void getColorData(ref uint16_t r, ref uint16_t g, ref uint16_t b, ref uint16_t c)
+        public void getColorData(ref uint16_t r, ref uint16_t g, ref uint16_t b, ref uint16_t c)
         {
             c = read16R(Registers.APDS9960_CDATAL);
             r = read16R(Registers.APDS9960_RDATAL);
@@ -668,7 +667,7 @@ namespace MadeInTheUSB
          *          Blue value
          *  @return Color temperature
          */
-        uint16_t calculateColorTemperature(uint16_t r, uint16_t g,
+        public uint16_t calculateColorTemperature(uint16_t r, uint16_t g,
                                                               uint16_t b)
         {
             float X, Y, Z; /* RGB to XYZ correlation      */
@@ -709,7 +708,7 @@ namespace MadeInTheUSB
          *          Blue value
          *  @return LUX value
          */
-        uint16_t calculateLux(uint16_t r, uint16_t g, uint16_t b)
+        public uint16_t calculateLux(uint16_t r, uint16_t g, uint16_t b)
         {
             float illuminance;
 
@@ -723,25 +722,25 @@ namespace MadeInTheUSB
         /*!
          *  @brief  Enables color interrupt
          */
-        void enableColorInterrupt()
+        public void enableColorInterrupt()
         {
             _enable.AIEN = 1;
-            write8(APDS9960_ENABLE, _enable.get());
+            write8(Registers.APDS9960_ENABLE, _enable.get());
         }
 
         /*!
          *  @brief  Disables color interrupt
          */
-        void disableColorInterrupt()
+        public void disableColorInterrupt()
         {
             _enable.AIEN = 0;
-            write8(APDS9960_ENABLE, _enable.get());
+            write8(Registers.APDS9960_ENABLE, _enable.get());
         }
 
         /*!
          *  @brief  Clears interrupt
          */
-        void clearInterrupt()
+        public void clearInterrupt()
         {
             this.write(Registers.APDS9960_AICLEAR, null, 0);
         }
@@ -753,12 +752,12 @@ namespace MadeInTheUSB
          *  @param  high
          *          High limit
          */
-        void setIntLimits(uint16_t low, uint16_t high)
+        public void setIntLimits(uint16_t low, uint16_t high)
         {
-            write8(APDS9960_AILTIL, low & 0xFF);
-            write8(APDS9960_AILTH, low >> 8);
-            write8(APDS9960_AIHTL, high & 0xFF);
-            write8(APDS9960_AIHTH, high >> 8);
+            write8(Registers.APDS9960_AILTIL, low & 0xFF);
+            write8(Registers.APDS9960_AILTH, low >> 8);
+            write8(Registers.APDS9960_AIHTL, high & 0xFF);
+            write8(Registers.APDS9960_AIHTH, high >> 8);
         }
 
         /*!
@@ -793,7 +792,7 @@ namespace MadeInTheUSB
          *          Register to write to
          *  @return Value in register
          */
-        uint32_t read32(uint8_t reg)
+        public uint32_t read32(uint8_t reg)
         {
             //uint8_t ret[4];
             //uint32_t ret32;
@@ -883,7 +882,8 @@ namespace MadeInTheUSB
             //uint8_t prefix[1] = { reg };
             //i2c_dev->write(buf, num, true, prefix, 1);
             var l = new List<byte>() { reg };
-            l.AddRange(buf);
+            if(buf != null)
+                l.AddRange(buf);
             this._i2cDevice.WriteBuffer(this.DeviceID, l.ToArray());
         }
     }

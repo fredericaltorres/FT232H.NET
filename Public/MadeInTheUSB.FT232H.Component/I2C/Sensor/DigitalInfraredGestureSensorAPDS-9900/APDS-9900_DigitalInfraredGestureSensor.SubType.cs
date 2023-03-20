@@ -486,9 +486,9 @@ namespace MadeInTheUSB
             return (byte)r;
         }
 
-        private bool write8(Registers reg, byte value)
+        private bool write8(Registers reg, int value)
         {
-            return write8((byte)reg, value);
+            return write8((byte)reg, (byte)value);
         }
 
         private bool write8(byte reg, byte value)
