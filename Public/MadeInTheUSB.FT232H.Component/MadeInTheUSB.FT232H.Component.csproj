@@ -53,6 +53,8 @@
     <Compile Include="I2C\LCD\PCF8574.cs" />
     <Compile Include="I2C\LCD\ILiquidCrystal_i2c.cs" />
     <Compile Include="I2C\LCD\LiquidCrystalBase.cs" />
+    <Compile Include="I2C\Sensor\DigitalInfraredGestureSensorAPDS-9900\APDS-9900_DigitalInfraredGestureSensor.SubType.cs" />
+    <Compile Include="I2C\Sensor\DigitalInfraredGestureSensorAPDS-9900\APDS-9900_DigitalInfraredGestureSensor.cs" />
     <Compile Include="I2C\Sensor\TemperatureMCP9808\MCP9808 _Temperature Sensor.cs" />
     <Compile Include="OLED\I2C_OLED.cs" />
     <Compile Include="OLED\OLED_SH1106.cs" />

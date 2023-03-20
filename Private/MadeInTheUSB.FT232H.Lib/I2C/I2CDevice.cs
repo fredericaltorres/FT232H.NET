@@ -86,6 +86,7 @@ namespace MadeInTheUSB.FT232H
             public bool Ack => (this.InputBuffer[0] & 0x01) == 0;
             // value = (System.UInt16)((buffer[0] << 8) + buffer[1]);
             public UInt16 Read16Bits => (UInt16)((this.InputBuffer[0] << 8) + this.InputBuffer[1]);
+            public Byte Read1Byte => this.InputBuffer[0];
         }
 
 
@@ -202,6 +203,44 @@ namespace MadeInTheUSB.FT232H
             }
             catch (Exception ex)
             {
+            }
+            finally
+            {
+                appStatus = this.I2C_SetStop();
+            }
+            return r;
+        }
+
+        public int Send1ByteRead1ByteCommand(int deviceId, byte c)
+        {
+            Int16 r = -1;
+            var appStatus = 0;
+            try
+            {
+                appStatus = this.I2C_SetStart();
+                if (appStatus != 0) return r;
+
+                appStatus = this.I2C_SendDeviceAddrAndCheckACK((byte)(deviceId), false);
+                if (appStatus != 0) return r;
+                if (!this.Ack) return r;
+
+                var zz = I2C_SendByteAndCheckACK(c);
+
+                appStatus = this.I2C_SetStart();
+                if (appStatus != 0) return r;
+
+                appStatus = this.I2C_SendDeviceAddrAndCheckACK((byte)(deviceId), true);
+                if (appStatus != 0) return r;
+                /// if (!this.Ack) return r;
+
+                var rd = I2C_ReadByte2(true);
+                if (!rd.Status) return r;
+
+                return rd.Read1Byte;
+            }
+            catch (Exception ex)
+            {
+                return r;
             }
             finally
             {

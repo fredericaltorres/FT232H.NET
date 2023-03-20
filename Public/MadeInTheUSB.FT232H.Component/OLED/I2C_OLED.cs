@@ -122,7 +122,8 @@ namespace MadeInTheUSB.Display
             var bytePerRows = 16 * 2;
             var x = 0;
             this.SendCommand((byte)SSD1306_API.COLUMNADDR, (byte)SSD1306_API.COLUMNADDR_START, (byte)SSD1306_API.COLUMNADDR_END);
-            this.SendCommand((byte)SSD1306_API.PAGE_ADDR, (byte)SSD1306_API.START_PAGE_ADDR, (byte)SSD1306_API.END_PAGE_ADDR_64_ROWS);
+            this.SendCommand((byte)SSD1306_API.PAGE_ADDR, (byte)SSD1306_API.START_PAGE_ADDR,
+                             (byte)(this.Height == 64 ? SSD1306_API.END_PAGE_ADDR_64_ROWS : SSD1306_API.END_PAGE_ADDR_32_ROWS));
 
             while (true)
             {

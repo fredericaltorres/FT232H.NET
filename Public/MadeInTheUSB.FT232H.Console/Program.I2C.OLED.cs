@@ -120,13 +120,27 @@ namespace MadeInTheUSB.FT232H.Console
             Thread.Sleep(1000 * 2);
         }
 
+        static void APDS_9900_DigitalInfraredGestureSensor(I2CDevice i2cDevice)
+        {
+            var sensor = new APDS_9900_DigitalInfraredGestureSensor(i2cDevice);
+            if (sensor.Begin())
+            {
+                
+            }
+        }
+
         static void OLED_SSD1306_Sample(I2CDevice i2cDevice)
         {
-            var oled = new I2C_OLED_SSD1306(i2cDevice, 128 , 32);
+            var oled = new I2C_OLED_SSD1306(i2cDevice, 128 , 64);
             if (oled.Begin())
             {
-                oled.DrawLine(0, 0, oled.Width, oled.Height, 1);
-                oled.WriteDisplay();
+                oled.DrawLine(0, 0, oled.Width, 0, 1); oled.WriteDisplay();
+                oled.DrawLine(0, 16, oled.Width, 16, 1); oled.WriteDisplay();
+                oled.DrawLine(0, 32, oled.Width, 32, 1); oled.WriteDisplay();
+                oled.DrawLine(0, 48, oled.Width, 48, 1); oled.WriteDisplay();
+                oled.DrawLine(0, 64, oled.Width, 64, 1); oled.WriteDisplay();
+                //oled.DrawLine(0, 0, oled.Width, oled.Height, 1);
+
                 oled.DrawWindow(" Hello ",  "Fast Speed");
                 OledRectangleDemo(oled, 20);
                 OledCircleDemo(oled);
