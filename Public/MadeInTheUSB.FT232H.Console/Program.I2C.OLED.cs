@@ -120,6 +120,22 @@ namespace MadeInTheUSB.FT232H.Console
             Thread.Sleep(1000 * 2);
         }
 
+        static void I2C_Gpios(I2CDevice i2cDevice, IDigitalWriteRead gpios)
+        {
+            var gpioPullUpIndex = 0;
+            var gpioOutputIndex = 1;
+            gpios.SetPinMode(gpioPullUpIndex, PinMode.InputPullUp);
+            gpios.SetPinMode(gpioOutputIndex, PinMode.Output);
+
+            var state = i2cDevice.Gpios.DigitalRead(gpioPullUpIndex);
+
+            gpios.DigitalWrite(gpioOutputIndex, PinState.Low);
+            state = gpios.DigitalRead(gpioPullUpIndex);
+
+            gpios.DigitalWrite(gpioOutputIndex, PinState.High);
+            state = gpios.DigitalRead(gpioPullUpIndex);
+        }
+
         static void APDS_9900_DigitalInfraredGestureSensor(I2CDevice i2cDevice)
         {
             

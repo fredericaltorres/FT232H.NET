@@ -31,6 +31,9 @@ namespace MadeInTheUSB.FT232H.Console
             //I2CSample_AdaFruit8x8LedMatrix(i2cDevice);
             //I2CSample_Adafruit9x16LedMatrixGray(i2cDevice);
             //MCP9808_TemperatureSensor_Sample(i2cDevice);
+
+            //I2C_Gpios(i2cDevice, i2cDevice.Gpios);
+
             APDS_9900_DigitalInfraredGestureSensor(i2cDevice);
             //OLED_SSD1306_Sample(i2cDevice);
             //LiquidCrystal(i2cDevice);
