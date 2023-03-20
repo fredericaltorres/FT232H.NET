@@ -1288,7 +1288,7 @@ namespace MadeInTheUSB.FT232H
 
             ACbusReadVal = (byte)(_inputBuffer2[0]);      // Return via global variable for calling function to read
 
-            return 0;
+            return ACbusReadVal;
 #endif
         }
 

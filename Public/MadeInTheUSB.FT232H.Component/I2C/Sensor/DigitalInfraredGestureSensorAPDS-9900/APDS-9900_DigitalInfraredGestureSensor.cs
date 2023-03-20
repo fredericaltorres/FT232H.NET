@@ -149,10 +149,22 @@ namespace MadeInTheUSB
         uint8_t RCount;
 
         I2CDevice _i2cDevice;
+        private readonly int _gpioInterrupt;
 
-        public APDS_9900_DigitalInfraredGestureSensor(I2CDevice i2cDevice)
+        public APDS_9900_DigitalInfraredGestureSensor(I2CDevice i2cDevice, int gpioInterrupt)
         {
+            
             this._i2cDevice = i2cDevice;
+            this._gpioInterrupt = gpioInterrupt;
+            this._i2cDevice.Gpios.SetPinMode(gpioInterrupt, PinMode.InputPullUp);
+        }
+
+        public bool IsInterruptOn
+        {
+            get
+            {
+                return this._i2cDevice.Gpios.DigitalRead(_gpioInterrupt) == 0;
+            }
         }
 
         float powf(float x, float y) {
@@ -381,7 +393,7 @@ namespace MadeInTheUSB
          */
         public void setProximityInterruptThreshold(uint8_t low,
                                                                uint8_t high,
-                                                               uint8_t persistence)
+                                                               uint8_t persistence = 4)
         {
             write8(Registers.APDS9960_PILT, low);
             write8(Registers.APDS9960_PIHT, high);
@@ -863,9 +875,9 @@ namespace MadeInTheUSB
 
         }
 
-        void write(Registers reg, List<byte> buf, uint8_t num)
+        bool write(Registers reg, List<byte> buf, uint8_t num)
         {
-            write((byte)reg, buf, num);
+            return write((byte)reg, buf, num);
         }
 
         /*!
@@ -877,14 +889,14 @@ namespace MadeInTheUSB
          *  @param  num
          *          Number of bytes
          */
-        void write(uint8_t reg, List<byte> buf, uint8_t num)
+        bool write(uint8_t reg, List<byte> buf, uint8_t num)
         {
             //uint8_t prefix[1] = { reg };
             //i2c_dev->write(buf, num, true, prefix, 1);
             var l = new List<byte>() { reg };
             if(buf != null)
                 l.AddRange(buf);
-            this._i2cDevice.WriteBuffer(this.DeviceID, l.ToArray());
+            return this._i2cDevice.WriteBuffer(this.DeviceID, l.ToArray());
         }
     }
 }
