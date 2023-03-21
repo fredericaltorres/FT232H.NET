@@ -11,6 +11,10 @@ using DynamicSugar;
 using MadeInTheUSB.Adafruit;
 using MadeInTheUSB.Display;
 using System.Diagnostics;
+using int16_t = System.Int16; // Nice C# feature allowing to use same Arduino/C type
+using uint32_t = System.UInt32;
+using uint16_t = System.UInt16;
+using uint8_t = System.Byte;
 
 namespace MadeInTheUSB.FT232H.Console
 {
@@ -136,22 +140,56 @@ namespace MadeInTheUSB.FT232H.Console
             state = gpios.DigitalRead(gpioPullUpIndex);
         }
 
-        static void APDS_9900_DigitalInfraredGestureSensor(I2CDevice i2cDevice)
+
+        static void APDS_9900_DigitalInfraredGestureSensor_Color(I2CDevice i2cDevice)
         {
-            
+            var sensor = new APDS_9900_DigitalInfraredGestureSensor(i2cDevice, 0);
+            if (sensor.begin())
+            {
+                //enable proximity mode
+                sensor.enableColor(true);
+
+                System.Console.Clear();
+                ConsoleEx.TitleBar(0, "Color Sensor");
+                ConsoleEx.WriteMenu(-1, 2, "Q)uit");
+                var quit = false;
+                ConsoleEx.WriteLine(1, 10, "Waiting for interrupt:", ConsoleColor.White);
+                while (!quit)
+                {
+                    uint16_t r = 0, g = 0, b = 0, c = 0;
+                    while (!sensor.colorDataReady())
+                        Thread.Sleep(10);
+
+                    sensor.getColorData(ref r, ref g, ref b, ref c);
+                    System.Console.WriteLine($"r:{r:000000}, g:{g:000000}, b:{b:000000}, c:{c:000000}");
+
+                    if (System.Console.KeyAvailable)
+                    {
+                        var k = System.Console.ReadKey(true).Key;
+                        if (k == ConsoleKey.Q)
+                            quit = true;
+                    }
+                    Thread.Sleep(750);
+                }
+            }
+        }
+
+        static void APDS_9900_DigitalInfraredGestureSensor_Proximity(I2CDevice i2cDevice)
+        {
             var sensor = new APDS_9900_DigitalInfraredGestureSensor(i2cDevice, 0);
             if (sensor.begin())
             {
                 //enable proximity mode
                 sensor.enableProximity(true);
-                sensor.setProximityInterruptThreshold(0, 175);
+                sensor.setProximityInterruptThreshold(0, 1); // 175
                 sensor.enableProximityInterrupt();
 
                 System.Console.Clear();
                 ConsoleEx.TitleBar(0, "Proximity Sensor");
-                ConsoleEx.WriteMenu(-1, 6, "Q)uit");
+                ConsoleEx.WriteMenu(-1, 2, "Q)uit");
                 var quit = false;
-                while(!quit)
+                ConsoleEx.WriteLine(1, 10, "Waiting for interrupt:", ConsoleColor.White);
+                while (!quit)
                 {
                     if(sensor.IsInterruptOn)
                     {

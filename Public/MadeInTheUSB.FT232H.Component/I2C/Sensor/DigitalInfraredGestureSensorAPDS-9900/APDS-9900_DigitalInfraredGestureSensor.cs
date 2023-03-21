@@ -82,6 +82,9 @@ using System.Threading;
 
 namespace MadeInTheUSB
 {
+    /// <summary>
+    /// https://cdn.sparkfun.com/assets/learn_tutorials/3/2/1/Avago-APDS-9960-datasheet.pdf
+    /// </summary>
     public partial class APDS_9900_DigitalInfraredGestureSensor
     {
         public enum Registers
@@ -189,6 +192,19 @@ namespace MadeInTheUSB
             this.write8(Registers.APDS9960_ENABLE, _enable.get());
         }
 
+        private bool VerifyDeviceConnection(int recusiveIndex = 0)
+        {
+            uint8_t x = read8(Registers.APDS9960_ID); /* Make sure we're actually connected */
+            var r = (x == 0xAB);
+            if(r == false && recusiveIndex == 0)
+            {
+                Thread.Sleep(10); // Wait and re-try
+                return VerifyDeviceConnection(recusiveIndex+1);
+            }
+
+            return r;
+        }
+
         /*!
          *  @brief  Initializes I2C and configures the sensor
          *  @param  iTimeMS
@@ -207,13 +223,11 @@ namespace MadeInTheUSB
             if (!this._i2cDevice.InitiateDetectionSequence(addr))
                 return false;
 
-            /* Make sure we're actually connected */
-            uint8_t x = read8(Registers.APDS9960_ID);
-            if (x != 0xAB)
+            if (!VerifyDeviceConnection())
             {
                 return false;
             }
-
+          
             /* Set default integration time and gain */
             setADCIntegrationTime(iTimeMS);
             setADCGain(aGain);
@@ -266,7 +280,11 @@ namespace MadeInTheUSB
                 temp = 0;
 
             /* Update the timing register */
-            write8(Registers.APDS9960_ATIME, (uint8_t)temp);
+            if(!write8(Registers.APDS9960_ATIME, (uint8_t)temp))
+            {
+                Thread.Sleep(1);
+                write8(Registers.APDS9960_ATIME, (uint8_t)temp);
+            }
         }
 
         /*!
@@ -391,9 +409,7 @@ namespace MadeInTheUSB
          *  @param  persistence
          *          Persistence
          */
-        public void setProximityInterruptThreshold(uint8_t low,
-                                                               uint8_t high,
-                                                               uint8_t persistence = 4)
+        public void setProximityInterruptThreshold(uint8_t low, uint8_t high, uint8_t persistence = 4)
         {
             write8(Registers.APDS9960_PILT, low);
             write8(Registers.APDS9960_PIHT, high);
@@ -754,7 +770,11 @@ namespace MadeInTheUSB
          */
         public void clearInterrupt()
         {
-            this.write(Registers.APDS9960_AICLEAR, null, 0);
+            if (!this.write(Registers.APDS9960_AICLEAR, null, 0))
+            {
+                Thread.Sleep(1);
+                this.write(Registers.APDS9960_AICLEAR, null, 0);
+            }
         }
 
         /*!
@@ -864,15 +884,18 @@ namespace MadeInTheUSB
          *          Number of bytes
          *  @return Position after reading
          */
-        uint8_t read(uint8_t reg, List<byte> buf, uint8_t num)
+        uint8_t read(uint8_t reg, List<byte> buf, uint8_t num, int recusiveIndex = 0)
         {
-            buf = this._i2cDevice.Send1ByteReadXByteCommand(this.DeviceID, reg, num);
+            var newBuf = this._i2cDevice.Send1ByteReadXByteCommand(this.DeviceID, reg, num);
+
+            if(newBuf == null && recusiveIndex == 0) // Retry once
+            {
+                Thread.Sleep(10);
+                return read(reg, buf, num, recusiveIndex+1);
+            }
+
+            buf.AddRange(newBuf);
             return num;
-
-            //buf[0] = reg;
-            //i2c_dev->write_then_read(buf, 1, buf, num);
-            //return num;
-
         }
 
         bool write(Registers reg, List<byte> buf, uint8_t num)

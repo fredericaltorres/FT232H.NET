@@ -24,23 +24,21 @@ namespace MadeInTheUSB.FT232H.Console
                 System.Console.WriteLine(ft232Device.ToString());
                 foreach(var p in ft232Device.Properties) System.Console.WriteLine($"{p.Key}: {p.Value}");
             }
-            var i2cDevice = new I2CDevice(ft232Device.ft232h, I2CDevice.ClockEnum.Clock100Khz_Divisor);
+            var i2cDevice = new I2CDevice(ft232Device.ft232h, I2CDevice.ClockEnum.Clock300Khz_Divisor);
             //i2cDevice.Gpios.DigitalWrite(0, PinState.High);
             //i2cDevice.Gpios.DigitalWrite(i2cDevice.Gpios.MaxGpio-1, PinState.High);
-
             //I2CSample_AdaFruit8x8LedMatrix(i2cDevice);
             //I2CSample_Adafruit9x16LedMatrixGray(i2cDevice);
             //MCP9808_TemperatureSensor_Sample(i2cDevice);
-
             //I2C_Gpios(i2cDevice, i2cDevice.Gpios);
 
-            //APDS_9900_DigitalInfraredGestureSensor(i2cDevice);
+            //APDS_9900_DigitalInfraredGestureSensor_Proximity(i2cDevice);
+            APDS_9900_DigitalInfraredGestureSensor_Color(i2cDevice);
             //OLED_SSD1306_Sample(i2cDevice);
             //LiquidCrystal(i2cDevice);
-            // PCF8574(i2cDevice);
-            ADS1015_ADC_ADC(i2cDevice);
+            //PCF8574(i2cDevice);
+            //ADS1015_ADC_ADC(i2cDevice);
             return;
-            
 
             // MCP3088 and MAX7219 is limited to 10Mhz
             var clockSpeed = MpsseSpiConfig._30Mhz; // MpsseSpiConfig._10Mhz;
