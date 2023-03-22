@@ -15,6 +15,7 @@ using int16_t = System.Int16; // Nice C# feature allowing to use same Arduino/C 
 using uint32_t = System.UInt32;
 using uint16_t = System.UInt16;
 using uint8_t = System.Byte;
+using static MadeInTheUSB.APDS_9900_DigitalInfraredGestureSensor;
 
 namespace MadeInTheUSB.FT232H.Console
 {
@@ -138,6 +139,38 @@ namespace MadeInTheUSB.FT232H.Console
 
             gpios.DigitalWrite(gpioOutputIndex, PinState.High);
             state = gpios.DigitalRead(gpioPullUpIndex);
+        }
+
+
+        static void APDS_9900_DigitalInfraredGestureSensor_Gesture(I2CDevice i2cDevice)
+        {
+            var sensor = new APDS_9900_DigitalInfraredGestureSensor(i2cDevice, 0);
+            if (sensor.begin())
+            {
+                sensor.enableProximity(true);
+                sensor.enableGesture(true);
+
+                System.Console.Clear();
+                ConsoleEx.TitleBar(0, "Gesture Sensor");
+                ConsoleEx.WriteMenu(-1, 2, "Q)uit");
+                var quit = false;
+                while (!quit)
+                {
+                    Gestures gesture = sensor.readGesture();
+                    if (gesture == APDS_9900_DigitalInfraredGestureSensor.Gestures.APDS9960_DOWN)   System.Console.WriteLine("v");
+                    if (gesture == APDS_9900_DigitalInfraredGestureSensor.Gestures.APDS9960_UP)     System.Console.WriteLine("^");
+                    if (gesture == APDS_9900_DigitalInfraredGestureSensor.Gestures.APDS9960_LEFT)   System.Console.WriteLine("<");
+                    if (gesture == APDS_9900_DigitalInfraredGestureSensor.Gestures.APDS9960_RIGHT)  System.Console.WriteLine(">");
+
+                    if (System.Console.KeyAvailable)
+                    {
+                        var k = System.Console.ReadKey(true).Key;
+                        if (k == ConsoleKey.Q)
+                            quit = true;
+                    }
+                    Thread.Sleep(100);
+                }
+            }
         }
 
 

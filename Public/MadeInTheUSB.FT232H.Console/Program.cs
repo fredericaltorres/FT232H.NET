@@ -34,6 +34,7 @@ namespace MadeInTheUSB.FT232H.Console
 
             //APDS_9900_DigitalInfraredGestureSensor_Proximity(i2cDevice);
             APDS_9900_DigitalInfraredGestureSensor_Color(i2cDevice);
+            //APDS_9900_DigitalInfraredGestureSensor_Gesture(i2cDevice);
             //OLED_SSD1306_Sample(i2cDevice);
             //LiquidCrystal(i2cDevice);
             //PCF8574(i2cDevice);

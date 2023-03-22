@@ -156,7 +156,6 @@ namespace MadeInTheUSB
 
         public APDS_9900_DigitalInfraredGestureSensor(I2CDevice i2cDevice, int gpioInterrupt)
         {
-            
             this._i2cDevice = i2cDevice;
             this._gpioInterrupt = gpioInterrupt;
             this._i2cDevice.Gpios.SetPinMode(gpioInterrupt, PinMode.InputPullUp);
@@ -170,8 +169,8 @@ namespace MadeInTheUSB
             }
         }
 
-        float powf(float x, float y) {
-            
+        float powf(float x, float y) 
+        {
              return (float) (Math.Pow((double) x, (double) y));
         }
 
@@ -547,12 +546,12 @@ namespace MadeInTheUSB
          *  @return Received gesture (APDS9960_DOWN APDS9960_UP, APDS9960_LEFT
          *          APDS9960_RIGHT)
          */
-        public uint8_t readGesture()
+        public Gestures readGesture()
         {
             uint8_t toRead;
             List<uint8_t> buf = new List<uint8_t>();
             int t = 0;
-            uint8_t gestureReceived;
+            Gestures gestureReceived;
             while (true)
             {
                 int up_down_diff = 0;
@@ -567,10 +566,12 @@ namespace MadeInTheUSB
                 // produces sideffects needed for readGesture to work
                 this.read(Registers.APDS9960_GFIFO_U, buf, toRead);
 
-                if (Math.Abs((int)buf[0] - (int)buf[1]) > 13)
+                var v1 = Math.Abs((int)buf[0] - (int)buf[1]);
+                if (v1 > 13)
                     up_down_diff += (int)buf[0] - (int)buf[1];
 
-                if (Math.Abs((int)buf[2] - (int)buf[3]) > 13)
+                var v2 = Math.Abs((int)buf[2] - (int)buf[3]);
+                if (v2 > 13)
                     left_right_diff += (int)buf[2] - (int)buf[3];
 
                 if (up_down_diff != 0)
@@ -578,18 +579,14 @@ namespace MadeInTheUSB
                     if (up_down_diff < 0)
                     {
                         if (DCount > 0)
-                        {
-                            gestureReceived = APDS9960_UP;
-                        }
+                            gestureReceived = Gestures.APDS9960_UP;
                         else
                             UCount++;
                     }
                     else if (up_down_diff > 0)
                     {
                         if (UCount > 0)
-                        {
-                            gestureReceived = APDS9960_DOWN;
-                        }
+                            gestureReceived = Gestures.APDS9960_DOWN;
                         else
                             DCount++;
                     }
@@ -601,7 +598,7 @@ namespace MadeInTheUSB
                     {
                         if (RCount > 0)
                         {
-                            gestureReceived = APDS9960_LEFT;
+                            gestureReceived = Gestures.APDS9960_LEFT;
                         }
                         else
                             LCount++;
@@ -610,7 +607,7 @@ namespace MadeInTheUSB
                     {
                         if (LCount > 0)
                         {
-                            gestureReceived = APDS9960_RIGHT;
+                            gestureReceived = Gestures.APDS9960_RIGHT;
                         }
                         else
                             RCount++;

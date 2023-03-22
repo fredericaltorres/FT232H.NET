@@ -164,10 +164,14 @@ namespace MadeInTheUSB
             APDS9960_GPULSE_32US = 0x03, // Pulse 32us
         };
 
-        public const int APDS9960_UP = 0x01;   /**< Gesture Up */
-        public const int APDS9960_DOWN = 0x02; /**< Gesture Down */
-        public const int APDS9960_LEFT = 0x03; /**< Gesture Left */
-        public const int APDS9960_RIGHT = 0x04; /**< Gesture Right */
+        public enum Gestures
+        {
+            UNDEFINED = 0,
+            APDS9960_UP = 0x01,   /**< Gesture Up */
+            APDS9960_DOWN = 0x02, /**< Gesture Down */
+            APDS9960_LEFT = 0x03, /**< Gesture Left */
+            APDS9960_RIGHT = 0x04, /**< Gesture Right */
+        }
 
         class Enable
         {
