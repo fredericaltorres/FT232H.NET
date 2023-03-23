@@ -66,7 +66,7 @@ namespace MadeInTheUSB.FT232H.Console
         }
         */
 
-        static void MCP9808_TemperatureSensor_Sample(I2CDevice i2cDevice)
+        static void MCP9808_TemperatureSensor_Sample(I2CDevice2 i2cDevice)
         {
             var ts = new MCP9808_TemperatureSensor(i2cDevice);
             if (!ts.Begin())

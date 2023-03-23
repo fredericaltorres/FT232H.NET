@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Linq;
 
 namespace MadeInTheUSB.FT232H
 {
@@ -127,13 +128,33 @@ namespace MadeInTheUSB.FT232H
             return LibMpsse_AccessToCppDll.I2C_DeviceWrite(_handle, DeviceAddress, sizeToTransfer, buffer, out sizeTransfered, options);
         }
 
+        public List<byte> ReadXByte(int count)
+        {
+            var buffer = new byte[count];
+            if (Read(buffer))
+            {
+                return buffer.ToList();
+            }
+            else return null;
+        }
+
+        public int Read1Byte()
+        {
+            var buffer = new byte[1];
+            if (Read(buffer))
+            {
+                return buffer[0];
+            }
+            else return -1;
+        }
+
         public FtdiMpsseSPIResult Read(byte[] buffer, int sizeToTransfer, out int sizeTransfered, FtI2CTransferOptions options)
         {
             //EnforceRightConfiguration();
             return LibMpsse_AccessToCppDll.I2C_DeviceRead(_handle, DeviceAddress, sizeToTransfer, buffer, out sizeTransfered, options);
         }
 
-        public void Read(byte[] buffer)
+        public bool Read(byte[] buffer)
         {
             int sizeTransfered = 0;
             var result = LibMpsse_AccessToCppDll.I2C_DeviceRead(
@@ -141,6 +162,7 @@ namespace MadeInTheUSB.FT232H
                 buffer.Length, buffer, out sizeTransfered, FtI2CTransferOptions.StartBit);
 
             CheckResult(result);
+            return result == FtdiMpsseSPIResult.Ok;
         }
 
         protected static void CheckResult(FtdiMpsseSPIResult result)

@@ -83,9 +83,9 @@ namespace MadeInTheUSB
         public int DeviceID = MCP9808_I2CADDR_DEFAULT;
 
 
-        I2CDevice _i2cDevice;
+        I2CDevice2 _i2cDevice;
 
-        public MCP9808_TemperatureSensor(I2CDevice i2cDevice, byte deviceId = MCP9808_I2CADDR_DEFAULT, int waitTimeAfterWriteOperation = 5, bool debug = false)
+        public MCP9808_TemperatureSensor(I2CDevice2 i2cDevice, byte deviceId = MCP9808_I2CADDR_DEFAULT, int waitTimeAfterWriteOperation = 5, bool debug = false)
         {
             this._i2cDevice = i2cDevice;
         }
@@ -95,8 +95,9 @@ namespace MadeInTheUSB
             try
             {
                 this.DeviceID = deviceAddress;
-                if (!this._i2cDevice.InitiateDetectionSequence(deviceAddress))
-                    return false;
+                this._i2cDevice.DeviceAddress = deviceAddress;
+                //if (!this._i2cDevice.InitiateDetectionSequence(deviceAddress))
+                //    return false;
 
                 if (read16(MCP9808_REG_MANUF_ID) != MCP9808_REG_MANUF_ID_ANSWER) return false;
                 if (read16(MCP9808_REG_DEVICE_ID) != MCP9808_REG_DEVICE_ID_ANSWER) return false;
@@ -138,16 +139,17 @@ namespace MadeInTheUSB
 
         private UInt16 read16(uint8_t reg)
         {
-            UInt16 value = 0;
             //var buffer = new byte[2]; // Allocate the response expected
             //if (Ii2cOutImpl.i2c_WriteReadBuffer(new byte[1] { reg }, buffer))
             //{
             //    value = (System.UInt16)((buffer[0] << 8) + buffer[1]);
             //}
 
-            var r = this._i2cDevice.Send1ByteReadInt16Command(this.DeviceID, reg);
-            
-            return (UInt16)r;
+            this._i2cDevice.Write(reg);
+            var buffer = this._i2cDevice.ReadXByte(2);
+            var value = (buffer[0] << 8) + buffer[1];
+
+            return (UInt16)value;
         }
     }
 }
