@@ -18,6 +18,20 @@ namespace MadeInTheUSB.FT232H.Console
     {
         static void Main(string[] args)
         {
+            var i2cDevice2 = new I2CDevice2();
+            i2cDevice2.Init();
+
+            /*
+            const int APDS9960_ADDRESS = (0x39); 
+            i2cDevice2.Init(APDS9960_ADDRESS);
+            var APDS9960_ID = 0x92;
+            i2cDevice2.Write(APDS9960_ID);
+            var buffer = new byte[1];
+            i2cDevice2.Read(buffer);
+            var r = (buffer[0] == 0xAB);
+            */
+
+            /*
             var ft232Device = FT232HDetector.Detect(closeDevice: false);
             if(ft232Device.Ok)
             {
@@ -25,15 +39,18 @@ namespace MadeInTheUSB.FT232H.Console
                 foreach(var p in ft232Device.Properties) System.Console.WriteLine($"{p.Key}: {p.Value}");
             }
             var i2cDevice = new I2CDevice(ft232Device.ft232h, I2CDevice.ClockEnum.Clock300Khz_Divisor);
+            */
+
+
             //i2cDevice.Gpios.DigitalWrite(0, PinState.High);
             //i2cDevice.Gpios.DigitalWrite(i2cDevice.Gpios.MaxGpio-1, PinState.High);
-            //I2CSample_AdaFruit8x8LedMatrix(i2cDevice);
+            I2CSample_AdaFruit8x8LedMatrix(i2cDevice2);
             //I2CSample_Adafruit9x16LedMatrixGray(i2cDevice);
             //MCP9808_TemperatureSensor_Sample(i2cDevice);
             //I2C_Gpios(i2cDevice, i2cDevice.Gpios);
 
-            //APDS_9900_DigitalInfraredGestureSensor_Proximity(i2cDevice);
-            APDS_9900_DigitalInfraredGestureSensor_Color(i2cDevice);
+            // APDS_9900_DigitalInfraredGestureSensor_Proximity(i2cDevice);
+            // APDS_9900_DigitalInfraredGestureSensor_Color(i2cDevice);
             //APDS_9900_DigitalInfraredGestureSensor_Gesture(i2cDevice);
             //OLED_SSD1306_Sample(i2cDevice);
             //LiquidCrystal(i2cDevice);

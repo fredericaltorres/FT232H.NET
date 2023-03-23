@@ -22,8 +22,40 @@ namespace MadeInTheUSB.FT232H
     // source https://ftdichip.com/wp-content/uploads/2020/07/AN_411_Source.zip
     // https://ftdichip.com/software-examples/code-examples/csharp-examples/
     /// </summary>
+    /// 
+    // https://github.com/jakkaj/xIOT
+
+    
     internal class LibMpsse_AccessToCppDll
     {
+        [DllImport(LibMpsse.DllName, SetLastError = true, CallingConvention = CallingConvention.Cdecl)]
+        public extern static FtdiMpsseSPIResult I2C_GetNumChannels(out int numChannels);
+
+        [DllImport(LibMpsse.DllName, SetLastError = true, CallingConvention = CallingConvention.Cdecl)]
+        public static extern FtdiMpsseSPIResult I2C_OpenChannel(int index, out System.IntPtr handle);
+
+        [DllImport(LibMpsse.DllName, SetLastError = true, CallingConvention = CallingConvention.Cdecl)]
+        public static extern FtdiMpsseSPIResult I2C_InitChannel(System.IntPtr handle, ref FtChannelConfig config);
+
+        [DllImport(LibMpsse.DllName, SetLastError = true, CallingConvention = CallingConvention.Cdecl)]
+        public extern static FtdiMpsseSPIResult I2C_GetChannelInfo(int index, out FtDeviceInfo chanInfo);
+
+        [DllImport(LibMpsse.DllName, SetLastError = true, CallingConvention = CallingConvention.Cdecl)]
+        public static extern FtdiMpsseSPIResult I2C_DeviceRead(System.IntPtr handle, int deviceAddress, int sizeToTransfer, byte[] buffer, out int sizeTransfered, FtI2CTransferOptions options);
+
+        [DllImport(LibMpsse.DllName, SetLastError = true, CallingConvention = CallingConvention.Cdecl)]
+        public static extern FtdiMpsseSPIResult I2C_DeviceWrite(System.IntPtr handle, int deviceAddress, int sizeToTransfer, byte[] buffer, out int sizeTransfered, FtI2CTransferOptions options);
+
+        [DllImport(LibMpsse.DllName, SetLastError = true, CallingConvention = CallingConvention.Cdecl)]
+        public static extern FtdiMpsseSPIResult FT_WriteGPIO(System.IntPtr handle, byte dir, byte value);
+
+        [DllImport(LibMpsse.DllName, SetLastError = true, CallingConvention = CallingConvention.Cdecl)]
+        public static extern FtdiMpsseSPIResult FT_ReadGPIO(System.IntPtr handle, out int value);
+
+
+
+
+
         [DllImport(LibMpsse.DllName, SetLastError = true, CallingConvention = CallingConvention.Cdecl)]
         public extern static FtdiMpsseSPIResult SPI_OpenChannel(int index, out IntPtr handle);
 
@@ -79,8 +111,8 @@ namespace MadeInTheUSB.FT232H
         public extern static FtdiMpsseSPIResult FT_WriteGPIO(IntPtr handle, int value /*0-low 1-high*/);
         
 
-        [DllImport(LibMpsse.DllName, SetLastError = true, CallingConvention = CallingConvention.Cdecl)]
-        public static extern FtdiMpsseSPIResult FT_ReadGPIO(IntPtr handle, out int value);
+        //[DllImport(LibMpsse.DllName, SetLastError = true, CallingConvention = CallingConvention.Cdecl)]
+        //public static extern FtdiMpsseSPIResult FT_ReadGPIO(IntPtr handle, out int value);
         
         [DllImport(LibMpsse.DllName, SetLastError = true, CallingConvention = CallingConvention.Cdecl)]
         public static extern UInt32 MPSSE_I2C_GetChannels(UInt32 numberOfChannels);

@@ -56,7 +56,11 @@
     <Compile Include="Exception\GpioException.cs" />
     <Compile Include="Exception\SpiChannelNotConnectedException.cs" />
     <Compile Include="FT232HDeviceBaseClass.cs" />
+    <Compile Include="I2C_2\I2CChannelNotConnectedException.cs" />
+    <Compile Include="I2C_2\I2CConfiguration.cs" />
+    <Compile Include="I2C_2\I2CDevice2.cs" />
     <Compile Include="I2C\I2CDeviceGpio.cs" />
+    <Compile Include="I2C_2\I2CModes.cs" />
     <Compile Include="Interface\IDigitalWriteRead.cs" />
     <Compile Include="Interface\ISPI.cs" />
     <Compile Include="MPSSE\MpsseChannelConfiguration.cs" />

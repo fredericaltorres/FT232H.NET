@@ -95,10 +95,10 @@ namespace MadeInTheUSB.Adafruit
         private int _I2CDeviceId;
 
 
-        private readonly I2CDevice _i2CDevice;
+        private readonly I2CDevice2 _i2CDevice;
 
 
-        public LEDBackpack(I2CDevice i2cDevice, int16_t width, int16_t height): base(width, height)
+        public LEDBackpack(I2CDevice2 i2cDevice, int16_t width, int16_t height): base(width, height)
         {
             _i2CDevice = i2cDevice;
         }
@@ -170,7 +170,10 @@ namespace MadeInTheUSB.Adafruit
         private bool _begin(byte addr = 0x70)
         {
             this._I2CDeviceId = addr;
-            if (!this._i2CDevice.Send1ByteCommand(this._I2CDeviceId, HT16K33_CMD_TURN_OSCILLATOR_ON)) return false;
+
+            if (!this._i2CDevice.Write(HT16K33_CMD_TURN_OSCILLATOR_ON)) return false;
+            //if (!this._i2CDevice.Send1ByteCommand(this._I2CDeviceId, HT16K33_CMD_TURN_OSCILLATOR_ON)) return false;
+
             this.SetBlinkRate(HT16K33_BLINK_OFF);
             this.SetBrightness(5);
             this.Clear(true);
@@ -210,15 +213,16 @@ namespace MadeInTheUSB.Adafruit
         {
             if (b > 15) b = 15;
             this._brightness = b;
-            if (!this._i2CDevice.Send1ByteCommand(this._I2CDeviceId, (byte)(HT16K33_CMD_BRIGHTNESS | b)))
+            if (!this._i2CDevice.Write(HT16K33_CMD_BRIGHTNESS | b))
                 throw new I2CCommunicationException(DEFAULT_I2C_ERROR_MESSAGE);
         }
 
         public void SetBlinkRate(byte b)
         {
             if (b > 3) b = 0; // turn off if not sure  
-            if (!this._i2CDevice.Send1ByteCommand(this._I2CDeviceId, (byte)(HT16K33_BLINK_CMD | HT16K33_BLINK_DISPLAYON | (b << 1))))
-                throw new I2CCommunicationException(DEFAULT_I2C_ERROR_MESSAGE);
+            //if (!this._i2CDevice.Send1ByteCommand(this._I2CDeviceId, (byte)(HT16K33_BLINK_CMD | HT16K33_BLINK_DISPLAYON | (b << 1))))
+            if (!this._i2CDevice.Write(HT16K33_BLINK_CMD | HT16K33_BLINK_DISPLAYON | (b << 1)))
+                    throw new I2CCommunicationException(DEFAULT_I2C_ERROR_MESSAGE);
         }
 
         public virtual void Clear(bool refresh = false)
@@ -241,7 +245,7 @@ namespace MadeInTheUSB.Adafruit
                 buf.Add((uint8_t)(_displayBuffer[i] & 0xFF));    // 8 bit of columns
                 buf.Add((uint8_t)(_displayBuffer[i] >> 8));
             }
-            return this._i2CDevice.WriteBuffer(this._I2CDeviceId, buf.ToArray());
+            return this._i2CDevice.WriteBuffer(buf.ToArray());
         }
 
 

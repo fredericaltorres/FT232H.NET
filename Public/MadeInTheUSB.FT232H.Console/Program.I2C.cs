@@ -18,7 +18,7 @@ namespace MadeInTheUSB.FT232H.Console
         static LEDBackpack _ledMatrix01;
         static MultiLEDBackpackManager _multiLEDBackpackManager;
 
-        static void I2CSample_AdaFruit8x8LedMatrix(I2CDevice i2cDevice)
+        static void I2CSample_AdaFruit8x8LedMatrix(I2CDevice2 i2cDevice)
         {
             _multiLEDBackpackManager = new MultiLEDBackpackManager();
             _ledMatrix00 = _multiLEDBackpackManager.Add(i2cDevice, 8, 8, 0x70); // 0x70 Small One
