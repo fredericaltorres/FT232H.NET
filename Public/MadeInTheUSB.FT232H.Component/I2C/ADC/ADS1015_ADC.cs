@@ -138,13 +138,13 @@ namespace MadeInTheUSB
         public const int RATE_ADS1115_860SPS = (0x00E0); ///< 860 samples per second
 
         public int DeviceID;
-        I2CDevice _i2cDevice;
+        I2CDevice2 _i2cDevice;
 
         uint8_t m_bitShift;            ///< bit shift amount
         adsGain_t m_gain;              ///< ADC gain
         uint16_t m_dataRate;           ///< Data rate
 
-        public ADS1015_ADC(I2CDevice i2cDevice, byte deviceId = ADS1X15_ADDRESS)
+        public ADS1015_ADC(I2CDevice2 i2cDevice, byte deviceId = ADS1X15_ADDRESS)
         {
             this._i2cDevice = i2cDevice;
 
@@ -158,8 +158,8 @@ namespace MadeInTheUSB
             try
             {
                 this.DeviceID = deviceAddress;
-                if (!this._i2cDevice.InitiateDetectionSequence(deviceAddress))
-                    return false;
+                //if (!this._i2cDevice.InitiateDetectionSequence(deviceAddress))
+                //    return false;
 
                 return true;
             }
@@ -252,17 +252,15 @@ namespace MadeInTheUSB
 
         private UInt16 read16(uint8_t reg)
         {
-            UInt16 value = 0;
+            //UInt16 value = 0;
             //var buffer = new byte[2]; // Allocate the response expected
             //if (Ii2cOutImpl.i2c_WriteReadBuffer(new byte[1] { reg }, buffer))
             //{
             //    value = (System.UInt16)((buffer[0] << 8) + buffer[1]);
             //}
 
-            var r = this._i2cDevice.Send1ByteReadInt16Command(this.DeviceID, reg);
-
-
-            return value;
+            var r = this._i2cDevice.Write1ByteRead2Byte(reg);
+            return (UInt16)r;
         }
 
         bool writeRegister(uint8_t reg, uint16_t value)
@@ -271,21 +269,20 @@ namespace MadeInTheUSB
             buffer[0] = reg;
             buffer[1] = (byte)(value >> 8);
             buffer[2] = (byte)(value & 0xFF);
-            return this._i2cDevice.WriteBuffer(this.DeviceID, buffer);
+            return this._i2cDevice.WriteBuffer(buffer);
         }
 
         uint16_t readRegister(uint8_t reg)
         {
             var buffer = new byte[1];
             buffer[0] = reg;
-            var r = this._i2cDevice.Send1ByteReadInt16Command(this.DeviceID, reg);
+            var r = this._i2cDevice.Write1ByteRead2Byte(reg);
             return (uint16_t)r;
 
             //m_i2c_dev->write(buffer, 1);
             //m_i2c_dev->read(buffer, 2);
             //return ((buffer[0] << 8) | buffer[1]);
         }
-
     }
 }
 

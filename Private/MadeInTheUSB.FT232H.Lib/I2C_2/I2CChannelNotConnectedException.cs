@@ -16,11 +16,11 @@ namespace MadeInTheUSB.FT232H
 
     // C:\DVT\Adafruit_Blinka\src\adafruit_blinka\microcontroller\ftdi_mpsse\mpsse\i2c.py
 
-    public class I2CChannelNotConnectedException : Exception
+    public class I2CException : Exception
     {
         public FtdiMpsseSPIResult Reason { get; private set; }
 
-        public I2CChannelNotConnectedException(FtdiMpsseSPIResult res)
+        public I2CException(FtdiMpsseSPIResult res)
         {
             Reason = res;
         }

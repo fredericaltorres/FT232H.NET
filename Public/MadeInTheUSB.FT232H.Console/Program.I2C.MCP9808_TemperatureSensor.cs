@@ -18,7 +18,7 @@ namespace MadeInTheUSB.FT232H.Console
     {
         // MCP9808_TemperatureSensor
 
-        static void ADS1015_ADC_ADC(I2CDevice i2cDevice)
+        static void ADS1015_ADC_ADC(I2CDevice2 i2cDevice)
         {
 //            i2cDevice.I2C_SetLineStatesIdle();
             var adc = new ADS1015_ADC(i2cDevice);

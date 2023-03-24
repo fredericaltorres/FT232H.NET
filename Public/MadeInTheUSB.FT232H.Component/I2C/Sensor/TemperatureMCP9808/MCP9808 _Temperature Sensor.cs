@@ -112,7 +112,7 @@ namespace MadeInTheUSB
 
         public double GetTemperature(TemperatureType type = TemperatureType.Celsius)
         {
-            uint16_t t = Read2Byte(MCP9808_REG_AMBIENT_TEMP);
+            uint16_t t = Write1ByteRead2Byte(MCP9808_REG_AMBIENT_TEMP);
             double temp = t & 0x0FFF;
             temp /= 16.0;
             if ((t & 0x1000) == 0x1000) temp -= 256;
@@ -139,15 +139,15 @@ namespace MadeInTheUSB
 
         private bool ReadByteWithRetry(uint8_t reg, UInt16 expected)
         {
-            if (Read2Byte(reg) == expected)
+            if (Write1ByteRead2Byte(reg) == expected)
                 return true;
             Thread.Sleep(10);
-            if (Read2Byte(reg) == expected)
+            if (Write1ByteRead2Byte(reg) == expected)
                 return true;
             return false;
         }
 
-        private UInt16 Read2Byte(uint8_t reg)
+        private UInt16 Write1ByteRead2Byte(uint8_t reg)
         {
             this._i2cDevice.Write(reg);
             var buffer = this._i2cDevice.ReadXByte(2);

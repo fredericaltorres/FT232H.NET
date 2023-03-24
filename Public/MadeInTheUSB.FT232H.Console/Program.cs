@@ -44,18 +44,18 @@ namespace MadeInTheUSB.FT232H.Console
 
             //i2cDevice.Gpios.DigitalWrite(0, PinState.High);
             //i2cDevice.Gpios.DigitalWrite(i2cDevice.Gpios.MaxGpio-1, PinState.High);
-            // I2CSample_AdaFruit8x8LedMatrix(i2cDevice2);
-            //I2CSample_Adafruit9x16LedMatrixGray(i2cDevice);
+            //I2CSample_AdaFruit8x8LedMatrix(i2cDevice2);
+            //I2CSample_Adafruit9x16LedMatrixGray(i2cDevice2);
             MCP9808_TemperatureSensor_Sample(i2cDevice2);
             //I2C_Gpios(i2cDevice, i2cDevice.Gpios);
 
             // APDS_9900_DigitalInfraredGestureSensor_Proximity(i2cDevice);
             // APDS_9900_DigitalInfraredGestureSensor_Color(i2cDevice);
             //APDS_9900_DigitalInfraredGestureSensor_Gesture(i2cDevice);
-            //OLED_SSD1306_Sample(i2cDevice);
+            //OLED_SSD1306_Sample(i2cDevice2);
             //LiquidCrystal(i2cDevice);
             //PCF8574(i2cDevice);
-            //ADS1015_ADC_ADC(i2cDevice);
+            //ADS1015_ADC_ADC(i2cDevice2);
             return;
 
             // MCP3088 and MAX7219 is limited to 10Mhz

@@ -104,9 +104,9 @@ namespace MadeInTheUSB.Adafruit
             }
         }
 
-        I2CDevice _i2cDevice;
+        I2CDevice2 _i2cDevice;
 
-        public IS31FL3731(I2CDevice i2cDevice, byte deviceId = ISSI_ADDR_DEFAULT, int width = 16, int height = 9) : base((Int16)width, (Int16)height)
+        public IS31FL3731(I2CDevice2 i2cDevice, byte deviceId = ISSI_ADDR_DEFAULT, int width = 16, int height = 9) : base((Int16)width, (Int16)height)
         {
             _i2cDevice = i2cDevice;
         }
@@ -117,8 +117,8 @@ namespace MadeInTheUSB.Adafruit
             {
                 this.DeviceId = deviceAddress;
 
-                if(!this._i2cDevice.InitiateDetectionSequence(deviceAddress))
-                    return false;
+                //if(!this._i2cDevice.InitiateDetectionSequence(deviceAddress))
+                //    return false;
 
                 this._frame = 0;
 
@@ -200,7 +200,7 @@ namespace MadeInTheUSB.Adafruit
             var l = new List<byte>();
             l.Add(command);
             l.AddRange(buffer);
-            return this._i2cDevice.WriteBuffer(this.DeviceId, l.ToArray());
+            return this._i2cDevice.WriteBuffer(l.ToArray());
         }
 
         public void Fill(List<List<byte>> val)
@@ -295,7 +295,7 @@ namespace MadeInTheUSB.Adafruit
             if (_frame != b)
             {
                 _frame = b;
-                return this._i2cDevice.WriteBuffer(this.DeviceId, new byte[2] { (byte)ISSI_COMMANDREGISTER, (byte)b });
+                return this._i2cDevice.WriteBuffer(new byte[2] { (byte)ISSI_COMMANDREGISTER, (byte)b });
             }
             else
                 return true;
@@ -337,7 +337,7 @@ namespace MadeInTheUSB.Adafruit
         {
             if (!this.SelectFrame(b)) return false;
             //return ((Ii2cOut)this).i2c_WriteBuffer(new byte[2] { (byte)reg, (byte)data });
-            return this._i2cDevice.WriteBuffer(this.DeviceId, new byte[2] { (byte)reg, (byte)data });
+            return this._i2cDevice.WriteBuffer(new byte[2] { (byte)reg, (byte)data });
         }
     }
 

@@ -18,7 +18,7 @@ namespace MadeInTheUSB.FT232H
 
         private I2CConfiguration _i2cConfig;
 
-        private const int ConnectionSpeed = (int)I2CModes.I2C_CLOCK_FAST_MODE_1_Mhz; // Hz
+        private const int ConnectionSpeed = (int)I2CModes.I2C_CLOCK_FAST_MODE_400Khz; // Hz
         private const int LatencyTimer = 10;//255; // Hz
 
         private byte _direction;
@@ -87,7 +87,7 @@ namespace MadeInTheUSB.FT232H
             CheckResult(result);
 
             if (_handle == IntPtr.Zero)
-                throw new I2CChannelNotConnectedException(FtdiMpsseSPIResult.InvalidHandle);
+                throw new I2CException(FtdiMpsseSPIResult.InvalidHandle);
 
             result = LibMpsse_AccessToCppDll.I2C_InitChannel(_handle, ref _cfg);
 
@@ -111,7 +111,8 @@ namespace MadeInTheUSB.FT232H
             int writtenAmount;
 
             var result = Write(array, array.Length, out writtenAmount,
-                FtI2CTransferOptions.FastTransfer | FtI2CTransferOptions.StartBit | FtI2CTransferOptions.StopBit);
+                //FtI2CTransferOptions.FastTransfer |
+                FtI2CTransferOptions.StartBit | FtI2CTransferOptions.StopBit);
 
             return result == FtdiMpsseSPIResult.Ok;
         }
@@ -153,6 +154,15 @@ namespace MadeInTheUSB.FT232H
             else return -1;
         }
 
+        public int Write1ByteRead2Byte(byte reg)
+        {
+            this.Write(reg);
+            var buffer = this.ReadXByte(2);
+            var value = (buffer[0] << 8) + buffer[1];
+
+            return (UInt16)value;
+        }
+
         public FtdiMpsseSPIResult Read(byte[] buffer, int sizeToTransfer, out int sizeTransfered, FtI2CTransferOptions options)
         {
             return LibMpsse_AccessToCppDll.I2C_DeviceRead(_handle, DeviceAddress, sizeToTransfer, buffer, out sizeTransfered, options);
@@ -172,7 +182,7 @@ namespace MadeInTheUSB.FT232H
         protected static void CheckResult(FtdiMpsseSPIResult result)
         {
             if (result != FtdiMpsseSPIResult.Ok)
-                throw new I2CChannelNotConnectedException(result);
+                throw new I2CException(result);
         }
 
         //Parts of this code are from http://www.chd.at/sites/default/files/files/FTDI.cs
