@@ -1,0 +1,14 @@
+﻿<Page
+    x:Class="XIOTCore.Samples.Universal.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:XIOTCore.Samples.Universal"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:oled="using:XIOTCore.Samples.Universal.OLED"
+    mc:Ignorable="d" Background="Black">
+
+    <Grid Background="Black" x:Name="OLEDRenderer" Width="128" Height="64">
+        <oled:OLEDRenderView Width="128" Height="64"/>
+    </Grid>
+</Page>
