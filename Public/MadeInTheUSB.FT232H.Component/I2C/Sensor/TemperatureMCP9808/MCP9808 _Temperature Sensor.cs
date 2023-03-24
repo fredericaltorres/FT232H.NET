@@ -37,7 +37,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-
+using System.Threading;
 using int16_t = System.Int16; // Nice C# feature allowing to use same Arduino/C type
 using uint16_t = System.UInt16;
 using uint8_t = System.Byte;
@@ -99,8 +99,8 @@ namespace MadeInTheUSB
                 //if (!this._i2cDevice.InitiateDetectionSequence(deviceAddress))
                 //    return false;
 
-                if (read16(MCP9808_REG_MANUF_ID) != MCP9808_REG_MANUF_ID_ANSWER) return false;
-                if (read16(MCP9808_REG_DEVICE_ID) != MCP9808_REG_DEVICE_ID_ANSWER) return false;
+                if (!ReadByteWithRetry(MCP9808_REG_MANUF_ID, MCP9808_REG_MANUF_ID_ANSWER)) return false;
+                if (!ReadByteWithRetry(MCP9808_REG_DEVICE_ID, MCP9808_REG_DEVICE_ID_ANSWER)) return false;
                 return true;
             }
             catch (System.Exception ex)
@@ -112,7 +112,7 @@ namespace MadeInTheUSB
 
         public double GetTemperature(TemperatureType type = TemperatureType.Celsius)
         {
-            uint16_t t = read16(MCP9808_REG_AMBIENT_TEMP);
+            uint16_t t = Read2Byte(MCP9808_REG_AMBIENT_TEMP);
             double temp = t & 0x0FFF;
             temp /= 16.0;
             if ((t & 0x1000) == 0x1000) temp -= 256;
@@ -137,14 +137,18 @@ namespace MadeInTheUSB
             return v * CELCIUS_TO_KELVIN;
         }
 
-        private UInt16 read16(uint8_t reg)
+        private bool ReadByteWithRetry(uint8_t reg, UInt16 expected)
         {
-            //var buffer = new byte[2]; // Allocate the response expected
-            //if (Ii2cOutImpl.i2c_WriteReadBuffer(new byte[1] { reg }, buffer))
-            //{
-            //    value = (System.UInt16)((buffer[0] << 8) + buffer[1]);
-            //}
+            if (Read2Byte(reg) == expected)
+                return true;
+            Thread.Sleep(10);
+            if (Read2Byte(reg) == expected)
+                return true;
+            return false;
+        }
 
+        private UInt16 Read2Byte(uint8_t reg)
+        {
             this._i2cDevice.Write(reg);
             var buffer = this._i2cDevice.ReadXByte(2);
             var value = (buffer[0] << 8) + buffer[1];

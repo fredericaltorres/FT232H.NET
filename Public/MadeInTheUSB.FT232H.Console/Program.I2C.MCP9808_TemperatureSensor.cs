@@ -68,6 +68,10 @@ namespace MadeInTheUSB.FT232H.Console
 
         static void MCP9808_TemperatureSensor_Sample(I2CDevice2 i2cDevice)
         {
+            System.Console.Clear();
+            ConsoleEx.TitleBar(0, "MCP9808 Temperature Sensor Demo", ConsoleColor.Yellow, ConsoleColor.DarkBlue);
+            ConsoleEx.WriteMenu(0, 2, "Q)uit");
+            
             var ts = new MCP9808_TemperatureSensor(i2cDevice);
             if (!ts.Begin())
                 return;
@@ -80,9 +84,14 @@ namespace MadeInTheUSB.FT232H.Console
                     if (k.Key == ConsoleKey.Q)
                         break;
                 }
-                var temp = ts.GetTemperature(TemperatureType.Fahrenheit);
-                ConsoleEx.WriteLine($"Temp:{temp}", ConsoleColor.Blue);
+                var FahrenheitTemp = ts.GetTemperature(TemperatureType.Fahrenheit);
+                var celciusTemp = ts.GetTemperature(TemperatureType.Celsius);
+                ConsoleEx.WriteLine($"[{DateTime.Now}] Temp:{FahrenheitTemp:0.00}F /  {celciusTemp:0.00}C", ConsoleColor.White);
                 ConsoleEx.Wait(1);
+
+                i2cDevice.Gpios.ProgressNext();
+
+
             }
         }
     }

@@ -25,6 +25,8 @@ namespace MadeInTheUSB.FT232H
         private byte _gpo;
         private object _lock = new object();
 
+        public IDigitalWriteRead Gpios = null; 
+
         private bool __Init()
         {
             var config = new FtChannelConfig
@@ -37,6 +39,10 @@ namespace MadeInTheUSB.FT232H
             _cfg = config;
 
             InitLibAndHandle();
+
+            var g = new GpioI2C2ImplementationDevice(this);
+            
+            this.Gpios = g;
 
             return true;
         }
@@ -87,7 +93,6 @@ namespace MadeInTheUSB.FT232H
 
             CheckResult(result);
             _currentGlobalConfig = _cfg;
-
         }
 
         public void WriteRead(byte[] writeBuffer, byte[] readBuffer)
@@ -150,7 +155,6 @@ namespace MadeInTheUSB.FT232H
 
         public FtdiMpsseSPIResult Read(byte[] buffer, int sizeToTransfer, out int sizeTransfered, FtI2CTransferOptions options)
         {
-            //EnforceRightConfiguration();
             return LibMpsse_AccessToCppDll.I2C_DeviceRead(_handle, DeviceAddress, sizeToTransfer, buffer, out sizeTransfered, options);
         }
 
@@ -189,12 +193,14 @@ namespace MadeInTheUSB.FT232H
             }
             _gpo &= ((byte)~(1 << pin));
 
-            lock (_lock)
-            {
-                var status = LibMpsse_AccessToCppDll.FT_WriteGPIO(_handle, _direction, _gpo);
-                CheckResult(status);
-            }
+                WriteGpios(_direction, _gpo);
             return true;
+        }
+
+        public void WriteGpios(byte direction, byte gpo)
+        {
+            var status = LibMpsse_AccessToCppDll.FT_WriteGPIO(_handle, direction, gpo);
+            CheckResult(status);
         }
 
         public bool SetGPIOOn(byte pin)
@@ -205,11 +211,7 @@ namespace MadeInTheUSB.FT232H
             }
             _gpo = (byte)(_gpo | (byte)(1 << pin));
 
-            lock (_lock)
-            {
-                var status = LibMpsse_AccessToCppDll.FT_WriteGPIO(_handle, _direction, _gpo);
-                CheckResult(status);
-            }
+            WriteGpios(_direction, _gpo);
             return true;
         }
 
@@ -222,35 +224,32 @@ namespace MadeInTheUSB.FT232H
 
             _gpo &= ((byte)~(1 << pin));
 
-            lock (_lock)
-            {
-                var status = LibMpsse_AccessToCppDll.FT_WriteGPIO(_handle, _direction, _gpo);
-                CheckResult(status);
-            }
+            WriteGpios(_direction, _gpo);
             return true;
         }
 
-        public bool ReadGPIO(byte pin, out bool value)
+        public int ReadGPIOMask()
         {
+            int value;
+            var status = LibMpsse_AccessToCppDll.FT_ReadGPIO(_handle, out value);
+            CheckResult(status);
+            if (status != FtdiMpsseSPIResult.Ok)
+                return -1;
+            return value;
+        }
+
+        public bool ReadGPIO(byte pin, out bool val)
+        {
+            val = false;
             if (_handle == IntPtr.Zero)
-            {
-                value = false;
                 return false;
-            }
 
-            lock (_lock)
-            {
-                int valTest;
+            int value = ReadGPIOMask();
+            if(value == -1)
+                return false;
 
-                var status = LibMpsse_AccessToCppDll.FT_ReadGPIO(_handle, out valTest);
-
-                var valShift = (valTest >> pin) & 1;
-
-                value = valShift == 1;
-
-                CheckResult(status);
-            }
-
+            var valShift = (value >> pin) & 1;
+            val = valShift == 1;
             return true;
         }
     }
