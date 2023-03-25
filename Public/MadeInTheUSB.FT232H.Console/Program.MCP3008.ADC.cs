@@ -34,8 +34,8 @@ namespace MadeInTheUSB.FT232H.Console
                 while (yy <= 3)
                 {
                     matrix.DrawRoundRect(yy, yy, 8 - (yy * 2), 8 - (yy * 2), 2, 1);
-                    //matrix.CopyToAll(deviceIndex, true);
                     matrix.WriteDisplay();
+                    //matrix.CopyToAll(deviceIndex, true);
                     Thread.Sleep(wait);
                     yy += 1;
                 }
@@ -44,14 +44,12 @@ namespace MadeInTheUSB.FT232H.Console
                 while (yy >= 0)
                 {
                     matrix.DrawRoundRect(yy, yy, 8 - (yy * 2), 8 - (yy * 2), 2, 0);
-                    //matrix.CopyToAll(deviceIndex, true);
-                    matrix.WriteDisplay();
+                    matrix.CopyToAll(deviceIndex, true);
                     Thread.Sleep(wait);
                     yy -= 1;
                 }
                 matrix.Clear(deviceIndex);
-                //matrix.CopyToAll(deviceIndex, true);
-                matrix.WriteDisplay();
+                matrix.CopyToAll(deviceIndex, true);
                 Thread.Sleep(wait);
             }
         }

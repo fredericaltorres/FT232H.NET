@@ -718,7 +718,7 @@ namespace MadeInTheUSB.FT232H.Components
                 l.Add((byte)(row + 1));      // Api to set the row 1 -- order will be reversed
             }
             l.Reverse();
-            var r = this.__SpiTransferBuffer(l, false);
+            var r = this.__SpiTransferBuffer(l);
             return r;
         }
         
@@ -737,7 +737,7 @@ namespace MadeInTheUSB.FT232H.Components
             }
         }
 
-        public SPIResult WriteRow(int deviceIndex, int row, bool computeBufferOnly = false)
+        public SPIResult WriteRow(int deviceIndex, int row)
         {
             var r = new SPIResult();
             if(deviceIndex<0 || deviceIndex>=_deviceCount)
@@ -745,7 +745,7 @@ namespace MadeInTheUSB.FT232H.Components
 
             int offset = deviceIndex * MATRIX_ROW_SIZE;
 
-            r = this.SpiTransfer(deviceIndex, (byte)(row+1),_pixels[offset+row], computeBufferOnly: computeBufferOnly);
+            r = this.SpiTransfer(deviceIndex, (byte)(row+1),_pixels[offset+row]);
             return r;
         }
 
@@ -1023,7 +1023,7 @@ namespace MadeInTheUSB.FT232H.Components
             this.SpiTransfer(deviceIndex, (byte)(digit+1), v);
         }
 
-        private SPIResult __SpiTransferBuffer(List<byte> buffer, bool software = false)
+        private SPIResult __SpiTransferBuffer(List<byte> buffer)
         {
             var r = new SPIResult();
             BytesSentOutCounter += buffer.Count;
@@ -1033,7 +1033,7 @@ namespace MadeInTheUSB.FT232H.Components
                 return r.Failed();
         }
 
-        private SPIResult SpiTransfer(int devIndex, byte opCode, byte data, bool software = false, bool computeBufferOnly = false)
+        private SPIResult SpiTransfer(int devIndex, byte opCode, byte data)
         {
             SPIResult r = null;
             var buffer            = new List<byte>(10);
@@ -1054,16 +1054,8 @@ namespace MadeInTheUSB.FT232H.Components
                 buffer.Add(0); // OpCode
                 buffer.Add(0); // Data
             }
-
-            if (computeBufferOnly)
-            {
-                r = new SPIResult() {Succeeded = true};
-                r.Buffer = buffer;
-            }
-            else
-            {
-                r = this.__SpiTransferBuffer(buffer, software);
-            }
+          
+            r = this.__SpiTransferBuffer(buffer);
             return r;
         }
 

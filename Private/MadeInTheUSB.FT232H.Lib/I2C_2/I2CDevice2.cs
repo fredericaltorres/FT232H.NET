@@ -11,9 +11,9 @@ namespace MadeInTheUSB.FT232H
     public class I2CDevice2
     {
         private static IntPtr _handle = IntPtr.Zero;
-        private static FtChannelConfig _currentGlobalConfig;
+        private static SpiChannelConfig _currentGlobalConfig;
 
-        private FtChannelConfig _config;
+        private SpiChannelConfig _config;
         public int DeviceAddress;
 
         private I2CConfiguration _i2cConfig;
@@ -35,7 +35,7 @@ namespace MadeInTheUSB.FT232H
 
         private bool __Init()
         {
-            var config = new FtChannelConfig
+            var config = new SpiChannelConfig
             {
                 ClockRate = (int)_clockSpeed,
                 LatencyTimer = LatencyTimer
@@ -64,7 +64,7 @@ namespace MadeInTheUSB.FT232H
             if (_handle != IntPtr.Zero)
                 return;
 
-            LibMpsse.Init();
+            libMPSSE_Initializator.Init();
             var num_channels = 0;
             var channels = LibMpsse_AccessToCppDll.I2C_GetNumChannels(out num_channels);
 
@@ -74,7 +74,7 @@ namespace MadeInTheUSB.FT232H
             {
                 for (var i = 0; i < num_channels; i++)
                 {
-                    FtDeviceInfo cInfo;
+                    FTDIDeviceInfo cInfo;
                     var channelInfoStatus = LibMpsse_AccessToCppDll.I2C_GetChannelInfo(i, out cInfo);
                     CheckResult(channelInfoStatus);
                     System.Console.WriteLine($"Flags: {cInfo.Flags}");

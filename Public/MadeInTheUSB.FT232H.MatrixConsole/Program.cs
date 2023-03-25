@@ -17,7 +17,7 @@ namespace MadeInTheUSB.FT232H.MatrixConsole
 
     public class GpioSpiDevice : SpiDeviceBaseClass
     {
-        public GpioSpiDevice(MpsseSpiConfig spiConfig) : base(spiConfig)
+        public GpioSpiDevice(SpiConfig spiConfig) : base(spiConfig)
         {
         }
     }
@@ -648,7 +648,7 @@ namespace MadeInTheUSB.FT232H.MatrixConsole
             Cls(ft232Device.ToString());
 
             // MAX7219 is limited to 10Mhz
-            var ft232hGpioSpiDevice = new GpioSpiDevice(MpsseSpiConfig.BuildSPI(MpsseSpiConfig._10Mhz));
+            var ft232hGpioSpiDevice = new GpioSpiDevice(SpiConfig.BuildSPI(SpiConfig._10Mhz));
             var spi = ft232hGpioSpiDevice.SPI;
 
 #if DEMO_WITH_4_8x8_LED_MATRIX_CHAINED

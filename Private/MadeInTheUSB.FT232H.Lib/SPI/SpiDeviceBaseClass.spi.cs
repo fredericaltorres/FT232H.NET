@@ -15,15 +15,15 @@ namespace MadeInTheUSB.FT232H
         /// FT232H has only one channel, channel 0
         /// FT2232 has 2 channels, not supportted
         /// </summary>
-        private MpsseSpiConfig            _spiConfig; 
+        private SpiConfig            _spiConfig; 
         private bool                      _isDisposed;
         private MpsseChannelConfiguration _ftdiMpsseChannelConfig;
 
-        protected SpiDeviceBaseClass(MpsseSpiConfig spiConfig) : this(spiConfig, null)
+        protected SpiDeviceBaseClass(SpiConfig spiConfig) : this(spiConfig, null)
         {
             this.GpioInit();
         }
-        protected SpiDeviceBaseClass(MpsseSpiConfig spiConfig, MpsseChannelConfiguration channelConfig)
+        protected SpiDeviceBaseClass(SpiConfig spiConfig, MpsseChannelConfiguration channelConfig)
         {
             this._ftdiMpsseChannelConfig = channelConfig ?? MpsseChannelConfiguration.FtdiMpsseChannelZeroConfiguration;
             this._spiConfig              = spiConfig;
@@ -34,7 +34,7 @@ namespace MadeInTheUSB.FT232H
             if (_spiHandle != IntPtr.Zero)
                 return;
 
-            LibMpsse.Init();
+            libMPSSE_Initializator.Init();
 
             var result = CheckResult(LibMpsse_AccessToCppDll.SPI_OpenChannel(_ftdiMpsseChannelConfig.ChannelIndex, out _spiHandle));
 
@@ -49,7 +49,7 @@ namespace MadeInTheUSB.FT232H
             if (this._isDisposed)
                 return;
             this._isDisposed = true;
-            LibMpsse.Cleanup();
+            libMPSSE_Initializator.Cleanup();
         }
         public FtdiMpsseSPIResult CheckResult(FtdiMpsseSPIResult spiResult)
         {
