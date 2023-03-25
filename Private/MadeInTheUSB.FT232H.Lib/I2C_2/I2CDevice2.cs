@@ -134,6 +134,23 @@ namespace MadeInTheUSB.FT232H
             return LibMpsse_AccessToCppDll.I2C_DeviceWrite(_handle, DeviceAddress, sizeToTransfer, buffer, out sizeTransfered, options);
         }
 
+        public bool Write1ByteReadUInt16WithRetry(byte reg, UInt16 expected)
+        {
+            if (this.Write1ByteReadUInt16(reg) == expected)
+                return true;
+            Thread.Sleep(10);
+            if (this.Write1ByteReadUInt16(reg) == expected)
+                return true;
+            return false;
+        }
+
+        public UInt16 Write1ByteReadUInt16(byte reg)
+        {
+            this.Write(reg);
+            var buffer = this.ReadXByte(2);
+            var value = (buffer[0] << 8) + buffer[1];
+            return (UInt16)value;
+        }
         public List<byte> ReadXByte(int count)
         {
             var buffer = new byte[count];
