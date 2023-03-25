@@ -54,7 +54,7 @@ namespace MadeInTheUSB.FT232H.Components
     /// <summary>
     /// Dedicated class for the specific NusbioMatrix Device
     /// </summary>
-    public class NusbioMatrix : MAX7219
+    public class MAX_7219_SPI_8x8_Matrix : MAX7219
     {
         /// <summary>
         /// The chip MAX7219 can be wired to an 8x8 LED matrix in 2 different ways.
@@ -73,7 +73,7 @@ namespace MadeInTheUSB.FT232H.Components
 
         public const int DEFAULT_BRIGTHNESS_DEMO = 5;
 
-        public NusbioMatrix(
+        public MAX_7219_SPI_8x8_Matrix(
             ISPI spi,
             MAX7219_WIRING_TO_8x8_LED_MATRIX max7219Wiring,
             int deviceCount = 1) :
@@ -82,12 +82,12 @@ namespace MadeInTheUSB.FT232H.Components
             this.MAX7219Wiring = max7219Wiring;
         }
 
-        public static NusbioMatrix Initialize(
+        public static MAX_7219_SPI_8x8_Matrix Initialize(
             ISPI spi,
             MAX7219_WIRING_TO_8x8_LED_MATRIX MAX7218Wiring,
             int deviceCount)
         {
-            var matrix = new NusbioMatrix(spi, MAX7218Wiring, deviceCount: deviceCount);
+            var matrix = new MAX_7219_SPI_8x8_Matrix(spi, MAX7218Wiring, deviceCount: deviceCount);
             matrix.Begin(DEFAULT_BRIGTHNESS_DEMO);
             return matrix;
         }
@@ -361,7 +361,7 @@ namespace MadeInTheUSB.FT232H.Components
     {
         private NusbioGameMatrixBall _mainBall;
 
-        public NusbioMatrix NusbioMatrix;
+        public MAX_7219_SPI_8x8_Matrix NusbioMatrix;
         public NusbioMatrixGameRackette Rackette;
 
         public int PointWon = 0;
@@ -379,7 +379,7 @@ namespace MadeInTheUSB.FT232H.Components
             get { return NusbioMatrix.Width; }
         }
 
-        public NusbioGameMatrix(NusbioMatrix nusbioMatrix)
+        public NusbioGameMatrix(MAX_7219_SPI_8x8_Matrix nusbioMatrix)
         {
             NusbioMatrix = nusbioMatrix;
             _mainBall = new NusbioGameMatrixBall(2, 0, this);
@@ -423,12 +423,12 @@ namespace MadeInTheUSB.FT232H.Components
 
     public class NusbioLandscapeMatrix
     {
-        public NusbioMatrix _nusbioMatrix;
+        public MAX_7219_SPI_8x8_Matrix _nusbioMatrix;
         public int CurrentYPosition = 0;
         public int CurrentXPosition = 0;
         private int _deviceIndex;
         
-        public NusbioLandscapeMatrix(NusbioMatrix nusbioMatrix, int deviceIndex)
+        public NusbioLandscapeMatrix(MAX_7219_SPI_8x8_Matrix nusbioMatrix, int deviceIndex)
         {
             this._deviceIndex      = deviceIndex;
             this._nusbioMatrix     = nusbioMatrix;
@@ -454,7 +454,7 @@ namespace MadeInTheUSB.FT232H.Components
         {
             _nusbioMatrix.ScrollPixelLeftDevices(_nusbioMatrix.DeviceCount-1, 0);
             this._nusbioMatrix.CurrentDeviceIndex = this._deviceIndex;
-            if (this._nusbioMatrix.MAX7219Wiring == NusbioMatrix.MAX7219_WIRING_TO_8x8_LED_MATRIX.OriginBottomRightCorner) 
+            if (this._nusbioMatrix.MAX7219Wiring == MAX_7219_SPI_8x8_Matrix.MAX7219_WIRING_TO_8x8_LED_MATRIX.OriginBottomRightCorner) 
                 _nusbioMatrix.DrawPixel(CurrentYPosition, CurrentXPosition, true);
             else
                 _nusbioMatrix.DrawPixel(CurrentXPosition, CurrentYPosition, true);

@@ -179,7 +179,7 @@ namespace MadeInTheUSB.FT232H.MatrixConsole
 
         private const int ConsoleUserStatusRow = 10;
 
-        private static void DrawAllMatrixOnePixelAtTheTimeDemo(NusbioMatrix matrix, int deviceIndex, int waitAfterClear = 350, int maxRepeat = 4)
+        private static void DrawAllMatrixOnePixelAtTheTimeDemo(MAX_7219_SPI_8x8_Matrix matrix, int deviceIndex, int waitAfterClear = 350, int maxRepeat = 4)
         {
             Console.Clear();
             ConsoleEx.TitleBar(0, "Draw one pixel at the time demo");
@@ -206,7 +206,7 @@ namespace MadeInTheUSB.FT232H.MatrixConsole
             }
         }
 
-        private static void DrawRoundRectDemo(NusbioMatrix matrix, int wait, int maxRepeat, int deviceIndex)
+        private static void DrawRoundRectDemo(MAX_7219_SPI_8x8_Matrix matrix, int wait, int maxRepeat, int deviceIndex)
         {
             Console.Clear();
             ConsoleEx.TitleBar(0, "Draw Round Rectangle Demo");
@@ -238,12 +238,12 @@ namespace MadeInTheUSB.FT232H.MatrixConsole
                 Thread.Sleep(wait);
             }
         }
-        private static void SetDefaultOrientations(NusbioMatrix matrix)
+        private static void SetDefaultOrientations(MAX_7219_SPI_8x8_Matrix matrix)
         {
             matrix.SetRotation(0);
         }
 
-        private static void BrightnessDemo(NusbioMatrix matrix, int maxRepeat, int deviceIndex)
+        private static void BrightnessDemo(MAX_7219_SPI_8x8_Matrix matrix, int maxRepeat, int deviceIndex)
         {
             Console.Clear();
             ConsoleEx.TitleBar(0, "Brightness Demo");
@@ -261,7 +261,7 @@ namespace MadeInTheUSB.FT232H.MatrixConsole
             matrix.Clear(deviceIndex);
         }
 
-        private static void DrawCircleDemo(NusbioMatrix matrix, int wait, int deviceIndex)
+        private static void DrawCircleDemo(MAX_7219_SPI_8x8_Matrix matrix, int wait, int deviceIndex)
         {
             Console.Clear();
             ConsoleEx.TitleBar(0, "DrawCircle Demo");
@@ -291,7 +291,7 @@ namespace MadeInTheUSB.FT232H.MatrixConsole
         }
 
 
-        private static void SetBrightnesses(NusbioMatrix matrix)
+        private static void SetBrightnesses(MAX_7219_SPI_8x8_Matrix matrix)
         {
             var brightness = DEFAULT_BRIGTHNESS_DEMO;
             if (matrix.DeviceCount > 1)
@@ -301,7 +301,7 @@ namespace MadeInTheUSB.FT232H.MatrixConsole
                 matrix.SetBrightness(brightness, deviceIndex);
         }
 
-        private static void DrawRectDemo(NusbioMatrix matrix, int MAX_REPEAT, int wait, int deviceIndex)
+        private static void DrawRectDemo(MAX_7219_SPI_8x8_Matrix matrix, int MAX_REPEAT, int wait, int deviceIndex)
         {
             Console.Clear();
             ConsoleEx.TitleBar(0, "Draw Rectangle Demo");
@@ -335,7 +335,7 @@ namespace MadeInTheUSB.FT232H.MatrixConsole
             matrix.Clear(deviceIndex);
         }
 
-        static void Animate(NusbioMatrix matrix, int deviceIndex)
+        static void Animate(MAX_7219_SPI_8x8_Matrix matrix, int deviceIndex)
         {
             int wait = 100;
             int maxRepeat = 5;
@@ -366,7 +366,7 @@ namespace MadeInTheUSB.FT232H.MatrixConsole
             matrix.CurrentDeviceIndex = 0;
         }
 
-        static void DisplayImageSequence(NusbioMatrix matrix, string title, int deviceIndex, int maxRepeat, int wait, List<List<string>> images)
+        static void DisplayImageSequence(MAX_7219_SPI_8x8_Matrix matrix, string title, int deviceIndex, int maxRepeat, int wait, List<List<string>> images)
         {
             matrix.CurrentDeviceIndex = deviceIndex;
             Console.Clear();
@@ -389,7 +389,7 @@ namespace MadeInTheUSB.FT232H.MatrixConsole
             matrix.Clear(deviceIndex, refresh: true);
         }
 
-        static void DisplaySquareImage1(NusbioMatrix matrix, int deviceIndex)
+        static void DisplaySquareImage1(MAX_7219_SPI_8x8_Matrix matrix, int deviceIndex)
         {
             var images = new List<List<string>>
             {
@@ -404,7 +404,7 @@ namespace MadeInTheUSB.FT232H.MatrixConsole
             DisplayImageSequence(matrix, "Display Images Demo", deviceIndex, 2, 200, images);
         }
 
-        static void DisplaySquareImage2(NusbioMatrix matrix, int deviceIndex)
+        static void DisplaySquareImage2(MAX_7219_SPI_8x8_Matrix matrix, int deviceIndex)
         {
             var images = new List<List<string>>
             {
@@ -413,7 +413,7 @@ namespace MadeInTheUSB.FT232H.MatrixConsole
             DisplayImageSequence(matrix, "Display Images Demo 2", deviceIndex, 8, 250, images);
         }
 
-        private static void DrawAxis(NusbioMatrix matrix, int deviceIndex)
+        private static void DrawAxis(MAX_7219_SPI_8x8_Matrix matrix, int deviceIndex)
         {
             ConsoleEx.Bar(0, ConsoleUserStatusRow, "Draw Axis Demo", ConsoleColor.Yellow, ConsoleColor.Red);
 
@@ -438,7 +438,7 @@ namespace MadeInTheUSB.FT232H.MatrixConsole
             var k = Console.ReadKey();
         }
 
-        private static void RotateMatrix(NusbioMatrix matrix, int deviceIndex)
+        private static void RotateMatrix(MAX_7219_SPI_8x8_Matrix matrix, int deviceIndex)
         {
             Console.Clear();
             ConsoleEx.TitleBar(0, "Rotate Demo");
@@ -464,7 +464,7 @@ namespace MadeInTheUSB.FT232H.MatrixConsole
             }
         }
 
-        static void ScrollDemo(NusbioMatrix matrix, int deviceIndex)
+        static void ScrollDemo(MAX_7219_SPI_8x8_Matrix matrix, int deviceIndex)
         {
             Console.Clear();
             ConsoleEx.TitleBar(0, "Scroll Demo");
@@ -492,13 +492,13 @@ namespace MadeInTheUSB.FT232H.MatrixConsole
             }
         }
 
-        private static void ScrollText(NusbioMatrix matrix, int deviceIndex = 0)
+        private static void ScrollText(MAX_7219_SPI_8x8_Matrix matrix, int deviceIndex = 0)
         {
             var quit = false;
             var speed = 10;
             var text = "Hello World!      ";
 
-            if (matrix.DeviceCount == 1 && matrix.MAX7219Wiring == NusbioMatrix.MAX7219_WIRING_TO_8x8_LED_MATRIX.OriginBottomRightCorner)
+            if (matrix.DeviceCount == 1 && matrix.MAX7219Wiring == MAX_7219_SPI_8x8_Matrix.MAX7219_WIRING_TO_8x8_LED_MATRIX.OriginBottomRightCorner)
                 speed = speed * 3;
 
             while (!quit)
@@ -523,7 +523,7 @@ namespace MadeInTheUSB.FT232H.MatrixConsole
                     {
                         Thread.Sleep(speed);
                         // Provide a better animation
-                        if (matrix.DeviceCount == 1 && matrix.MAX7219Wiring == NusbioMatrix.MAX7219_WIRING_TO_8x8_LED_MATRIX.OriginBottomRightCorner)
+                        if (matrix.DeviceCount == 1 && matrix.MAX7219Wiring == MAX_7219_SPI_8x8_Matrix.MAX7219_WIRING_TO_8x8_LED_MATRIX.OriginBottomRightCorner)
                             Thread.Sleep(speed * 12);
                     }
 
@@ -551,7 +551,7 @@ namespace MadeInTheUSB.FT232H.MatrixConsole
             }
         }
 
-        static void PerformanceTest(NusbioMatrix matrix, int deviceIndex)
+        static void PerformanceTest(MAX_7219_SPI_8x8_Matrix matrix, int deviceIndex)
         {
             Console.Clear();
             ConsoleEx.TitleBar(0, "Performance Test");
@@ -595,7 +595,7 @@ namespace MadeInTheUSB.FT232H.MatrixConsole
             var k = Console.ReadKey();
         }
 
-        private static void LandscapeDemo(NusbioMatrix matrix, int deviceIndex = 0)
+        private static void LandscapeDemo(MAX_7219_SPI_8x8_Matrix matrix, int deviceIndex = 0)
         {
             Console.Clear();
             ConsoleEx.TitleBar(0, "Random Landscape Demo");
@@ -653,13 +653,13 @@ namespace MadeInTheUSB.FT232H.MatrixConsole
 
 #if DEMO_WITH_4_8x8_LED_MATRIX_CHAINED
                 var matrixChainedCount = 8;
-                var origin = NusbioMatrix.MAX7219_WIRING_TO_8x8_LED_MATRIX.OriginUpperLeftCorner; // Different Wiring for 4 8x8 LED Matrix sold by MadeInTheUSB
+                var origin = MAX_7219_SPI_8x8_Matrix.MAX7219_WIRING_TO_8x8_LED_MATRIX.OriginUpperLeftCorner; // Different Wiring for 4 8x8 LED Matrix sold by MadeInTheUSB
 #else
                 var matrixChainedCount = 1;
                 var origin = NusbioMatrix.MAX7219_WIRING_TO_8x8_LED_MATRIX.OriginBottomRightCorner;
 #endif
 
-            var matrix = NusbioMatrix.Initialize(spi, origin, matrixChainedCount);
+            var matrix = MAX_7219_SPI_8x8_Matrix.Initialize(spi, origin, matrixChainedCount);
 
             matrix.DrawRect(1, 1, 4, 4, true);
             matrix.WriteDisplay(0);
