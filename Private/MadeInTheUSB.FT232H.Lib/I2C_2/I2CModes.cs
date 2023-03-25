@@ -4,7 +4,7 @@
 
 namespace MadeInTheUSB.FT232H
 {
-    public enum I2CModes
+    public enum ClockSpeeds
     {
         I2C_CLOCK_STANDARD_MODE_100Khz = 100000,
         I2C_CLOCK_FAST_MODE_400Khz = 400000,

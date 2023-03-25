@@ -118,6 +118,9 @@ namespace MadeInTheUSB
 
         private int ValidateOperation(SPIResult result)
         {
+            //var r2 = (((uint16_t)(result.Buffer[1] & 0x07)) << 8) | result.Buffer[2];
+            //return r2;
+
             if (result.Succeeded && result.Buffer.Count == 3)
             {
                 int r = 0;

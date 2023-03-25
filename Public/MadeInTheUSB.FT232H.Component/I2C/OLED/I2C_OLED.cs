@@ -80,7 +80,7 @@ namespace MadeInTheUSB.Display
         public const int SH1106_X_PIXELS    = 128;
         public const int SH1106_Y_PIXELS    = 32;
         public const int SH1106_ROWS        = 8;
-        public const int BUF_LEN            =  512*2; // (512*8)/128 == 32 Rows
+        public const int BUF_LEN            =  512; // (512*8)/128 == 32 Rows
         private uint8_t[] _buffer           = new uint8_t[BUF_LEN];
 
         public const int SH1106_SUCCESS = 1;
@@ -94,6 +94,7 @@ namespace MadeInTheUSB.Display
 
         protected I2CDevice2 _i2cDevice;
 
+
         public I2C_OLED(I2CDevice2 i2cDevice, int width, int height,
             List<byte> writeDisplayCommands,
             OledDriver driver = OledDriver.SSD1306, bool debug = false) : base((Int16)width, (Int16)height)
@@ -102,14 +103,13 @@ namespace MadeInTheUSB.Display
             this.Width      = (short)width;
             this.Height     = (short)height;
 
-            
-
             this._i2cDevice = i2cDevice;
             this._writeDisplayCommands = writeDisplayCommands;
         }
 
-        public virtual void Begin(bool invert = false, uint8_t contrast = 128, uint8_t Vpp = 0)
+        public virtual void Begin(int deviceId, bool invert = false, uint8_t contrast = 128, uint8_t Vpp = 0)
         {
+            this.DeviceId = deviceId;
         }
 
         public override void DrawPixel(size_t x, size_t y, uint16_t color)
@@ -119,7 +119,7 @@ namespace MadeInTheUSB.Display
 
         public void WriteDisplay()
         {
-            var bytePerRows = 16 * 2;
+            var bytePerRows = 16;
             var x = 0;
             this.SendCommand((byte)SSD1306_API.COLUMNADDR, (byte)SSD1306_API.COLUMNADDR_START, (byte)SSD1306_API.COLUMNADDR_END);
             this.SendCommand((byte)SSD1306_API.PAGE_ADDR, (byte)SSD1306_API.START_PAGE_ADDR,

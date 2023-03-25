@@ -24,6 +24,10 @@ namespace MadeInTheUSB.FT232H
     /// </summary>
     /// 
     // https://github.com/jakkaj/xIOT
+    // FTDI SOURCE CODE
+    // C:\DVT\FT232H.NET\Private\MadeInTheUSB.FT232H.Lib\libmpsse-windows-1.0.3
+
+
 
     
     internal class LibMpsse_AccessToCppDll

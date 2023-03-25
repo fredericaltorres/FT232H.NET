@@ -15,15 +15,16 @@ namespace MadeInTheUSB.FT232H.Console
         /// <summary>
         /// </summary>
         /// <param name="spi"></param>
-        static void ADC_MCP3008Demo(ISPI spi)
+        static void ADC_MCP3008Demo(ISPI spi, IDigitalWriteRead gpios)
         {
             var adc = new MCP3008(spi);
             var done = false;
             System.Console.Clear();
-            const double referenceVoltage = 5;
+            const double referenceVoltage = 3.3;
             while(!done)
             {
-                for(var adcPort = 0; adcPort < 1; adcPort++)
+                gpios.ProgressNext();
+                for (var adcPort = 0; adcPort < 1; adcPort++)
                 {
                     var adcValue = adc.Read(adcPort);
                     var voltageValue = adc.ComputeVoltage(referenceVoltage, adcValue);

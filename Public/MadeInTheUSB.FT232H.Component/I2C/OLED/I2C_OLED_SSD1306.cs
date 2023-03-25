@@ -157,7 +157,7 @@ namespace MadeInTheUSB.Display
             //    return false;
 
             this.DeviceId = 0x3C;
-            this.DeviceId = 0x3D;
+            //this.DeviceId = 0x3D;
 
             if (this.Is64RowsDevice)
                 Init128x64();
