@@ -48,6 +48,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Enums\FtdiI2CTransferOptions.cs" />
     <Compile Include="FTD2XX_NET\FT232HDetector.cs" />
     <Compile Include="FTD2XX_NET\FT232HDetectorInformation.cs" />
     <Compile Include="FTD2XX_NET\FTD2XX_NET.cs" />

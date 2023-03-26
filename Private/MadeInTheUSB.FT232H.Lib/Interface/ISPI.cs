@@ -3,9 +3,9 @@
 namespace MadeInTheUSB.FT232H
 {
     public interface ISPI {
-        FtdiMpsseSPIResult Write(byte[] buffer, int sizeToTransfer, out int sizeTransfered, FtSpiTransferOptions options = FtSpiTransferOptions.ToogleChipSelect);
+        FtdiMpsseSPIResult Write(byte[] buffer, int sizeToTransfer, out int sizeTransfered, FtdiSpiTransferOptions options = FtdiSpiTransferOptions.ToogleChipSelect);
         FtdiMpsseSPIResult Write(byte[] buffer);
-        FtdiMpsseSPIResult Read(byte[] buffer, int sizeToTransfer, out int sizeTransfered, FtSpiTransferOptions options);
+        FtdiMpsseSPIResult Read(byte[] buffer, int sizeToTransfer, out int sizeTransfered, FtdiSpiTransferOptions options);
         FtdiMpsseSPIResult Read(byte[] buffer);
         /// <summary>
         /// Send the bufferOut then read the bufferIn

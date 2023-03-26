@@ -322,10 +322,11 @@ namespace MadeInTheUSB.FT232H.Components
         /// <param name="defaultBrightness"></param>
         public bool Begin(int defaultBrightness = 8)
         {
+            if (!this.SetBrightness(defaultBrightness)) return false; // Set the brightness to a medium values
+
             for (var devIndex = 0; devIndex < this._deviceCount; devIndex++)
             {
                 if (!this.Shutdown(false, devIndex)) return false; // The MAX72XX is in power-saving mode on startup, we have to do a wakeup call
-                if (!this.SetBrightness(defaultBrightness, devIndex)) return false; // Set the brightness to a medium values
                 this.Clear(devIndex); // and Clear the Display
             }
             return true; 
@@ -353,7 +354,7 @@ namespace MadeInTheUSB.FT232H.Components
 
             for(var i = 0; i < _deviceCount; i++)
             {
-                var r1 = this.SpiTransfer(i, OP_DISPLAYTEST, 0);
+                var r1 = this.SpiTransferForAllDevices(i, OP_DISPLAYTEST, 0);
 
                 //scanlimit is set to max on startup
                 // The scan-limit register sets how many digits are displayed, from 1 to 8. T
@@ -365,7 +366,7 @@ namespace MadeInTheUSB.FT232H.Components
                 var r2 = this.SetScanLimit(i, MAX_SCAN_LIMIT-1);
 
                 // decode is done in source
-                var r3 = this.SpiTransfer(i, OP_DECODEMODE, 0); // No decode mode, see datasheet page 7
+                var r3 = this.SpiTransferForAllDevices(i, OP_DECODEMODE, 0); // No decode mode, see datasheet page 7
 
                 this.Clear(i, refresh: true);
                 //we go into Shutdown-mode on startup
@@ -398,9 +399,9 @@ namespace MadeInTheUSB.FT232H.Components
                 return r.Succeeded;
 
             if(status)
-                r = this.SpiTransfer(devIndex, OP_SHUTDOWN,0);
+                r = this.SpiTransferForAllDevices(devIndex, OP_SHUTDOWN,0);
             else
-                r = this.SpiTransfer(devIndex, OP_SHUTDOWN,1);
+                r = this.SpiTransferForAllDevices(devIndex, OP_SHUTDOWN,1);
 
             return r.Succeeded;
         }
@@ -420,7 +421,7 @@ namespace MadeInTheUSB.FT232H.Components
                 return r.Succeeded;
 
             if(limit >= 0 && limit < 8)
-                r = this.SpiTransfer(devIndex, OP_SCANLIMIT,(byte)limit);
+                r = this.SpiTransferForAllDevices(devIndex, OP_SCANLIMIT,(byte)limit);
 
             return r.Succeeded;
         }
@@ -465,15 +466,21 @@ namespace MadeInTheUSB.FT232H.Components
         /// <param name="intensity"></param>
         public bool SetBrightness(int intensity, int deviceIndex = 0)
         {
-            if(deviceIndex < 0 || deviceIndex >=_deviceCount)
-                return false;
-
-            if (intensity >= 0 && intensity <= MAX_BRITGHNESS)
-            {
-                var r = this.SpiTransfer(deviceIndex, OP_INTENSITY, (byte)intensity);
-                return r.Succeeded;
-            }
-            else return false;
+            //if (intensity >= 0 && intensity <= MAX_BRITGHNESS)
+            //{
+            //    var l = new List<byte>();
+            //    for (var dIndex = 0; dIndex < this.DeviceCount; dIndex++)
+            //    {
+            //        l.Add(OP_INTENSITY);
+            //        l.Add((byte)intensity);
+            //    }                
+            //    var r = this.__SpiTransferBuffer(l);
+            //    return r.Succeeded;
+            //}
+            var r = this.SpiTransferForAllDevices(deviceIndex, OP_INTENSITY, (byte)intensity, onlyForDeviceIndex: false);
+            return r.Succeeded;
+            //}
+            //else return false;
         }
 
         /// <summary>
@@ -724,6 +731,7 @@ namespace MadeInTheUSB.FT232H.Components
         
         public void WriteDisplay(int deviceIndex = 0, bool all = false)
         {
+            
             if (all)
             {
                 // Write each row from 0 to 7 with one USB/SPI buffer command
@@ -732,9 +740,37 @@ namespace MadeInTheUSB.FT232H.Components
             }
             else
             {
-                for (var i = 0; i < MATRIX_ROW_SIZE; i++)
-                    WriteRow(deviceIndex, i);
+                var optimized = false; // TODOL Remove
+                if (optimized)
+                {
+                    WriteRows(deviceIndex);
+                }
+                else
+                {
+                    for (var i = 0; i < MATRIX_ROW_SIZE; i++)
+                        WriteRow(deviceIndex, i);
+                }
             }
+        }
+
+        public SPIResult WriteRows(int deviceIndex)
+        {
+            var r = new SPIResult();
+            var buffer = new List<byte>();
+
+            if (deviceIndex < 0 || deviceIndex >= _deviceCount)
+                return r;
+
+            for (var row = 0; row < MATRIX_ROW_SIZE; row++)
+            {
+                int offset = deviceIndex * MATRIX_ROW_SIZE;
+                buffer.Add((byte)(row + 1));
+                buffer.Add(_pixels[offset + row]);
+            }
+
+            //r = this.SpiTransfer(deviceIndex, buffer);
+            r = this.__SpiTransferBuffer(buffer);
+            return r;
         }
 
         public SPIResult WriteRow(int deviceIndex, int row)
@@ -745,7 +781,7 @@ namespace MadeInTheUSB.FT232H.Components
 
             int offset = deviceIndex * MATRIX_ROW_SIZE;
 
-            r = this.SpiTransfer(deviceIndex, (byte)(row+1),_pixels[offset+row]);
+            r = this.SpiTransferForAllDevices(deviceIndex, (byte)(row+1),_pixels[offset+row]);
             return r;
         }
 
@@ -828,7 +864,7 @@ namespace MadeInTheUSB.FT232H.Components
                 return;
             int offset = deviceIndex * MATRIX_ROW_SIZE;
             _pixels[offset+row]=value;
-            this.SpiTransfer(deviceIndex, (byte)(row+1),_pixels[offset+row]);
+            this.SpiTransferForAllDevices(deviceIndex, (byte)(row+1),_pixels[offset+row]);
         }
 
         /// <summary>
@@ -979,7 +1015,7 @@ namespace MadeInTheUSB.FT232H.Components
             if(dp)
                 v|=128;
             _pixels[offset+digit] = v;
-            this.SpiTransfer(deviceIndex, (byte)(digit+1), v);
+            this.SpiTransferForAllDevices(deviceIndex, (byte)(digit+1), v);
         }
        
         /// <summary>
@@ -1020,7 +1056,7 @@ namespace MadeInTheUSB.FT232H.Components
             if(dp)
                 v|=128;
             _pixels[offset+digit] = v;
-            this.SpiTransfer(deviceIndex, (byte)(digit+1), v);
+            this.SpiTransferForAllDevices(deviceIndex, (byte)(digit+1), v);
         }
 
         private SPIResult __SpiTransferBuffer(List<byte> buffer)
@@ -1033,26 +1069,26 @@ namespace MadeInTheUSB.FT232H.Components
                 return r.Failed();
         }
 
-        private SPIResult SpiTransfer(int devIndex, byte opCode, byte data)
+        private SPIResult SpiTransferForAllDevices(int deviceIndex, byte opCode, byte data, bool onlyForDeviceIndex = true)
         {
             SPIResult r = null;
             var buffer            = new List<byte>(10);
-            var deviceToSkipFirst = this.DeviceCount - devIndex - 1;
+            var deviceToSkipFirst = this.DeviceCount - deviceIndex - 1;
 
             for (var d = 0; d < deviceToSkipFirst; d++)
             {
-                buffer.Add(0); // OpCode
-                buffer.Add(0); // Data
+                buffer.Add((byte)(onlyForDeviceIndex ? 0 : opCode)); // OpCode
+                buffer.Add((byte)(onlyForDeviceIndex ? 0 : data)); // data
             }
 
             buffer.Add(opCode); // OpCode
             buffer.Add(data);   // Data
 
-            var deviceToSkipAfter = this.DeviceCount - (this.DeviceCount - devIndex);
+            var deviceToSkipAfter = this.DeviceCount - (this.DeviceCount - deviceIndex);
             for (var d = 0; d < deviceToSkipAfter; d++)
             {
-                buffer.Add(0); // OpCode
-                buffer.Add(0); // Data
+                buffer.Add((byte)(onlyForDeviceIndex ? 0 : opCode)); // OpCode
+                buffer.Add((byte)(onlyForDeviceIndex ? 0 : data)); // data
             }
           
             r = this.__SpiTransferBuffer(buffer);

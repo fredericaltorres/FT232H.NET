@@ -6,7 +6,7 @@ using System.Text;
 namespace MadeInTheUSB.FT232H
 {
     [Flags]
-    public enum FtSpiTransferOptions : int
+    public enum FtdiSpiTransferOptions : int
     {
         None              = 0x00000000,
 

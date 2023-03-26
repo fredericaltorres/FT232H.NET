@@ -117,8 +117,8 @@ namespace MadeInTheUSB.FT232H
 
             var result = Write(array, array.Length, out writtenAmount,
                 //FtI2CTransferOptions.FastTransfer |
-                FtI2CTransferOptions.StartBit     | 
-                FtI2CTransferOptions.StopBit);
+                FtdiI2CTransferOptions.StartBit     | 
+                FtdiI2CTransferOptions.StopBit);
 
             return result == FtdiMpsseSPIResult.Ok;
         }
@@ -168,12 +168,12 @@ BIT7 – BIT31: reserved
 
             var result = Write(array, array.Length, out writtenAmount,
                 //FtI2CTransferOptions.FastTransfer | 
-                FtI2CTransferOptions.StartBit | FtI2CTransferOptions.StopBit);
+                FtdiI2CTransferOptions.StartBit | FtdiI2CTransferOptions.StopBit);
 
             return result == FtdiMpsseSPIResult.Ok;
         }
 
-        public FtdiMpsseSPIResult Write(byte[] buffer, int sizeToTransfer, out int sizeTransfered, FtI2CTransferOptions options)
+        public FtdiMpsseSPIResult Write(byte[] buffer, int sizeToTransfer, out int sizeTransfered, FtdiI2CTransferOptions options)
         {
             return LibMpsse_AccessToCppDll.I2C_DeviceWrite(_handle, DeviceAddress, sizeToTransfer, buffer, out sizeTransfered, options);
         }
@@ -224,7 +224,7 @@ BIT7 – BIT31: reserved
             return (UInt16)value;
         }
 
-        public FtdiMpsseSPIResult Read(byte[] buffer, int sizeToTransfer, out int sizeTransfered, FtI2CTransferOptions options)
+        public FtdiMpsseSPIResult Read(byte[] buffer, int sizeToTransfer, out int sizeTransfered, FtdiI2CTransferOptions options)
         {
             return LibMpsse_AccessToCppDll.I2C_DeviceRead(_handle, DeviceAddress, sizeToTransfer, buffer, out sizeTransfered, options);
         }
@@ -234,7 +234,7 @@ BIT7 – BIT31: reserved
             int sizeTransfered = 0;
             var result = LibMpsse_AccessToCppDll.I2C_DeviceRead(
                 _handle, DeviceAddress,
-                buffer.Length, buffer, out sizeTransfered, FtI2CTransferOptions.StartBit);
+                buffer.Length, buffer, out sizeTransfered, FtdiI2CTransferOptions.StartBit);
 
             CheckResult(result);
             return result == FtdiMpsseSPIResult.Ok;

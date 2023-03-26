@@ -70,7 +70,7 @@ namespace MadeInTheUSB.FT232H
         {
             return (spiResult == FtdiMpsseSPIResult.Ok);
         }
-        public FtdiMpsseSPIResult Write(byte[] buffer, int sizeToTransfer, out int sizeTransfered, FtSpiTransferOptions options = FtSpiTransferOptions.ToogleChipSelect)
+        public FtdiMpsseSPIResult Write(byte[] buffer, int sizeToTransfer, out int sizeTransfered, FtdiSpiTransferOptions options = FtdiSpiTransferOptions.ToogleChipSelect)
         {
             EnforceRightConfiguration();
             return LibMpsse_AccessToCppDll.SPI_Write(_spiHandle, buffer, sizeToTransfer, out sizeTransfered, options);
@@ -78,14 +78,14 @@ namespace MadeInTheUSB.FT232H
         public FtdiMpsseSPIResult Write(byte[] buffer)
         {
             int sizeTransfered = 0;
-            return Write(buffer, buffer.Length, out sizeTransfered, FtSpiTransferOptions.ToogleChipSelect);
+            return Write(buffer, buffer.Length, out sizeTransfered, FtdiSpiTransferOptions.ToogleChipSelect);
         }
-        public FtdiMpsseSPIResult Read(byte[] buffer, int sizeToTransfer, out int sizeTransfered, FtSpiTransferOptions options)
+        public FtdiMpsseSPIResult Read(byte[] buffer, int sizeToTransfer, out int sizeTransfered, FtdiSpiTransferOptions options)
         {
             EnforceRightConfiguration();
             return LibMpsse_AccessToCppDll.SPI_Read(_spiHandle, buffer, sizeToTransfer, out sizeTransfered, options);
         }
-        public FtdiMpsseSPIResult ReadWrite(byte[] bufferSend, byte [] bufferReceive, FtSpiTransferOptions options)
+        public FtdiMpsseSPIResult ReadWrite(byte[] bufferSend, byte [] bufferReceive, FtdiSpiTransferOptions options)
         {
             EnforceRightConfiguration();
             int sizeTransferred;
@@ -93,21 +93,21 @@ namespace MadeInTheUSB.FT232H
         }
         public FtdiMpsseSPIResult QueryReadWrite(byte [] bufferSent, byte [] bufferReceived)
         {
-            var r = ReadWrite(bufferSent, bufferReceived, FtSpiTransferOptions.ToogleChipSelect);
+            var r = ReadWrite(bufferSent, bufferReceived, FtdiSpiTransferOptions.ToogleChipSelect);
             return r;
         }
         public FtdiMpsseSPIResult Read(byte[] buffer)
         {
             int sizeTransfered;
-            return Read(buffer, buffer.Length, out sizeTransfered, FtSpiTransferOptions.ToogleChipSelect);
+            return Read(buffer, buffer.Length, out sizeTransfered, FtdiSpiTransferOptions.ToogleChipSelect);
         }        
         public FtdiMpsseSPIResult Query(byte [] bufferSent, byte [] bufferReceived)
         {
             int byteSent = 0;
-            var ec = this.Write(bufferSent, bufferSent.Length, out byteSent, FtSpiTransferOptions.ChipselectEnable);
+            var ec = this.Write(bufferSent, bufferSent.Length, out byteSent, FtdiSpiTransferOptions.ChipselectEnable);
             if (ec == FtdiMpsseSPIResult.Ok)
             {
-                ec = this.Read(bufferReceived, bufferReceived.Length, out byteSent, FtSpiTransferOptions.ChipselectDisable);
+                ec = this.Read(bufferReceived, bufferReceived.Length, out byteSent, FtdiSpiTransferOptions.ChipselectDisable);
                 return (ec == FtdiMpsseSPIResult.Ok) ? FtdiMpsseSPIResult.Ok : ec;
             }
             else return ec;

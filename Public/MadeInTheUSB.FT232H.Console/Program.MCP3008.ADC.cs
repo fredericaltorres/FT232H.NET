@@ -15,9 +15,9 @@ namespace MadeInTheUSB.FT232H.Console
     {
         static void MAX7219_SPI_8x8_Matrix(ISPI spi, IDigitalWriteRead gpios) 
         {
-            MAX_7219_SPI_8x8_Matrix matrix = new MAX_7219_SPI_8x8_Matrix(spi, MAX_7219_SPI_8x8_Matrix.MAX7219_WIRING_TO_8x8_LED_MATRIX.OriginBottomRightCorner);
+            var matrix = new MAX_7219_SPI_8x8_Matrix(spi, MAX_7219_SPI_8x8_Matrix.MAX7219_WIRING_TO_8x8_LED_MATRIX.OriginBottomRightCorner, deviceCount:4);
             matrix.Begin();
-            matrix.SetBrightness(4);
+            matrix.SetBrightness(0);
             System.Console.Clear();
             ConsoleEx.TitleBar(0, "Draw Round Rectangle Demo");
 
@@ -25,19 +25,19 @@ namespace MadeInTheUSB.FT232H.Console
             var wait = 100;
 
             matrix.CurrentDeviceIndex = deviceIndex;
-            var maxRepeat = 10;
-
-            for (byte rpt = 0; rpt <= maxRepeat; rpt += 2)
+            var done = false;
+            while(!done)
             {
                 matrix.Clear(deviceIndex);
                 var yy = 0;
                 while (yy <= 3)
                 {
                     matrix.DrawRoundRect(yy, yy, 8 - (yy * 2), 8 - (yy * 2), 2, 1);
-                    matrix.WriteDisplay();
-                    //matrix.CopyToAll(deviceIndex, true);
+                    //matrix.WriteDisplay();
+                    matrix.CopyToAll(deviceIndex, true);
                     Thread.Sleep(wait);
                     yy += 1;
+                    break;
                 }
                 Thread.Sleep(wait);
                 yy = 2;
@@ -51,6 +51,16 @@ namespace MadeInTheUSB.FT232H.Console
                 matrix.Clear(deviceIndex);
                 matrix.CopyToAll(deviceIndex, true);
                 Thread.Sleep(wait);
+
+                if (System.Console.KeyAvailable)
+                {
+                    if (System.Console.ReadKey().Key == ConsoleKey.Q)
+                    {
+                        done = true;
+                        break;
+                    }
+                }
+                Thread.Sleep(500);
             }
         }
             /// <summary>
