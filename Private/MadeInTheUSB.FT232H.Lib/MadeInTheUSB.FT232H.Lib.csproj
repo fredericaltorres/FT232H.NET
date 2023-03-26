@@ -30,8 +30,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="BufferUtil.Lib, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\BufferUtil.Lib.1.0.0\lib\netstandard2.0\BufferUtil.Lib.dll</HintPath>
+    <Reference Include="BufferUtil.Lib, Version=1.0.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\BufferUtil.Lib.1.0.3\lib\netstandard2.0\BufferUtil.Lib.dll</HintPath>
     </Reference>
     <Reference Include="DynamicSugar, Version=0.2.5.0, Culture=neutral, PublicKeyToken=e8dd8df5156875e2, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -88,15 +88,14 @@
     <Compile Include="Util\WinUtil.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="..\..\Public\Ref\libMPSSE.dll">
       <Link>MPSSE\libMPSSE.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>echo * * * Copying DLL To "$(ProjectDir)..\..\Public\Ref" * * *

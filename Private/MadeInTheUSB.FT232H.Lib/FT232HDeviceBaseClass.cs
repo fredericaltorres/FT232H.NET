@@ -1,5 +1,9 @@
-﻿using System;
+﻿using BufferUtil.Lib;
+using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Text;
+using System.Threading;
 
 namespace MadeInTheUSB.FT232H
 {
@@ -31,5 +35,52 @@ namespace MadeInTheUSB.FT232H
             1, 2, 4, 8, 16, 32, 64, 128,
             256, 512, 1024, 2048
         };
+
+        public string LogFile = @"c:\temp\spi.log";
+        public bool Log = false;
+
+        public void LogSpiTransaction(byte[] bufferOut, byte[] bufferIn, int recursiveCounter = 0)
+        {
+            if (this.Log)
+            {
+                var sb = new StringBuilder();
+
+                sb.Append($"[{DateTime.Now}]");
+                sb.Append("SPI_TRAN ");
+
+                if (bufferOut.Length > 0)
+                {
+                    sb.Append("OUT:[");
+                    sb.Append(HexaString.ConvertTo(bufferOut, itemFormat: "{0}, "));
+                    sb.Append("]");
+                }
+
+                if (bufferIn.Length > 0)
+                {
+                    if (bufferOut.Length > 0)
+                    {
+                        sb.Append(", ");
+                    }
+
+                    sb.Append("IN:[");
+                    sb.Append(HexaString.ConvertTo(bufferIn, itemFormat: "{0}, "));
+                    sb.Append("]");
+                }
+
+                try
+                {
+                    File.AppendAllText(this.LogFile, sb.ToString() + Environment.NewLine);
+                }
+                catch(System.Exception ex)
+                {
+                    if (recursiveCounter == 0)
+                    {
+                        Thread.Sleep(11);
+                        LogSpiTransaction(bufferOut, bufferIn, recursiveCounter + 1);
+                    }
+                    else throw;
+                }
+            }
+        }
     }
 }

@@ -17,7 +17,7 @@ namespace MadeInTheUSB.FT232H.Console
         {
             var matrix = new MAX_7219_SPI_8x8_Matrix(spi, MAX_7219_SPI_8x8_Matrix.MAX7219_WIRING_TO_8x8_LED_MATRIX.OriginBottomRightCorner, deviceCount:4);
             matrix.Begin();
-            matrix.SetBrightness(0);
+            matrix.SetBrightness(1);
             System.Console.Clear();
             ConsoleEx.TitleBar(0, "Draw Round Rectangle Demo");
 

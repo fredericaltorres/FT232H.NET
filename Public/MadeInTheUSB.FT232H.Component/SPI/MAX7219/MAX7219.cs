@@ -89,7 +89,7 @@ namespace MadeInTheUSB.FT232H.Components
 
         ISPI _spi;
 
-        static List<object> __CHAR_TABLE = new List<object>() { 
+        static List<object> __CHAR_TABLE = new List<object>() {
 
              " " ,3, 8, "B00000000", "B00000000", "B00000000", "B00000000", "B00000000", // space
              "!" ,1, 8, "B01011111", "B00000000", "B00000000", "B00000000", "B00000000", // !
@@ -197,9 +197,9 @@ namespace MadeInTheUSB.FT232H.Components
 
             public CharDef(char character, int columnCount, int height, params string[] columnAsBit)
             {
-                this.Character   = character;
+                this.Character = character;
                 this.ColumnCount = columnCount;
-                this.Height      = height;
+                this.Height = height;
                 foreach (var b in columnAsBit)
                     this.Columns.Add((byte)BitUtil.ParseBinary(b));
             }
@@ -221,8 +221,8 @@ namespace MadeInTheUSB.FT232H.Components
                     char character = __CHAR_TABLE[i + 0].ToString()[0];
                     var charDef = new CharDef(
                         character,
-                        (int) __CHAR_TABLE[i + 1],
-                        (int) __CHAR_TABLE[i + 2],
+                        (int)__CHAR_TABLE[i + 1],
+                        (int)__CHAR_TABLE[i + 2],
                         __CHAR_TABLE[i + 3].ToString(),
                         __CHAR_TABLE[i + 4].ToString(),
                         __CHAR_TABLE[i + 5].ToString(),
@@ -240,7 +240,7 @@ namespace MadeInTheUSB.FT232H.Components
          * Segments to be switched on for characters and digits on
          * 7-Segment Displays
          */
-         static List<string> charTable = new List<string>() {
+        static List<string> charTable = new List<string>() {
 
             "B01111110","B00110000","B01101101","B01111001","B00110011","B01011011","B01011111","B01110000",
             "B01111111","B01111011","B01110111","B00011111","B00001101","B00111101","B01001111","B01000111",
@@ -259,6 +259,7 @@ namespace MadeInTheUSB.FT232H.Components
             "B01100111","B00000000","B00000000","B00000000","B00000000","B00000000","B00000000","B00000000",
             "B00000000","B00000000","B00000000","B00000000","B00000000","B00000000","B00000000","B00000000"
         };
+
 
         // the opcodes for the MAX7221 and MAX7219
         private const int OP_NOOP        = 0;
@@ -714,19 +715,21 @@ namespace MadeInTheUSB.FT232H.Components
             _pixels[offset + row] = (byte)(_pixels[offset + row] >> 1);
         }
 
-        public SPIResult WriteRowForAllDevices(int row)
+        public SPIResult WriteRowForAllDevices()
         {
             var l = new List<byte>();
-
-            for (var deviceIndex = 0; deviceIndex < this.DeviceCount; deviceIndex++)
+            for (var row = 0; row < MATRIX_ROW_SIZE; row++)
             {
-                int offset = deviceIndex * MATRIX_ROW_SIZE;
-                l.Add(_pixels[offset + row]); // 8 bit defined the 8 pixels in a row -- order will be reversed
-                l.Add((byte)(row + 1));      // Api to set the row 1 -- order will be reversed
+                l.Clear();
+                for (var deviceIndex = 0; deviceIndex < this.DeviceCount; deviceIndex++)
+                {
+                    int offset = deviceIndex * MATRIX_ROW_SIZE;
+                    l.Add((byte)(row + 1));         // OpCode
+                    l.Add(_pixels[offset + row]); // Data
+                }
+                var r = this.__SpiTransferBuffer(l);
             }
-            l.Reverse();
-            var r = this.__SpiTransferBuffer(l);
-            return r;
+            return new SPIResult { Succeeded = true };
         }
         
         public void WriteDisplay(int deviceIndex = 0, bool all = false)
@@ -735,8 +738,7 @@ namespace MadeInTheUSB.FT232H.Components
             if (all)
             {
                 // Write each row from 0 to 7 with one USB/SPI buffer command
-                for (var i = 0; i < MATRIX_ROW_SIZE; i++)
-                    WriteRowForAllDevices(i);
+                WriteRowForAllDevices();
             }
             else
             {
@@ -1063,6 +1065,7 @@ namespace MadeInTheUSB.FT232H.Components
         {
             var r = new SPIResult();
             BytesSentOutCounter += buffer.Count;
+
             if(this._spi.Write(buffer.ToArray())== FtdiMpsseSPIResult.Ok)
                 return r.Succeed();
             else
