@@ -1,9 +1,12 @@
-﻿namespace MadeInTheUSB.FT232H
+﻿using static MadeInTheUSB.FT232H.SpiConfig;
+
+namespace MadeInTheUSB.FT232H
 {
     public class SpiDevice : SpiDeviceBaseClass
     {
-        public SpiDevice(SpiConfig spiConfig) : base(spiConfig)
+        public SpiDevice(SpiClockSpeeds clockSpeed) : base(clockSpeed)
         {
+            
         }
     }
 }

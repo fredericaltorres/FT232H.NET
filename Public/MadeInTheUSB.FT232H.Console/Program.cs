@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using static FTD2XX_NET.FTDI;
 using MadeInTheUSB.FT232H.Components.APA102;
 using MadeInTheUSB.FT232H.Components;
+using static MadeInTheUSB.FT232H.SpiConfig;
 
 namespace MadeInTheUSB.FT232H.Console
 {
@@ -67,8 +68,8 @@ namespace MadeInTheUSB.FT232H.Console
             //return;
 
             // MCP3088 and MAX7219 is limited to 10Mhz
-            var clockSpeed = SpiConfig._10Mhz ; // MpsseSpiConfig._30Mhz; // 
-            var ft232hGpioSpiDevice = new SpiDevice(SpiConfig.BuildSPI(clockSpeed));
+            var clockSpeed = SpiClockSpeeds._10Mhz ; // MpsseSpiConfig._30Mhz; // 
+            var ft232hGpioSpiDevice = new SpiDevice(clockSpeed);
 
             ft232hGpioSpiDevice.Log = !true;
 

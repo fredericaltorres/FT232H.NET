@@ -12,6 +12,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static MadeInTheUSB.FT232H.SpiConfig;
 
 namespace MadeInTheUSB.FT232H.Flash.WinApp
 {
@@ -63,8 +64,8 @@ namespace MadeInTheUSB.FT232H.Flash.WinApp
                 {
                     this.ShowUser($"FT232H [{_ft232Device}]");
                     // MCP3088 and MAX7219 is limited to 10Mhz
-                    var clockSpeed = this.rbMhz30.Checked ? SpiConfig._30Mhz : SpiConfig._10Mhz;
-                    _gpioSpiDevice = new SpiDevice(SpiConfig.BuildSPI(clockSpeed));
+                    var clockSpeed = this.rbMhz30.Checked ? SpiClockSpeeds._30Mhz : SpiClockSpeeds._10Mhz;
+                    _gpioSpiDevice = new SpiDevice(clockSpeed);
                     _interfaces = _gpioSpiDevice.Interfaces;
                     return _gpioSpiDevice.Interfaces;
                 }

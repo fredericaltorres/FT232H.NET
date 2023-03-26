@@ -14,19 +14,19 @@ namespace MadeInTheUSB
     public class SPIResult
     {
         public List<byte> Buffer = new List<uint8_t>();
-        public bool Succeeded;
+        public bool OperationSucceeded;
         public int Value;
 
         public SPIResult Failed()
         {
-            this.Succeeded = false;
+            this.OperationSucceeded = false;
             return this;
         }
         public SPIResult Succeed(List<byte> buffer = null)
         {
             if(buffer != null)
                 this.Buffer = buffer;
-            this.Succeeded = true;
+            this.OperationSucceeded = true;
             return this;
         }
         public int Val0

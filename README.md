@@ -1,5 +1,7 @@
 # FT232H.NET Library
 
+*** The Library is a work in progress for now. Code is very messy ***
+
 The .NET/Windows library FT232H.NET provides an abstraction to program
 * The SPI protocol
 * The I2C protocol

@@ -79,11 +79,9 @@ namespace MadeInTheUSB.FT232H.Components
     /// 
     ///  Remark:
     ///     7-Segment Displays support is in progress.
-    /// 
+    /// https://www.sparkfun.com/datasheets/Components/General/COM-09622-MAX7219-MAX7221.pdf
     /// </summary>
     public class MAX7219 : Adafruit_GFX {
-
-        public static bool OptimizeSpiDataLine = true;
 
         public Int32 BytesSentOutCounter = 0;
 
@@ -262,20 +260,26 @@ namespace MadeInTheUSB.FT232H.Components
 
 
         // the opcodes for the MAX7221 and MAX7219
-        private const int OP_NOOP        = 0;
-        private const int OP_DIGIT0      = 1;
-        private const int OP_DIGIT1      = 2;
-        private const int OP_DIGIT2      = 3;
-        private const int OP_DIGIT3      = 4;
-        private const int OP_DIGIT4      = 5;
-        private const int OP_DIGIT5      = 6;
-        private const int OP_DIGIT6      = 7;
-        private const int OP_DIGIT7      = 8;
-        private const int OP_DECODEMODE  = 9;
-        private const int OP_INTENSITY   = 10;
-        private const int OP_SCANLIMIT   = 11;
-        private const int OP_SHUTDOWN    = 12;
-        private const int OP_DISPLAYTEST = 15;
+        private const int OP_NOOP        = 0x00;
+        private const int OP_DIGIT0      = 0x01;
+        private const int OP_DIGIT1      = 0x02;
+        private const int OP_DIGIT2      = 0x03;
+        private const int OP_DIGIT3      = 0x04;
+        private const int OP_DIGIT4      = 0x05;
+        private const int OP_DIGIT5      = 0x06;
+        private const int OP_DIGIT6      = 0x07;
+        private const int OP_DIGIT7      = 0x08;
+        private const int OP_DECODEMODE  = 0x09;
+        private const int OP_INTENSITY   = 0x0A;
+        private const int OP_SCANLIMIT   = 0x0B;
+        private const int OP_SHUTDOWN    = 0x0C;
+        private const int OP_UNKNOWN     = 0x0D;
+        private const int OP_DISPLAYTEST = 0x0F;
+
+        private static byte GetSetRowOpCode(int row) 
+        {
+            return (byte)(row + 1); // OP_DIGIT0 .. OP_DIGIT7
+        }
 
         /// <summary>
         /// The max britghness is 31. But I noticed that the 8x8 natrix can consume up
@@ -316,6 +320,52 @@ namespace MadeInTheUSB.FT232H.Components
         /// </summary>
         public int CurrentDeviceIndex = 0;
 
+
+        /* 
+        * Create a new controler 
+        * Params :
+        * dataPin		pin on the Arduino where data gets shifted out
+        * clockPin		pin for the clock
+        * csPin		pin for selecting the device 
+        * deviceCount	maximum number of devices that can be controled
+        */
+        public MAX7219(ISPI spi, int deviceCount = 1, Int16 width = 8, Int16 height = 8) : base(width, height)
+        {
+            this._spi = spi;
+
+            if (deviceCount <= 0 || deviceCount > MAX_MAX7219_CHAINABLE)
+                deviceCount = MAX_MAX7219_CHAINABLE;
+
+            _deviceCount = deviceCount;
+
+            for (var i = 0; i < 64; i++)
+            {
+                _pixels[i] = 0x00;
+            }
+
+            for (var i = 0; i < _deviceCount; i++)
+            {
+                var r1 = this.SpiTransferForAllDevices(i, OP_DISPLAYTEST, 0);
+
+                //scanlimit is set to max on startup
+                // The scan-limit register sets how many digits are displayed, from 1 to 8. T
+                // Originally the MAX7219 is for Display 7-Segment Display from 1 to 8.
+                // The scan limit defines how many 7-Segment are contolled.
+                // Each 7-Segments require 8 LEDs time 8, it is 8 x 8 = 64. 
+                // Since we want to handle most of the time 8x8 LEDs we need to set it to
+                // the max. 
+                var r2 = this.SetScanLimit(i, MAX_SCAN_LIMIT - 1);
+
+                // decode is done in source
+                var r3 = this.SpiTransferForAllDevices(i, OP_DECODEMODE, 0); // No decode mode, see datasheet page 7
+
+                this.Clear(i, refresh: true);
+                //we go into Shutdown-mode on startup
+                this.Shutdown(true, i);
+            }
+        }
+
+
         /// <summary>
         /// 
         /// </summary>
@@ -332,48 +382,6 @@ namespace MadeInTheUSB.FT232H.Components
             }
             return true; 
         }
-
-        /* 
-        * Create a new controler 
-        * Params :
-        * dataPin		pin on the Arduino where data gets shifted out
-        * clockPin		pin for the clock
-        * csPin		pin for selecting the device 
-        * deviceCount	maximum number of devices that can be controled
-        */
-        public MAX7219(ISPI spi,  int deviceCount = 1, Int16 width = 8, Int16 height = 8) : base(width, height)
-        {
-           this._spi = spi;
-
-            if (deviceCount <= 0 || deviceCount > MAX_MAX7219_CHAINABLE)
-                deviceCount = MAX_MAX7219_CHAINABLE;
-
-            _deviceCount = deviceCount;
-
-            for(var i = 0; i < 64; i++)
-                _pixels[i] = 0x00;
-
-            for(var i = 0; i < _deviceCount; i++)
-            {
-                var r1 = this.SpiTransferForAllDevices(i, OP_DISPLAYTEST, 0);
-
-                //scanlimit is set to max on startup
-                // The scan-limit register sets how many digits are displayed, from 1 to 8. T
-                // Originally the MAX7219 is for Display 7-Segment Display from 1 to 8.
-                // The scan limit defines how many 7-Segment are contolled.
-                // Each 7-Segments require 8 LEDs time 8, it is 8 x 8 = 64. 
-                // Since we want to handle most of the time 8x8 LEDs we need to set it to
-                // the max. 
-                var r2 = this.SetScanLimit(i, MAX_SCAN_LIMIT-1);
-
-                // decode is done in source
-                var r3 = this.SpiTransferForAllDevices(i, OP_DECODEMODE, 0); // No decode mode, see datasheet page 7
-
-                this.Clear(i, refresh: true);
-                //we go into Shutdown-mode on startup
-                this.Shutdown(true, i);
-            }
-       }
 
         /*
         * Gets the number of devices attached to this MAX7219.
@@ -397,14 +405,14 @@ namespace MadeInTheUSB.FT232H.Components
             var r = new SPIResult();
 
             if (devIndex < 0 || devIndex >= _deviceCount)
-                return r.Succeeded;
+                return r.OperationSucceeded;
 
             if(status)
-                r = this.SpiTransferForAllDevices(devIndex, OP_SHUTDOWN,0);
+                r = this.SpiTransferForAllDevices(devIndex, OP_SHUTDOWN, 0);
             else
-                r = this.SpiTransferForAllDevices(devIndex, OP_SHUTDOWN,1);
+                r = this.SpiTransferForAllDevices(devIndex, OP_SHUTDOWN, 1);
 
-            return r.Succeeded;
+            return r.OperationSucceeded;
         }
 
         /* 
@@ -418,13 +426,13 @@ namespace MadeInTheUSB.FT232H.Components
         public bool SetScanLimit(int devIndex, int limit)
         {
             var r = new SPIResult();
-            if(devIndex<0 || devIndex>=_deviceCount)
-                return r.Succeeded;
+            if(devIndex < 0 || devIndex >= _deviceCount)
+                return r.OperationSucceeded;
 
             if(limit >= 0 && limit < 8)
-                r = this.SpiTransferForAllDevices(devIndex, OP_SCANLIMIT,(byte)limit);
+                r = this.SpiTransferForAllDevices(devIndex, OP_SCANLIMIT, (byte)limit);
 
-            return r.Succeeded;
+            return r.OperationSucceeded;
         }
 
         /// <summary>
@@ -445,11 +453,13 @@ namespace MadeInTheUSB.FT232H.Components
             {
                 for (var b = 0; b < maxBrigthness; b++)
                 {
+                    Console.WriteLine($"Brigthness: {b}");
                     this.SetBrightness(b, deviceIndex);
                     TimePeriod.Sleep(onWaitTime);
                 }
                 for (var b = maxBrigthness; b >= 0; b--)
                 {
+                    Console.WriteLine($"Brigthness: {b}");
                     this.SetBrightness(b, deviceIndex);
                     TimePeriod.Sleep(offWaitTime);
                 }
@@ -467,21 +477,8 @@ namespace MadeInTheUSB.FT232H.Components
         /// <param name="intensity"></param>
         public bool SetBrightness(int intensity, int deviceIndex = 0)
         {
-            //if (intensity >= 0 && intensity <= MAX_BRITGHNESS)
-            //{
-            //    var l = new List<byte>();
-            //    for (var dIndex = 0; dIndex < this.DeviceCount; dIndex++)
-            //    {
-            //        l.Add(OP_INTENSITY);
-            //        l.Add((byte)intensity);
-            //    }                
-            //    var r = this.__SpiTransferBuffer(l);
-            //    return r.Succeeded;
-            //}
             var r = this.SpiTransferForAllDevices(deviceIndex, OP_INTENSITY, (byte)intensity, onlyForDeviceIndex: false);
-            return r.Succeeded;
-            //}
-            //else return false;
+            return r.OperationSucceeded;
         }
 
         /// <summary>
@@ -721,37 +718,28 @@ namespace MadeInTheUSB.FT232H.Components
             for (var row = 0; row < MATRIX_ROW_SIZE; row++)
             {
                 l.Clear();
-                for (var deviceIndex = 0; deviceIndex < this.DeviceCount; deviceIndex++)
+                // for (var deviceIndex = 0; deviceIndex < this.DeviceCount; deviceIndex++)
+                for (var deviceIndex = this.DeviceCount - 1; deviceIndex >= 0; deviceIndex--)
                 {
                     int offset = deviceIndex * MATRIX_ROW_SIZE;
-                    l.Add((byte)(row + 1));         // OpCode
+                    l.Add(GetSetRowOpCode(row));         // OpCode
                     l.Add(_pixels[offset + row]); // Data
                 }
                 var r = this.__SpiTransferBuffer(l);
             }
-            return new SPIResult { Succeeded = true };
+            return new SPIResult { OperationSucceeded = true };
         }
         
         public void WriteDisplay(int deviceIndex = 0, bool all = false)
         {
-            
             if (all)
             {
-                // Write each row from 0 to 7 with one USB/SPI buffer command
                 WriteRowForAllDevices();
             }
             else
             {
-                var optimized = false; // TODOL Remove
-                if (optimized)
-                {
-                    WriteRows(deviceIndex);
-                }
-                else
-                {
-                    for (var i = 0; i < MATRIX_ROW_SIZE; i++)
-                        WriteRow(deviceIndex, i);
-                }
+                for (var i = 0; i < MATRIX_ROW_SIZE; i++)
+                    WriteRow(deviceIndex, i);
             }
         }
 
@@ -766,11 +754,10 @@ namespace MadeInTheUSB.FT232H.Components
             for (var row = 0; row < MATRIX_ROW_SIZE; row++)
             {
                 int offset = deviceIndex * MATRIX_ROW_SIZE;
-                buffer.Add((byte)(row + 1));
+                buffer.Add(GetSetRowOpCode(row));
                 buffer.Add(_pixels[offset + row]);
             }
 
-            //r = this.SpiTransfer(deviceIndex, buffer);
             r = this.__SpiTransferBuffer(buffer);
             return r;
         }
@@ -783,7 +770,7 @@ namespace MadeInTheUSB.FT232H.Components
 
             int offset = deviceIndex * MATRIX_ROW_SIZE;
 
-            r = this.SpiTransferForAllDevices(deviceIndex, (byte)(row+1),_pixels[offset+row]);
+            r = this.SpiTransferForAllDevices(deviceIndex, (byte)(row+1), _pixels[offset+row]);
             return r;
         }
 

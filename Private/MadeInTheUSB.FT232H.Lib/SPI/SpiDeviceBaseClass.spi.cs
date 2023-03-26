@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using static MadeInTheUSB.FT232H.SpiConfig;
 
 namespace MadeInTheUSB.FT232H
 {
@@ -15,20 +16,22 @@ namespace MadeInTheUSB.FT232H
         /// FT232H has only one channel, channel 0
         /// FT2232 has 2 channels, not supportted
         /// </summary>
-        private SpiConfig            _spiConfig; 
-        private bool                      _isDisposed;
-        private MpsseChannelConfiguration _ftdiMpsseChannelConfig;
+        private SpiConfig                   _spiConfig; 
+        private bool                        _isDisposed;
+        private MpsseChannelConfiguration   _ftdiMpsseChannelConfig;
 
-        protected SpiDeviceBaseClass(SpiConfig spiConfig) : this(spiConfig, null)
+        protected SpiDeviceBaseClass(SpiClockSpeeds clockSpeed) : this(SpiConfig.BuildSPI(clockSpeed), null)
         {
             this.GpioInit();
         }
+
         protected SpiDeviceBaseClass(SpiConfig spiConfig, MpsseChannelConfiguration channelConfig)
         {
             this._ftdiMpsseChannelConfig = channelConfig ?? MpsseChannelConfiguration.FtdiMpsseChannelZeroConfiguration;
             this._spiConfig              = spiConfig;
             this.InitLibAndHandle();
         }
+
         private void InitLibAndHandle()
         {
             if (_spiHandle != IntPtr.Zero)
@@ -44,6 +47,7 @@ namespace MadeInTheUSB.FT232H
             result = CheckResult(LibMpsse_AccessToCppDll.SPI_InitChannel(_spiHandle, ref _spiConfig));
             _globalConfig = this._spiConfig;
         }
+
         public void Dispose()
         {
             if (this._isDisposed)
@@ -51,12 +55,14 @@ namespace MadeInTheUSB.FT232H
             this._isDisposed = true;
             libMPSSE_Initializator.Cleanup();
         }
+
         public FtdiMpsseSPIResult CheckResult(FtdiMpsseSPIResult spiResult)
         {
             if (spiResult != FtdiMpsseSPIResult.Ok)
                 throw new SpiChannelNotConnectedException(spiResult);
             return spiResult;
         }
+
         private void EnforceRightConfiguration()
         {
             if (_globalConfig.spiConfigOptions != _spiConfig.spiConfigOptions)
@@ -65,22 +71,26 @@ namespace MadeInTheUSB.FT232H
                 _globalConfig = _spiConfig;
             }
         }
+
         // ISPI implementation
         public bool Ok(FtdiMpsseSPIResult spiResult)
         {
             return (spiResult == FtdiMpsseSPIResult.Ok);
         }
+
         public FtdiMpsseSPIResult Write(byte[] buffer, int sizeToTransfer, out int sizeTransfered, FtdiSpiTransferOptions options = FtdiSpiTransferOptions.ToogleChipSelect)
         {
             EnforceRightConfiguration();
             return LibMpsse_AccessToCppDll.SPI_Write(_spiHandle, buffer, sizeToTransfer, out sizeTransfered, options);
         }
+
         public FtdiMpsseSPIResult Write(byte[] buffer)
         {
             int sizeTransfered = 0;
             base.LogSpiTransaction(buffer, new byte[0]);
             return Write(buffer, buffer.Length, out sizeTransfered, FtdiSpiTransferOptions.ToogleChipSelect);
         }
+
         public FtdiMpsseSPIResult Read(byte[] buffer, int sizeToTransfer, out int sizeTransfered, FtdiSpiTransferOptions options)
         {
             EnforceRightConfiguration();
@@ -88,6 +98,7 @@ namespace MadeInTheUSB.FT232H
             base.LogSpiTransaction(new byte[0], buffer);
             return r;
         }
+
         public FtdiMpsseSPIResult ReadWrite(byte[] bufferSend, byte [] bufferReceive, FtdiSpiTransferOptions options)
         {
             EnforceRightConfiguration();
@@ -96,12 +107,14 @@ namespace MadeInTheUSB.FT232H
             base.LogSpiTransaction(bufferSend, bufferReceive);
             return r;
         }
+
         public FtdiMpsseSPIResult QueryReadWrite(byte [] bufferSent, byte [] bufferReceived)
         {
             var r = ReadWrite(bufferSent, bufferReceived, FtdiSpiTransferOptions.ToogleChipSelect);
             base.LogSpiTransaction(bufferSent, bufferReceived);
             return r;
         }
+
         public FtdiMpsseSPIResult Read(byte[] buffer)
         {
             int sizeTransfered;
@@ -109,6 +122,7 @@ namespace MadeInTheUSB.FT232H
             base.LogSpiTransaction(new byte[0], buffer);
             return r;
         }        
+
         public FtdiMpsseSPIResult Query(byte [] bufferSent, byte [] bufferReceived)
         {
             int byteSent = 0;

@@ -6,24 +6,25 @@ using System.Text;
 
 namespace MadeInTheUSB.FT232H
 {
-
     [StructLayout(LayoutKind.Sequential)]
     public partial struct SpiConfig
     {
-        public const int _30Mhz = 30 * 1000 * 1000;
-        public const int _25Mhz = 25 * 1000 * 1000;
-        public const int _20Mhz = 20 * 1000 * 1000;
-        public const int _15Mhz = 15 * 1000 * 1000;
-        public const int _16Mhz = 16 * 1000 * 1000;
-        public const int _10Mhz = 10 * 1000 * 1000;
-        public const int _1Mhz  = 01 * 1000 * 1000;
-        public const int _2Mhz  = 02 * 1000 * 1000;
-        public const int _4Mhz  = 04 * 1000 * 1000;
-        public const int _8Mhz  = 08 * 1000 * 1000;
-
-        public const int _0_5Mhz   = 01 * 1000 * 1000 / 2;
-        public const int _0_25Mhz  = 01 * 1000 * 1000 / 4; // 31k
-        public const int _TestMhz = 01*1000*1000;
+        public enum SpiClockSpeeds
+        {
+            _30Mhz      = 30 * 1000 * 1000,
+            _25Mhz      = 25 * 1000 * 1000,
+            _20Mhz      = 20 * 1000 * 1000,
+            _15Mhz      = 15 * 1000 * 1000,
+            _16Mhz      = 16 * 1000 * 1000,
+            _10Mhz      = 10 * 1000 * 1000,
+            _1Mhz       = 01 * 1000 * 1000,
+            _2Mhz       = 02 * 1000 * 1000,
+            _4Mhz       = 04 * 1000 * 1000,
+            _8Mhz       = 08 * 1000 * 1000,
+            _0_5Mhz     = 01 * 1000 * 1000 / 2,
+            _0_25Mhz    = 01 * 1000 * 1000 / 4, // 31k
+            _TestMhz    = 01 * 1000 * 1000,
+        }
 
         public int ClockRate;
         public byte LatencyTimer;
@@ -31,10 +32,10 @@ namespace MadeInTheUSB.FT232H
         public int Pin;
         public short reserved;
 
-        public static SpiConfig Init(int clockRate, SpiChipSelectPins selectPin)
+        public static SpiConfig Init(SpiClockSpeeds clockRate, SpiChipSelectPins selectPin)
         {
             var f = new SpiConfig {
-                ClockRate = clockRate,
+                ClockRate = (int)clockRate,
                 LatencyTimer = 10,
                 spiConfigOptions = FtdiMpsseSpiConfigOptions.Mode0 | FtdiMpsseSpiConfigOptions.CsActivelow | ((FtdiMpsseSpiConfigOptions)selectPin)
             };
@@ -43,10 +44,10 @@ namespace MadeInTheUSB.FT232H
 
         public static SpiConfig GetDefault()
         {
-            return SpiConfig.Init(SpiConfig._30Mhz, SpiChipSelectPins.CsDbus3);
+            return SpiConfig.Init(SpiClockSpeeds._30Mhz, SpiChipSelectPins.CsDbus3);
         }
 
-        public static SpiConfig BuildSPI(int speed, SpiChipSelectPins chipSelect = SpiChipSelectPins.CsDbus3)
+        public static SpiConfig BuildSPI(SpiClockSpeeds speed, SpiChipSelectPins chipSelect = SpiChipSelectPins.CsDbus3)
         {
             return SpiConfig.Init(speed, chipSelect);
         }

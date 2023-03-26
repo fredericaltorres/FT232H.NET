@@ -69,9 +69,9 @@ namespace MadeInTheUSB.FT232H.Components
             OriginUpperLeftCorner,   // 4 8x8 LED matrix chained together device sold by MadeInTheUSB
         }
 
-        public MAX7219_WIRING_TO_8x8_LED_MATRIX MAX7219Wiring = MAX7219_WIRING_TO_8x8_LED_MATRIX.OriginBottomRightCorner;
+        public MAX7219_WIRING_TO_8x8_LED_MATRIX MAX7219Wiring = MAX7219_WIRING_TO_8x8_LED_MATRIX.OriginUpperLeftCorner;
 
-        public const int DEFAULT_BRIGTHNESS_DEMO = 5;
+        public const int DEFAULT_BRIGTHNESS_DEMO = 2;
 
         public MAX_7219_SPI_8x8_Matrix(
             ISPI spi,

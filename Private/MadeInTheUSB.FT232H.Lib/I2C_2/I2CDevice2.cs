@@ -18,7 +18,7 @@ namespace MadeInTheUSB.FT232H
 
         private I2CConfiguration _i2cConfig;
 
-        private ClockSpeeds _clockSpeed;
+        private I2CClockSpeeds _clockSpeed;
         private const int LatencyTimer = 200;//255; // Hz
 
         private byte _direction;
@@ -27,7 +27,7 @@ namespace MadeInTheUSB.FT232H
         public IDigitalWriteRead Gpios = null;
         public GpioI2C2ImplementationDevice GpiosPlus;
 
-        public I2CDevice2(ClockSpeeds clockSpeed = ClockSpeeds.I2C_CLOCK_FAST_MODE_400Khz)
+        public I2CDevice2(I2CClockSpeeds clockSpeed = I2CClockSpeeds.I2C_CLOCK_FAST_MODE_400Khz)
         {
             _clockSpeed = clockSpeed;
             this.Init();

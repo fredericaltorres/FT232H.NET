@@ -11,16 +11,11 @@ using MadeInTheUSB.FT232H.Components.APA102;
 using MadeInTheUSB.FT232H.Components;
 using System.Reflection;
 using System.Diagnostics;
+using static MadeInTheUSB.FT232H.SpiConfig;
 
 namespace MadeInTheUSB.FT232H.MatrixConsole
 {
-
-    public class GpioSpiDevice : SpiDeviceBaseClass
-    {
-        public GpioSpiDevice(SpiConfig spiConfig) : base(spiConfig)
-        {
-        }
-    }
+ 
 
     partial class Program
     {
@@ -210,6 +205,7 @@ namespace MadeInTheUSB.FT232H.MatrixConsole
         {
             Console.Clear();
             ConsoleEx.TitleBar(0, "Draw Round Rectangle Demo");
+            ConsoleEx.WriteMenu(1, 4, "");
 
             matrix.CurrentDeviceIndex = deviceIndex;
 
@@ -219,6 +215,7 @@ namespace MadeInTheUSB.FT232H.MatrixConsole
                 var yy = 0;
                 while (yy <= 3)
                 {
+                    Console.WriteLine($"Rectangle: {yy}, {yy}, {8 - (yy * 2)}, {8 - (yy * 2)} ");
                     matrix.DrawRoundRect(yy, yy, 8 - (yy * 2), 8 - (yy * 2), 2, 1);
                     matrix.CopyToAll(deviceIndex, true);
                     Thread.Sleep(wait);
@@ -283,11 +280,13 @@ namespace MadeInTheUSB.FT232H.MatrixConsole
                 for (byte ray = 0; ray <= 4; ray++)
                 {
                     matrix.Clear(deviceIndex);
+                    Console.WriteLine($"Circle Center: {circleLocation.X}, {circleLocation.Y}");
                     matrix.DrawCircle(circleLocation.X, circleLocation.Y, ray, 1);
                     matrix.CopyToAll(deviceIndex, refreshAll: true);
                     Thread.Sleep(wait);
                 }
             }
+            matrix.Clear(deviceIndex, refresh: true);
         }
 
 
@@ -495,8 +494,9 @@ namespace MadeInTheUSB.FT232H.MatrixConsole
         private static void ScrollText(MAX_7219_SPI_8x8_Matrix matrix, int deviceIndex = 0)
         {
             var quit = false;
-            var speed = 10;
-            var text = "Hello World!      ";
+            var speed = 256;
+            var text = "Hello World! ";
+            var textChars = text.ToCharArray().ToList();
 
             if (matrix.DeviceCount == 1 && matrix.MAX7219Wiring == MAX_7219_SPI_8x8_Matrix.MAX7219_WIRING_TO_8x8_LED_MATRIX.OriginBottomRightCorner)
                 speed = speed * 3;
@@ -506,11 +506,47 @@ namespace MadeInTheUSB.FT232H.MatrixConsole
                 Console.Clear();
                 ConsoleEx.TitleBar(0, "Scroll Text");
                 ConsoleEx.WriteMenu(0, 2, string.Format("Q)uit  F)aster  S)lower   Speed:{0:000}", speed));
+                matrix.Clear(all: true, refresh: true);
+                var charProcessed = 0;
 
-                matrix.Clear(all: true);
-                matrix.WriteDisplay(all: true);
+                while (true)
+                {
+                    var next8Chars = textChars.Skip(charProcessed).Take(matrix.DeviceCount).ToList();
+                    if (next8Chars.Count == 0)
+                        break;
 
-                for (var ci = 0; ci < text.Length; ci++)
+                    var textIndex = 0;
+                    for (var dIndex = matrix.DeviceCount - 1; dIndex >= 0; dIndex--)
+                    {
+                        if (!(textIndex >= next8Chars.Count))
+                        {
+                            var c = next8Chars[textIndex];
+                            textIndex += 1;
+                            matrix.WriteChar(dIndex, c); // See property matrix.MAX7218Wiring for more info
+                            ConsoleEx.WriteMenu(textIndex, 4, c.ToString());
+                        }
+                    }
+                    matrix.WriteDisplay(all: true);
+                    charProcessed++;
+
+                    Thread.Sleep(speed);
+                    if (Console.KeyAvailable)
+                    {
+                        switch (Console.ReadKey().Key)
+                        {
+                            case ConsoleKey.Q: quit = true; break;
+                            case ConsoleKey.S: speed += 10; break;
+                            case ConsoleKey.F: speed -= 10; if (speed < 0) speed = 0; break;
+                        }
+                        ConsoleEx.WriteMenu(0, 2, string.Format("Q)uit  F)aster  S)lower   Speed:{0:000}", speed));
+                    }
+                }
+            }
+        }
+
+
+        /*
+         for (var ci = 0; ci < text.Length; ci++)
                 {
                     var c = text[ci];
 
@@ -548,8 +584,7 @@ namespace MadeInTheUSB.FT232H.MatrixConsole
                         }
                     }
                 }
-            }
-        }
+         */
 
         static void PerformanceTest(MAX_7219_SPI_8x8_Matrix matrix, int deviceIndex)
         {
@@ -636,20 +671,12 @@ namespace MadeInTheUSB.FT232H.MatrixConsole
         {
             var ft232Device = FT232HDetector.Detect();
             if (ft232Device.Ok)
-            {
                 System.Console.WriteLine(ft232Device.ToString());
-            }
             else
-            {
                 Environment.Exit(1);
-            }
-                
 
             Cls(ft232Device.ToString());
-
-            // MAX7219 is limited to 10Mhz
-            var ft232hGpioSpiDevice = new GpioSpiDevice(SpiConfig.BuildSPI(SpiConfig._10Mhz));
-            var spi = ft232hGpioSpiDevice.SPI;
+            var ft232HSpiDevice = new SpiDevice( SpiClockSpeeds._10Mhz); // MAX7219 is limited to 10Mhz
 
 #if DEMO_WITH_4_8x8_LED_MATRIX_CHAINED
                 var matrixChainedCount = 8;
@@ -659,10 +686,8 @@ namespace MadeInTheUSB.FT232H.MatrixConsole
                 var origin = NusbioMatrix.MAX7219_WIRING_TO_8x8_LED_MATRIX.OriginBottomRightCorner;
 #endif
 
-            var matrix = MAX_7219_SPI_8x8_Matrix.Initialize(spi, origin, matrixChainedCount);
+            var matrix = MAX_7219_SPI_8x8_Matrix.Initialize(ft232HSpiDevice.SPI, origin, matrixChainedCount);
 
-            matrix.DrawRect(1, 1, 4, 4, true);
-            matrix.WriteDisplay(0);
 
             while (true)
             {
