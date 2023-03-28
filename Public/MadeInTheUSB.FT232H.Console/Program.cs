@@ -79,8 +79,8 @@ namespace MadeInTheUSB.FT232H.Console
             //GpioSample(gpios, true);
             // CheetahBoosterDemo(gpios, false);
 
-            //ADC_MCP3008Demo(spi, gpios);
-            MAX7219_SPI_8x8_Matrix(spi, gpios);
+            ADC_MCP3008Demo(spi, gpios);
+            //MAX7219_SPI_8x8_Matrix(spi, gpios);
 
             /*const int fatLinkedListSectorCount = 10;
             const string volumeName = "fDrive.v01";

@@ -63,10 +63,10 @@ namespace MadeInTheUSB.FT232H.Console
                 Thread.Sleep(500);
             }
         }
-            /// <summary>
-            /// </summary>
-            /// <param name="spi"></param>
-            static void ADC_MCP3008Demo(ISPI spi, IDigitalWriteRead gpios)
+        /// <summary>
+        /// </summary>
+        /// <param name="spi"></param>
+        static void ADC_MCP3008Demo(ISPI spi, IDigitalWriteRead gpios)
         {
             var adc = new MCP3008(spi);
             var done = false;
@@ -74,7 +74,7 @@ namespace MadeInTheUSB.FT232H.Console
             const double referenceVoltage = 3.3;
             while(!done)
             {
-                gpios.ProgressNext();
+//                gpios.ProgressNext();
                 for (var adcPort = 0; adcPort < 1; adcPort++)
                 {
                     var adcValue = adc.Read(adcPort);
@@ -82,7 +82,8 @@ namespace MadeInTheUSB.FT232H.Console
                     System.Console.WriteLine($"ADC [{adcPort}] = {adcValue}, voltage:{voltageValue}");
                 }
 
-                if(System.Console.KeyAvailable) {
+                if(System.Console.KeyAvailable) 
+                {
                     if(System.Console.ReadKey().Key == ConsoleKey.Q)
                     {
                         done = true;

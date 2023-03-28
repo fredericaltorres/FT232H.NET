@@ -19,7 +19,7 @@ namespace MadeInTheUSB.FT232H.MatrixConsole
 
     partial class Program
     {
-        private const int DEFAULT_BRIGTHNESS_DEMO = MAX7219.MAX_BRITGHNESS / 2;
+        private const int DEFAULT_BRIGTHNESS_DEMO = 2;
         private static List<string> smileBmp = new List<string>()
         {
             "B00111100",
@@ -720,6 +720,8 @@ namespace MadeInTheUSB.FT232H.MatrixConsole
                     matrix.Clear(all: true, refresh: true);
                 }
             }
+            matrix.Clear();
+            matrix.WriteDisplay();
         }
     }
 }
