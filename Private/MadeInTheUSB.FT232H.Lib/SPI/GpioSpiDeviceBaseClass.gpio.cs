@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Threading;
 
 namespace MadeInTheUSB.FT232H
 {
@@ -47,6 +48,15 @@ namespace MadeInTheUSB.FT232H
         public byte MaxGpio
         {
             get { return _maxGpio; }
+        }
+        public void Animate()
+        {
+            this.AllGpios(false);
+            for (var i = 0; i < this.MaxGpio * 3; i++)
+            {
+                this.ProgressNext();
+                Thread.Sleep(25);
+            }
         }
         public void DigitalWrite(PinState mode, params int[] pins)
         {

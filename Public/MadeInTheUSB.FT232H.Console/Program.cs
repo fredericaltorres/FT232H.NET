@@ -9,6 +9,7 @@ using static FTD2XX_NET.FTDI;
 using MadeInTheUSB.FT232H.Components.APA102;
 using MadeInTheUSB.FT232H.Components;
 using static MadeInTheUSB.FT232H.SpiConfig;
+using MadeInTheUSB.FT232H;
 
 namespace MadeInTheUSB.FT232H.Console
 {
@@ -19,27 +20,23 @@ namespace MadeInTheUSB.FT232H.Console
     {
         static void Main(string[] args)
         {
-            //var ft232Device = FT232HDetector.Detect(closeDevice: false);
-            //if(ft232Device.Ok)
-            //{
-            //    System.Console.WriteLine(ft232Device.ToString());
-            //    foreach(var p in ft232Device.Properties) System.Console.WriteLine($"{p.Key}: {p.Value}");
-            //}
-            //var i2cDevice = new I2CDevice(ft232Device.ft232h, I2CDevice.ClockEnum.Clock300Khz_Divisor);
-            //OLED_SSD1306_Sample(i2cDevice);
-
-            /*
-            I2C
-            var i2cDevice2 = new I2CDevice2(ClockSpeeds.I2C_CLOCK_STANDARD_MODE_100Khz);
-            for(var i=0; i < 111; i++)
+            var ft232Device = FT232HDetector.Detect();
+            if (ft232Device.Ok)
             {
-                i2cDevice2.GpiosPlus.ProgressNext();
-                Thread.Sleep(555);
+                System.Console.WriteLine(ft232Device.ToString());
+                foreach (var p in ft232Device.Properties) System.Console.WriteLine($"{p.Key}: {p.Value}");
             }
             
+
+            var i2cDevice2 = new I2CDevice(I2CClockSpeeds.I2C_CLOCK_FAST_MODE_1_Mhz);
+            i2cDevice2.Gpios.Animate();
+
+            I2CSample_AdaFruit8x8LedMatrix(i2cDevice2);
+            return;
+
             //OLED_SSD1306_Sample(i2cDevice2);
-            MCP9808_TemperatureSensor_Sample(i2cDevice2);
-            */
+            //MCP9808_TemperatureSensor_Sample(i2cDevice2);
+
 
             /*
             const int APDS9960_ADDRESS = (0x39); 
@@ -68,18 +65,16 @@ namespace MadeInTheUSB.FT232H.Console
             //return;
 
             // MCP3088 and MAX7219 is limited to 10Mhz
-            var clockSpeed = SpiClockSpeeds._10Mhz ; // MpsseSpiConfig._30Mhz; // 
+            var clockSpeed = SpiClockSpeeds._2Mhz ; // MpsseSpiConfig._30Mhz; // 
             var ft232hGpioSpiDevice = new SpiDevice(clockSpeed);
-
             ft232hGpioSpiDevice.Log = !true;
-
             var spi                 = ft232hGpioSpiDevice.SPI;
             var gpios               = ft232hGpioSpiDevice.GPIO;
 
             //GpioSample(gpios, true);
             // CheetahBoosterDemo(gpios, false);
 
-            ADC_MCP3008Demo(spi, gpios);
+            //ADC_MCP3008Demo(spi, gpios);
             //MAX7219_SPI_8x8_Matrix(spi, gpios);
 
             /*const int fatLinkedListSectorCount = 10;
@@ -101,3 +96,4 @@ namespace MadeInTheUSB.FT232H.Console
         }
     }
 }
+

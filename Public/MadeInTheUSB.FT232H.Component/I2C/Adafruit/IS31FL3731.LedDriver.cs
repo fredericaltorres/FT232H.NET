@@ -104,9 +104,9 @@ namespace MadeInTheUSB.Adafruit
             }
         }
 
-        I2CDevice2 _i2cDevice;
+        I2CDevice _i2cDevice;
 
-        public IS31FL3731(I2CDevice2 i2cDevice, byte deviceId = ISSI_ADDR_DEFAULT, int width = 16, int height = 9) : base((Int16)width, (Int16)height)
+        public IS31FL3731(I2CDevice i2cDevice, byte deviceId = ISSI_ADDR_DEFAULT, int width = 16, int height = 9) : base((Int16)width, (Int16)height)
         {
             _i2cDevice = i2cDevice;
         }

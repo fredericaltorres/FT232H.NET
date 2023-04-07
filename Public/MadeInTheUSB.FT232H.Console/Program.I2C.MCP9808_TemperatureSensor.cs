@@ -18,7 +18,7 @@ namespace MadeInTheUSB.FT232H.Console
     {
         // MCP9808_TemperatureSensor
 
-        static void ADS1015_ADC_ADC(I2CDevice2 i2cDevice)
+        static void ADS1015_ADC_ADC(I2CDevice i2cDevice)
         {
 //            i2cDevice.I2C_SetLineStatesIdle();
             var adc = new ADS1015_ADC(i2cDevice);
@@ -66,7 +66,7 @@ namespace MadeInTheUSB.FT232H.Console
         }
         */
 
-        static void MCP9808_TemperatureSensor_Sample(I2CDevice2 i2cDevice)
+        static void MCP9808_TemperatureSensor_Sample(I2CDevice i2cDevice)
         {
             System.Console.Clear();
             ConsoleEx.TitleBar(0, "MCP9808 Temperature Sensor Demo", ConsoleColor.Yellow, ConsoleColor.DarkBlue);

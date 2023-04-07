@@ -125,7 +125,7 @@ namespace MadeInTheUSB.FT232H.Console
             Thread.Sleep(1000 * 2);
         }
 
-        static void I2C_Gpios(I2CDevice i2cDevice, IDigitalWriteRead gpios)
+        static void I2C_Gpios(I2CDevice_MPSSE_NotUsed i2cDevice, IDigitalWriteRead gpios)
         {
             var gpioPullUpIndex = 0;
             var gpioOutputIndex = 1;
@@ -142,7 +142,7 @@ namespace MadeInTheUSB.FT232H.Console
         }
 
 
-        static void APDS_9900_DigitalInfraredGestureSensor_Gesture(I2CDevice i2cDevice)
+        static void APDS_9900_DigitalInfraredGestureSensor_Gesture(I2CDevice_MPSSE_NotUsed i2cDevice)
         {
             var sensor = new APDS_9900_DigitalInfraredGestureSensor(i2cDevice, 0);
             if (sensor.begin())
@@ -174,7 +174,7 @@ namespace MadeInTheUSB.FT232H.Console
         }
 
 
-        static void APDS_9900_DigitalInfraredGestureSensor_Color(I2CDevice i2cDevice)
+        static void APDS_9900_DigitalInfraredGestureSensor_Color(I2CDevice_MPSSE_NotUsed i2cDevice)
         {
             var sensor = new APDS_9900_DigitalInfraredGestureSensor(i2cDevice, 0);
             if (sensor.begin())
@@ -207,7 +207,7 @@ namespace MadeInTheUSB.FT232H.Console
             }
         }
 
-        static void APDS_9900_DigitalInfraredGestureSensor_Proximity(I2CDevice i2cDevice)
+        static void APDS_9900_DigitalInfraredGestureSensor_Proximity(I2CDevice_MPSSE_NotUsed i2cDevice)
         {
             var sensor = new APDS_9900_DigitalInfraredGestureSensor(i2cDevice, 0);
             if (sensor.begin())
@@ -241,7 +241,7 @@ namespace MadeInTheUSB.FT232H.Console
             }
         }
 
-        static void OLED_SSD1306_Sample(I2CDevice2 i2cDevice)
+        static void OLED_SSD1306_Sample(I2CDevice i2cDevice)
         {
             var oled = new I2C_OLED_SSD1306(i2cDevice, 128 , 32);
             if (oled.Begin())

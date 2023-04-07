@@ -151,10 +151,10 @@ namespace MadeInTheUSB
         uint8_t LCount;
         uint8_t RCount;
 
-        I2CDevice _i2cDevice;
+        I2CDevice_MPSSE_NotUsed _i2cDevice;
         private readonly int _gpioInterrupt;
 
-        public APDS_9900_DigitalInfraredGestureSensor(I2CDevice i2cDevice, int gpioInterrupt)
+        public APDS_9900_DigitalInfraredGestureSensor(I2CDevice_MPSSE_NotUsed i2cDevice, int gpioInterrupt)
         {
             this._i2cDevice = i2cDevice;
             this._gpioInterrupt = gpioInterrupt;

@@ -135,7 +135,7 @@ namespace MadeInTheUSB.Display
 
         public static List<byte> PossibleI2COleAddress = new List<uint8_t>()  { 0x3C, 0x3D }; // 0x78, 
 
-        public I2C_OLED_SSD1306(I2CDevice2 i2cDevice, int width, int height, bool debug = false) : 
+        public I2C_OLED_SSD1306(I2CDevice i2cDevice, int width, int height, bool debug = false) : 
             base(i2cDevice, width, height, new List<uint8_t>() { (byte)SSD1306_API.SETSTARTLINE }, OledDriver.SSD1306)
         {
         }

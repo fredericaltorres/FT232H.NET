@@ -138,13 +138,13 @@ namespace MadeInTheUSB
         public const int RATE_ADS1115_860SPS = (0x00E0); ///< 860 samples per second
 
         public int DeviceID;
-        I2CDevice2 _i2cDevice;
+        I2CDevice _i2cDevice;
 
         uint8_t m_bitShift;            ///< bit shift amount
         adsGain_t m_gain;              ///< ADC gain
         uint16_t m_dataRate;           ///< Data rate
 
-        public ADS1015_ADC(I2CDevice2 i2cDevice, byte deviceId = ADS1X15_ADDRESS)
+        public ADS1015_ADC(I2CDevice i2cDevice, byte deviceId = ADS1X15_ADDRESS)
         {
             this._i2cDevice = i2cDevice;
 

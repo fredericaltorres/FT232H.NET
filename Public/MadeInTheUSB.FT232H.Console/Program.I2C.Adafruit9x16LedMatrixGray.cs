@@ -16,7 +16,7 @@ namespace MadeInTheUSB.FT232H.Console
     {
         static IS31FL3731 ledMatrix16x9;
 
-        static void I2CSample_Adafruit9x16LedMatrixGray(I2CDevice2 i2cDevice)
+        static void I2CSample_Adafruit9x16LedMatrixGray(I2CDevice i2cDevice)
         {
             ledMatrix16x9 = new IS31FL3731(i2cDevice);
             if (!ledMatrix16x9.Begin())

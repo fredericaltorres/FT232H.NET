@@ -73,11 +73,11 @@ namespace MadeInTheUSB
 
 
         public int DeviceID;
-        public I2CDevice _i2cDevice;
+        public I2CDevice_MPSSE_NotUsed _i2cDevice;
 
         private static List<int> I2C_IDS = new List<int>() { 0x27, 0x3F };
 
-        public static LiquidCrystal_I2C_PCF8574 Detect(I2CDevice i2cDevice, int maxColumn, int maxRow, 
+        public static LiquidCrystal_I2C_PCF8574 Detect(I2CDevice_MPSSE_NotUsed i2cDevice, int maxColumn, int maxRow, 
             List<int> i2cIDs = null,
             bool displayMessage = true)
         {
@@ -103,7 +103,7 @@ namespace MadeInTheUSB
             return null;
         }
 
-        public LiquidCrystal_I2C_PCF8574(I2CDevice i2cDevice, int cols, int rows, int deviceId = 0x27, bool debug = false, int backlight = LCD_NOBACKLIGHT) 
+        public LiquidCrystal_I2C_PCF8574(I2CDevice_MPSSE_NotUsed i2cDevice, int cols, int rows, int deviceId = 0x27, bool debug = false, int backlight = LCD_NOBACKLIGHT) 
         {
             NumCols       = (uint8_t)cols;
             NumLines      = (uint8_t)rows;
@@ -139,8 +139,8 @@ namespace MadeInTheUSB
 
         public override bool Begin(uint8_t cols, uint8_t lines, int16_t dotsize = -1)
         {
-            if (this._i2cDevice.ClockSpeed != I2CDevice.ClockEnum.Clock100Khz_Divisor)
-                throw new ArgumentException($"{this.GetType().FullName} requires I2C Clock:{I2CDevice.ClockEnum.Clock100Khz_Divisor}");
+            if (this._i2cDevice.ClockSpeed != I2CDevice_MPSSE_NotUsed.ClockEnum.Clock100Khz_Divisor)
+                throw new ArgumentException($"{this.GetType().FullName} requires I2C Clock:{I2CDevice_MPSSE_NotUsed.ClockEnum.Clock100Khz_Divisor}");
 
             var r = true;
 

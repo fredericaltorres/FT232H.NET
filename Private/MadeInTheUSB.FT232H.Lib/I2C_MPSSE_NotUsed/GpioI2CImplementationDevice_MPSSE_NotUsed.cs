@@ -1,13 +1,15 @@
 ﻿using System;
+using System.Security.AccessControl;
+using System.Threading;
 
 namespace MadeInTheUSB.FT232H
 {
-    public class GpioI2CImplementationDevice  : FT232HDeviceBaseClass, IDigitalWriteRead
+    public class GpioI2CImplementationDevice_MPSSE_NotUsed  : FT232HDeviceBaseClass, IDigitalWriteRead
     {
         private int _values;
         private int _directions;
 
-        public GpioI2CImplementationDevice (I2CDevice i2cDevice)
+        public GpioI2CImplementationDevice_MPSSE_NotUsed (I2CDevice_MPSSE_NotUsed i2cDevice)
         {
             base._i2cDevice = i2cDevice;
             this.GpioInit();
@@ -23,6 +25,21 @@ namespace MadeInTheUSB.FT232H
             //var v2 = i2cDevice.I2C_GetGPIOValuesLow();
             //var v1 = i2cDevice.I2C_GetGPIOValuesHigh();
         }
+
+        public void Animate()
+        {
+            var wait = 100;
+            this.AllGpios(false);
+            for (var i = 0; i < this.MaxGpio * 3; i++)
+            {
+                this.ProgressNext();
+                Thread.Sleep(wait);
+                wait -= 5;
+                if (wait < 10)
+                    wait = 10;
+            }
+        }
+
         private bool WriteGPIOMask(int directions, int values)
         {
             _values = values;

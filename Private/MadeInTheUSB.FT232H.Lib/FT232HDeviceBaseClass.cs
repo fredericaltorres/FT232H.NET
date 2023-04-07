@@ -14,7 +14,7 @@ namespace MadeInTheUSB.FT232H
     {
         internal static IntPtr _spiHandle = IntPtr.Zero;
         //internal static IntPtr                _i2cHandle = IntPtr.Zero;
-        protected I2CDevice _i2cDevice = null;
+        protected I2CDevice_MPSSE_NotUsed _i2cDevice = null;
         internal static SpiConfig _globalConfig;
         protected const int _maxGpio = 8;
         protected const int ValuesDefaultMask = 0;

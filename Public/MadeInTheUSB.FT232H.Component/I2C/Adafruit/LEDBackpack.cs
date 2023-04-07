@@ -95,10 +95,10 @@ namespace MadeInTheUSB.Adafruit
         private int _I2CDeviceId;
 
 
-        private readonly I2CDevice2 _i2CDevice;
+        private readonly I2CDevice _i2CDevice;
 
 
-        public LEDBackpack(I2CDevice2 i2cDevice, int16_t width, int16_t height): base(width, height)
+        public LEDBackpack(I2CDevice i2cDevice, int16_t width, int16_t height): base(width, height)
         {
             _i2CDevice = i2cDevice;
         }

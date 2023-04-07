@@ -66,14 +66,14 @@ namespace MadeInTheUSB
         protected const byte RegisterSelectMode = 1; // B00000001  // Register select bit
         protected const byte CommandMode = 0;
 
-        public I2CDevice _i2cDevice;
+        public I2CDevice_MPSSE_NotUsed _i2cDevice;
         public int DeviceId;
 
         public const int PCF8574_I2CADDR_DEFAULT = 0x20; ///< PCF8574 default I2C address
 
         uint8_t _readbuf = 0, _writebuf = 0;
 
-        public PCF8574(I2CDevice i2cDevice)
+        public PCF8574(I2CDevice_MPSSE_NotUsed i2cDevice)
         {
             _i2cDevice = i2cDevice;
         }

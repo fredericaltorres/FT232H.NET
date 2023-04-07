@@ -78,11 +78,45 @@ namespace MadeInTheUSB
         }
 
         /// <summary>
+        /// https://github.com/adafruit/Adafruit_Python_MCP3008/blob/master/Adafruit_MCP3008/MCP3008.py
+        /// </summary>
+        /// <param name="port"></param>
+        /// <param name="percentageAdjust"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
+
+        public int Read(int port, int percentageAdjust = -1)
+        {
+            if ((port > 7) || (port < 0))
+                throw new ArgumentException(string.Format("Invalid analog port {0}", port));
+
+            var command = 0b11 << 6;            //                  # Start bit, single channel read
+            command |= (port & 0x07) << 3;      //  # Channel number (in 3 bits)
+            
+            var bufferReceive = new byte[3] { 0, 0, 0 };
+            var bufferSend = new List<Byte>() { (byte)command, 0, 0  };
+
+            if (this._spi.Ok(this._spi.QueryReadWrite(bufferSend.ToArray(), bufferReceive)))
+            {
+
+                var r1 = new SPIResult().Succeed(bufferReceive.ToList());
+                // System.Console.WriteLine($"bufferOut: {bufferReceive[0]}, {bufferReceive[1]}, {bufferReceive[2]}");
+                var v = ValidateOperation(r1);
+                if (percentageAdjust != -1)
+                {
+                    v = v + (v * percentageAdjust / 100);
+                }
+                return v;
+            }
+            else return -1;
+        }
+
+        /// <summary>
         /// Read the value of one analog port using Nusbio spi/hardware acceleration.
         /// </summary>
         /// <param name="port"></param>
         /// <returns></returns>
-        public int Read(int port, int percentageAdjust = -1)
+        public int Read2(int port, int percentageAdjust = -1)
         {
             if ((port > 7) || (port < 0))
                 throw new ArgumentException(string.Format("Invalid analog port {0}", port));
@@ -95,8 +129,7 @@ namespace MadeInTheUSB
             if(this._spi.Ok(this._spi.QueryReadWrite(bufferSend.ToArray(), bufferReceive))) {
 
                 var r1 = new SPIResult().Succeed(bufferReceive.ToList());
-                // System.Console.WriteLine($"bufferOut: {bufferReceive[0]}, {bufferReceive[1]}, {bufferReceive[2]}");
-                var v = ValidateOperation(r1);
+                var v = ValidateOperation2(r1);
                 if(percentageAdjust != -1)
                 {
                     v = v + (v * percentageAdjust / 100);
@@ -116,7 +149,19 @@ namespace MadeInTheUSB
         {
             //var r2 = (((uint16_t)(result.Buffer[1] & 0x07)) << 8) | result.Buffer[2];
             //return r2;
+            if (result.OperationSucceeded && result.Buffer.Count == 3)
+            {
+                int r = (result.Buffer[0] & 0x01) << 9;
+                r |= (result.Buffer[1] & 0xFF) << 1;
+                r |= (result.Buffer[2] & 0x80) >> 7;
+                return r & 0x3FF;
+            }
+            else return -1;
+        }
 
+        private int ValidateOperation2(SPIResult result)
+        {
+            
             if (result.OperationSucceeded && result.Buffer.Count == 3)
             {
                 int r = 0;

@@ -71,11 +71,12 @@ namespace MadeInTheUSB.FT232H.Console
             var adc = new MCP3008(spi);
             var done = false;
             System.Console.Clear();
-            const double referenceVoltage = 3.3;
+            const double referenceVoltage = 5;
             while(!done)
             {
-//                gpios.ProgressNext();
-                for (var adcPort = 0; adcPort < 1; adcPort++)
+                System.Console.WriteLine("");
+                //                gpios.ProgressNext();
+                for (var adcPort = 0; adcPort < 3; adcPort++)
                 {
                     var adcValue = adc.Read(adcPort);
                     var voltageValue = adc.ComputeVoltage(referenceVoltage, adcValue);
@@ -90,7 +91,7 @@ namespace MadeInTheUSB.FT232H.Console
                         break;
                     }
                 }
-                Thread.Sleep(500);
+                Thread.Sleep(1000);
             }
         }
     }

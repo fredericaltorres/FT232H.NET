@@ -14,6 +14,7 @@ namespace MadeInTheUSB.FT232H
         void SetPullUp(int p, PinState d);
 
         void ProgressNext(bool clear = false);
+        void Animate();
     }
 
 }

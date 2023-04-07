@@ -81,9 +81,9 @@ namespace MadeInTheUSB
         public const double CELCIUS_TO_KELVIN = 274.15;
 
 
-        I2CDevice2 _i2cDevice;
+        I2CDevice _i2cDevice;
 
-        public MCP9808_TemperatureSensor(I2CDevice2 i2cDevice, byte deviceId = MCP9808_I2CADDR_DEFAULT, int waitTimeAfterWriteOperation = 5, bool debug = false)
+        public MCP9808_TemperatureSensor(I2CDevice i2cDevice, byte deviceId = MCP9808_I2CADDR_DEFAULT, int waitTimeAfterWriteOperation = 5, bool debug = false)
         {
             this._i2cDevice = i2cDevice;
         }

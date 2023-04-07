@@ -92,10 +92,10 @@ namespace MadeInTheUSB.Display
 
         private List<byte> _writeDisplayCommands = new List<byte>();
 
-        protected I2CDevice2 _i2cDevice;
+        protected I2CDevice _i2cDevice;
 
 
-        public I2C_OLED(I2CDevice2 i2cDevice, int width, int height,
+        public I2C_OLED(I2CDevice i2cDevice, int width, int height,
             List<byte> writeDisplayCommands,
             OledDriver driver = OledDriver.SSD1306, bool debug = false) : base((Int16)width, (Int16)height)
         {

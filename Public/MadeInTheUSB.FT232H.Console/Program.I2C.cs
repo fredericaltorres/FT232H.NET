@@ -18,11 +18,11 @@ namespace MadeInTheUSB.FT232H.Console
         static LEDBackpack _ledMatrix01;
         static MultiLEDBackpackManager _multiLEDBackpackManager;
 
-        static void I2CSample_AdaFruit8x8LedMatrix(I2CDevice2 i2cDevice)
+        static void I2CSample_AdaFruit8x8LedMatrix(I2CDevice i2cDevice)
         {
             _multiLEDBackpackManager = new MultiLEDBackpackManager();
-            _ledMatrix00 = _multiLEDBackpackManager.Add(i2cDevice, 8, 8, 0x70); // 0x70 Small One
-            //_ledMatrix01 = _multiLEDBackpackManager.Add(i2cDevice, 8, 8, 0x71);
+            //_ledMatrix00 = _multiLEDBackpackManager.Add(i2cDevice, 8, 8, 0x70); // 0x70 Small One
+            _ledMatrix00 = _multiLEDBackpackManager.Add(i2cDevice, 8, 8, 0x71);
 
             if(_ledMatrix00 != null)
             {
@@ -117,7 +117,7 @@ namespace MadeInTheUSB.FT232H.Console
         static void Animate()
         {
             int wait = 100;
-            int waitPixelDemo = 10;
+            int waitPixelDemo = 0;
             int maxRepeat = 5;
 
             DrawRoundRectDemo(wait, maxRepeat);
@@ -210,7 +210,7 @@ namespace MadeInTheUSB.FT232H.Console
 
         private static void DrawPixelDemo(int maxRepeat, int wait = 13)
         {
-            maxRepeat = 4;
+            maxRepeat = 2;
             ConsoleEx.Bar(0, 5, "DrawPixel Demo", ConsoleColor.Yellow, ConsoleColor.Red);
             for (byte rpt = 0; rpt < maxRepeat; rpt += 2)
             {
@@ -221,11 +221,8 @@ namespace MadeInTheUSB.FT232H.Console
                     for (var c = 0; c < _ledMatrix00.Width; c++)
                     {
                         _multiLEDBackpackManager.DrawPixel(r, c, true);
-                        if ((true) || (c % 2 != 0)) // Reduce the number of refresh and improve speed
-                        {
-                            _multiLEDBackpackManager.WriteDisplay();
-                            Thread.Sleep(wait);
-                        }
+                        _multiLEDBackpackManager.WriteDisplay();
+                        if(wait > 0) Thread.Sleep(wait);
                     }
                 }
             }

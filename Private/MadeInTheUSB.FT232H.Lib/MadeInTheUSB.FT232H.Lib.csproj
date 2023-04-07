@@ -58,13 +58,12 @@
     <Compile Include="Exception\SpiChannelNotConnectedException.cs" />
     <Compile Include="FT232HDeviceBaseClass.cs" />
     <Compile Include="FTDIDeviceInfo.cs" />
-    <Compile Include="I2C_2\I2C2DeviceGpio.cs" />
-    <Compile Include="I2C_2\I2CChannelNotConnectedException.cs" />
-    <Compile Include="I2C_2\I2CConfiguration.cs" />
-    <Compile Include="I2C_2\I2CDevice2.cs" />
-    <Compile Include="I2C\I2CDeviceGpio.cs" />
-    <Compile Include="I2C_2\I2CDeviceGpio.cs" />
-    <Compile Include="I2C_2\I2CModes.cs" />
+    <Compile Include="I2C\I2CGpioIImplementationDevice.cs" />
+    <Compile Include="I2C\I2CException.cs" />
+    <Compile Include="I2C\I2CConfiguration.cs" />
+    <Compile Include="I2C\I2CDevice.cs" />
+    <Compile Include="I2C_MPSSE_NotUsed\GpioI2CImplementationDevice_MPSSE_NotUsed.cs" />
+    <Compile Include="I2C\I2CClockSpeeds.cs" />
     <Compile Include="Interface\IDigitalWriteRead.cs" />
     <Compile Include="Interface\ISPI.cs" />
     <Compile Include="MPSSE\MpsseChannelConfiguration.cs" />
@@ -83,7 +82,7 @@
     <Compile Include="SPI\SpiConfigOptions.cs" />
     <Compile Include="SPI\GpioSpiDeviceBaseClass.gpio.cs" />
     <Compile Include="SPI\SpiDeviceBaseClass.spi.cs" />
-    <Compile Include="I2C\I2CDevice.cs" />
+    <Compile Include="I2C_MPSSE_NotUsed\I2CDevice_MPSSE_NotUsed.cs" />
     <Compile Include="Util\ConsoleEx.cs" />
     <Compile Include="Util\WinUtil.cs" />
   </ItemGroup>

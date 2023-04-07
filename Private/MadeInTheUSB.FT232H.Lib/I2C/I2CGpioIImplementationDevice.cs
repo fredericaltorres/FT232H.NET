@@ -1,14 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace MadeInTheUSB.FT232H
 {
-    public class GpioI2C2ImplementationDevice  : IDigitalWriteRead
+    public class I2CGpioIImplementationDevice  : IDigitalWriteRead
     {
         private int _values;
         private int _directions;
 
-        I2CDevice2 _i2cDevice;
+        I2CDevice _i2cDevice;
 
         protected const int _gpioStartIndex = 0;
         protected const int _maxGpio = 8;
@@ -25,7 +26,7 @@ namespace MadeInTheUSB.FT232H
             1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048
         };
 
-        public GpioI2C2ImplementationDevice(I2CDevice2 i2cDevice)
+        public I2CGpioIImplementationDevice(I2CDevice i2cDevice)
         {
             _i2cDevice = i2cDevice;
             this.GpioInit();
@@ -81,6 +82,21 @@ namespace MadeInTheUSB.FT232H
         {
             for (int i = 0; i < this.MaxGpio; i++)
                 this.DigitalWrite(i, on ? PinState.High : PinState.Low);
+        }
+
+        public void Animate()
+        {
+            var wait = 55;
+            this.AllGpios(false);
+            for (var i = 0; i < this.MaxGpio * 5; i++)
+            {
+                this.ProgressNext();
+                Thread.Sleep(wait);
+                wait -= 8;
+                if (wait < 8)
+                    wait = 8;
+            }
+            this.AllGpios(false);
         }
 
         static bool _progressModeInitialized = false;
