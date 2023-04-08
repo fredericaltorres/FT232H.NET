@@ -71,9 +71,9 @@ using MadeInTheUSB.FT232H;
 
 namespace MadeInTheUSB.Adafruit
 {
-
     /// <summary>
     /// https://learn.adafruit.com/adafruit-led-backpack/changing-i2c-address
+    /// HT16K33 https://cdn-shop.adafruit.com/datasheets/ht16K33v110.pdf
     /// </summary>
     public class LEDBackpack : Adafruit_GFX
     {
@@ -88,15 +88,15 @@ namespace MadeInTheUSB.Adafruit
         private const byte HT16K33_CMD_BRIGHTNESS = 0xE0;
         private const byte HT16K33_CMD_TURN_OSCILLATOR_ON = 0x21;
 
-        public const int _displayBufferRowCount = 8;
-        public byte[] _displayBuffer = new byte[_displayBufferRowCount];
+        public const int MAX_ROW = 8;
 
-
-        private int _I2CDeviceId;
-
-
+        private byte[] _displayBuffer = new byte[MAX_ROW];
+        private const byte DEFAULT_I2C_ADDRESS = 0x70;
+        /// <summary>
+        /// See datasheet section "Display Memory – RAM Structure"
+        /// </summary>
+        List<byte> HT16K33_CMD_WRITE_DISPLAY_START_ADDRESS = new List<byte>() { 0x00, 0x2, 0x4, 0x6, 0x8, 0xA, 0xC, 0xE };
         private readonly I2CDevice _i2CDevice;
-
 
         public LEDBackpack(I2CDevice i2cDevice, int16_t width, int16_t height): base(width, height)
         {
@@ -145,7 +145,7 @@ namespace MadeInTheUSB.Adafruit
         }
 
 
-        public bool Detect(byte addr = 0x70)
+        public bool Detect(byte addr = DEFAULT_I2C_ADDRESS)
         {
             try
             {
@@ -162,21 +162,21 @@ namespace MadeInTheUSB.Adafruit
             base.Rotation = (byte)v;
         }
 
-        public bool Begin(int addr = 0x70)
+        public bool Begin(int addr = DEFAULT_I2C_ADDRESS)
         {
             return this._begin((byte)addr);
         }
 
-        private bool _begin(byte addr = 0x70)
+        private bool _begin(byte addr )
         {
-            this._I2CDeviceId = addr;
+            //this._I2CDeviceId = addr;
 
             if (!this._i2CDevice.Write(HT16K33_CMD_TURN_OSCILLATOR_ON)) return false;
             //if (!this._i2CDevice.Send1ByteCommand(this._I2CDeviceId, HT16K33_CMD_TURN_OSCILLATOR_ON)) return false;
-
+            this.Clear(true);
             this.SetBlinkRate(HT16K33_BLINK_OFF);
             this.SetBrightness(5);
-            this.Clear(true);
+            
             return true;
         }
 
@@ -220,16 +220,15 @@ namespace MadeInTheUSB.Adafruit
         public void SetBlinkRate(byte b)
         {
             if (b > 3) b = 0; // turn off if not sure  
-            //if (!this._i2CDevice.Send1ByteCommand(this._I2CDeviceId, (byte)(HT16K33_BLINK_CMD | HT16K33_BLINK_DISPLAYON | (b << 1))))
             if (!this._i2CDevice.Write(HT16K33_BLINK_CMD | HT16K33_BLINK_DISPLAYON | (b << 1)))
-                    throw new I2CCommunicationException(DEFAULT_I2C_ERROR_MESSAGE);
+                throw new I2CCommunicationException(DEFAULT_I2C_ERROR_MESSAGE);
         }
 
-        public virtual void Clear(bool refresh = false)
+        public virtual void Clear(bool refresh = false, byte value = 0)
         {
-            for (var i = 0; i < 8; i++)
+            for (var i = 0; i < MAX_ROW; i++)
             {
-                _displayBuffer[i] = 0;
+                _displayBuffer[i] = value;
             }
             if (refresh)
                 this.WriteDisplay();
@@ -237,10 +236,9 @@ namespace MadeInTheUSB.Adafruit
 
         public bool WriteDisplay()
         {
-            var buf = new List<uint8_t>();
-            byte addr = 0; // Start of screen
-            buf.Add(addr);
-            for (var i = 0; i < 8; i++)
+            var buf = new List<byte>();
+            buf.Add(HT16K33_CMD_WRITE_DISPLAY_START_ADDRESS[0]);
+            for (var i = 0; i < MAX_ROW; i++)
             {
                 buf.Add((uint8_t)(_displayBuffer[i] & 0xFF));    // 8 bit of columns
                 buf.Add((uint8_t)(_displayBuffer[i] >> 8));
@@ -248,57 +246,21 @@ namespace MadeInTheUSB.Adafruit
             return this._i2CDevice.WriteBuffer(buf.ToArray());
         }
 
-
-        // //MadeInTheUSB.Components.Interface.Ii2cOut
-        //bool i2c_Send1ByteCommand(byte c)
+        //public bool WriteDisplay()
         //{
-        //    var AppStatus = _i2CDevice.I2C_SetStart();
-        //    if (AppStatus != 0) return false;
-
-        //    AppStatus = _i2CDevice.I2C_SendDeviceAddrAndCheckACK((byte)(this.DeviceId), false);     // I2C ADDRESS (for write)
-        //    if (AppStatus != 0) return false;
-        //    //if (_i2CDevice.I2C_Ack != true) { _i2CDevice.I2C_SetStop(); return false; }
-
-        //    AppStatus = _i2CDevice.I2C_SendByteAndCheckACK(c);
-        //    if (AppStatus != 0) return false;
-        //    if (_i2CDevice.I2C_Ack != true) { _i2CDevice.I2C_SetStop(); return false; }
-
-        //    AppStatus = _i2CDevice.I2C_SetStop();
-        //    if (AppStatus != 0) return false;
-
+        //    for (var i = 0; i < MAX_ROW; i++)
+        //        WriteLineDisplay(i);
         //    return true;
         //}
 
-        //bool i2c_Send2ByteCommand(byte c0, byte c1)
-        //{
-        //    throw new NotImplementedException();
-        //}
-
-        //bool i2c_WriteBuffer(byte[] buffer)
-        //{
-        //    var AppStatus = _i2CDevice.I2C_SetStart();
-        //    if (AppStatus != 0) return false;
-
-        //    AppStatus = _i2CDevice.I2C_SendDeviceAddrAndCheckACK((byte)(this.DeviceId), false);     // I2C ADDRESS (for write)
-        //    if (AppStatus != 0) return false;
-        //    if (_i2CDevice.I2C_Ack != true) { _i2CDevice.I2C_SetStop(); return false; }
-
-        //    foreach(var c in buffer) {
-        //        AppStatus = _i2CDevice.I2C_SendByteAndCheckACK(c);
-        //        if (AppStatus != 0) return false;
-        //        if (_i2CDevice.I2C_Ack != true) { _i2CDevice.I2C_SetStop(); return false; }
-        //    }
-
-        //    AppStatus = _i2CDevice.I2C_SetStop();
-        //    if (AppStatus != 0) return false;
-
-        //    return true;
-        //}
-
-        //bool i2c_WriteReadBuffer(byte[] writeBuffer, byte[] readBuffer)
-        //{
-        //    throw new NotImplementedException();
-        //}
+        public bool WriteLineDisplay(int row)
+        {
+            var buf = new List<byte>();
+            buf.Add(HT16K33_CMD_WRITE_DISPLAY_START_ADDRESS[row]);
+            buf.Add((uint8_t)(_displayBuffer[row] & 0xFF));
+            buf.Add((uint8_t)(_displayBuffer[row] >> 8));
+            return this._i2CDevice.WriteBuffer(buf.ToArray());
+        }
     }
 }
 

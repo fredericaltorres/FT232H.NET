@@ -44,7 +44,6 @@ namespace MadeInTheUSB.FT232H
 
             if (r.DeviceType == FTDI.FT_DEVICE.FT_DEVICE_232H)
             {
-                Console.WriteLine("aa");
             }
 
             if (ft232hDevice == null)

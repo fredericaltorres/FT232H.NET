@@ -27,10 +27,13 @@ namespace MadeInTheUSB.FT232H
         public IDigitalWriteRead Gpios = null;
         public I2CGpioIImplementationDevice GpiosPlus;
 
-        public I2CDevice(I2CClockSpeeds clockSpeed = I2CClockSpeeds.I2C_CLOCK_FAST_MODE_400Khz)
+        public bool HardwareProgressBarOn = false;
+
+        public I2CDevice(I2CClockSpeeds clockSpeed = I2CClockSpeeds.FAST_MODE_400Khz, bool hardwareProgressBarOn = false)
         {
             _clockSpeed = clockSpeed;
             this.Init();
+            HardwareProgressBarOn = hardwareProgressBarOn;
         }
 
         private bool __Init()
@@ -105,12 +108,19 @@ namespace MadeInTheUSB.FT232H
             throw new NotImplementedException();
         }
 
-        public bool WriteBuffer(byte[] array)
+        public void OnHardwareProgressBar()
         {
-            return Write(array);
+            if(HardwareProgressBarOn)
+                this.GpiosPlus.ProgressNext();
         }
 
-        public bool Write(byte[] array)
+        public bool WriteBuffer(byte[] array)
+        {
+            OnHardwareProgressBar();
+            return _write(array);
+        }
+
+        bool _write(byte[] array)
         {
             int writtenAmount;
 
@@ -124,6 +134,7 @@ namespace MadeInTheUSB.FT232H
 
         public bool Write(int value)
         {
+            this.OnHardwareProgressBar();
             var array = new byte[1];
             array[0] = Convert.ToByte(value);
             int writtenAmount;
@@ -174,7 +185,7 @@ BIT7 – BIT31: reserved
 
         public FtdiMpsseSPIResult Write(byte[] buffer, int sizeToTransfer, out int sizeTransfered, FtdiI2CTransferOptions options)
         {
-            return LibMpsse_AccessToCppDll.I2C_DeviceWrite(_handle, DeviceAddress, sizeToTransfer, buffer, out sizeTransfered, options);
+            return LibMpsse_AccessToCppDll.I2C_DeviceWrite(_handle, this.DeviceAddress, sizeToTransfer, buffer, out sizeTransfered, options);
         }
 
         public bool Write1ByteReadUInt16WithRetry(byte reg, UInt16 expected)
@@ -225,14 +236,14 @@ BIT7 – BIT31: reserved
 
         public FtdiMpsseSPIResult Read(byte[] buffer, int sizeToTransfer, out int sizeTransfered, FtdiI2CTransferOptions options)
         {
-            return LibMpsse_AccessToCppDll.I2C_DeviceRead(_handle, DeviceAddress, sizeToTransfer, buffer, out sizeTransfered, options);
+            return LibMpsse_AccessToCppDll.I2C_DeviceRead(_handle, this.DeviceAddress, sizeToTransfer, buffer, out sizeTransfered, options);
         }
 
         public bool Read(byte[] buffer)
         {
             int sizeTransfered = 0;
             var result = LibMpsse_AccessToCppDll.I2C_DeviceRead(
-                _handle, DeviceAddress,
+                _handle, this.DeviceAddress,
                 buffer.Length, buffer, out sizeTransfered, FtdiI2CTransferOptions.StartBit);
 
             CheckResult(result);
@@ -324,5 +335,3 @@ BIT7 – BIT31: reserved
         }
     }
 }
-
-

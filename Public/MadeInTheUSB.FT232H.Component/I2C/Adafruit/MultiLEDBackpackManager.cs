@@ -62,11 +62,8 @@ namespace MadeInTheUSB.Adafruit
             i2c.DeviceAddress = addr;
             var b = new LEDBackpack(i2c, width, height);
             if (b.Detect((byte)addr)) {
-                if (b.Begin(addr))
-                {
-                    this._backpacks.Add(b);
-                    return b;
-                }
+                this._backpacks.Add(b);
+                return b;
             }
             return null;
         }
@@ -114,16 +111,16 @@ namespace MadeInTheUSB.Adafruit
                 b.DrawPixel(x, y, color);
         }
 
-        public void AnimateSetBrightness(int maxRepeat, int onWaitTime = 20, int offWaitTime = 40, int maxBrigthness = 15) {
+        public void AnimateSetBrightness(int maxRepeat, int onWaitTime = 30, int offWaitTime = 60, int maxBrigthness = 12) {
 
-            for (byte rpt = 0; rpt < maxRepeat; rpt++)
+            for (var r = 0; r < maxRepeat; r++)
             {
-                for (var b = 0; b < maxBrigthness; b++)
+                for (var b = 0; b < maxBrigthness; b+=2)
                 {
                     this.SetBrightness(b);
                     TimePeriod.Sleep(onWaitTime);
                 }
-                for (var b = maxBrigthness; b >= 0; b--)
+                for (var b = maxBrigthness; b >= 0; b-=2)
                 {
                     this.SetBrightness(b);
                     TimePeriod.Sleep(offWaitTime);
@@ -144,16 +141,23 @@ namespace MadeInTheUSB.Adafruit
                 bp.SetBlinkRate(b);
         }
 
-        public void Clear(bool refresh = false)
+        public void Clear(bool refresh = false, byte value = 0x0)
         {
             foreach (var bp in this._backpacks)
-                bp.Clear(refresh);
+                bp.Clear(refresh, value);
         }
 
         public bool WriteDisplay()
         {
             foreach (var bp in this._backpacks)
                 bp.WriteDisplay();
+            return true;
+        }
+
+        public bool WriteLineDisplay(int row)
+        {
+            foreach (var bp in this._backpacks)
+                bp.WriteLineDisplay(row);
             return true;
         }
     }
