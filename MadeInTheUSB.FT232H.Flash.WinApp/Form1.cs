@@ -65,7 +65,6 @@ namespace MadeInTheUSB.FT232H.Flash.WinApp
                     this.ShowUser($"FT232H [{_ft232Device}]");
                     // MCP3088 and MAX7219 is limited to 10Mhz
                     var clockSpeed = this.rbMhz30.Checked ? SpiClockSpeeds._30Mhz : SpiClockSpeeds._10Mhz;
-                    clockSpeed = SpiClockSpeeds._16Mhz;
                     _gpioSpiDevice = new SpiDevice(clockSpeed);
                     _interfaces = _gpioSpiDevice.Interfaces;
                     return _gpioSpiDevice.Interfaces;
@@ -135,6 +134,7 @@ namespace MadeInTheUSB.FT232H.Flash.WinApp
                 else
                 {
                     this.ShowUser($"FLASH: Not detected");
+                    _flash = null;
                     return false;
                 }
             }
@@ -328,11 +328,11 @@ namespace MadeInTheUSB.FT232H.Flash.WinApp
 
             /// _flash.ErasePage(0, FlashMemory.ERASE_BLOCK_SIZE.BLOCK_64K);
 
-            for (var p = 30000; p < maxPage; p++)
+            for (var p = 51000; p < maxPage; p++)
             {
                 var totalWritten = p * _flash.PageSize;
                 if (p % 10 == 0)
-                    this.ShowState($"Writing page {p}/{maxPage},  {totalWritten / 1024}/{_flash.SizeInByte / 1024} kB");
+                    this.ShowState($"Writing page {p}/{maxPage},  {totalWritten/1024/1024.0:0.0}/{_flash.SizeInByte / 1024/1024.0:0.0} Mb");
 
                 _flash.WritePages(p * _flash.PageSize, BufferUtils.MakeBuffer(_flash.PageSize, asciValue), verify: !true, eraseBlock: true );
                 asciValue += 1;

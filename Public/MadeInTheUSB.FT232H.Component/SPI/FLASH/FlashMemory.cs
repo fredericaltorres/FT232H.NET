@@ -273,7 +273,7 @@ namespace MadeInTheUSB.FT232H.Components
                     if (!this.__WriteOnePage(address, buffer2))
                         return false;
                     Console.Write(".");
-                    var r = this.IsWriteRegisterEnable();
+                    ///////////var r = this.IsWriteRegisterEnable();
                 }
 
                 if (verify && buffer.Count <= MAX_BLOCK_SIZE)
