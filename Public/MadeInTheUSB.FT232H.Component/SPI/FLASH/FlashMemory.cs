@@ -114,7 +114,7 @@ namespace MadeInTheUSB.FT232H.Components
             }
         }
 
-        public void ReadIdentification(FLASH_DEVICE_ID deviceId = FLASH_DEVICE_ID.Undefined)
+        public bool ReadIdentification(FLASH_DEVICE_ID deviceId = FLASH_DEVICE_ID.Undefined)
         {
             if (deviceId != FLASH_DEVICE_ID.Undefined)
             {
@@ -166,6 +166,7 @@ namespace MadeInTheUSB.FT232H.Components
                 
                 }
             }
+            return this.SizeInByte > 0;
         }
 
         public int GetDeviceSizeInMb()

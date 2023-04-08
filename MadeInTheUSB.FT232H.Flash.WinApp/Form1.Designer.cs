@@ -184,14 +184,14 @@
             // fat12ReadDiskToolStripMenuItem
             // 
             this.fat12ReadDiskToolStripMenuItem.Name = "fat12ReadDiskToolStripMenuItem";
-            this.fat12ReadDiskToolStripMenuItem.Size = new System.Drawing.Size(146, 24);
+            this.fat12ReadDiskToolStripMenuItem.Size = new System.Drawing.Size(180, 24);
             this.fat12ReadDiskToolStripMenuItem.Text = "Read Disk";
             this.fat12ReadDiskToolStripMenuItem.Click += new System.EventHandler(this.fat12ReadDiskToolStripMenuItem_Click);
             // 
             // fat12WriteDiskToolStripMenuItem
             // 
             this.fat12WriteDiskToolStripMenuItem.Name = "fat12WriteDiskToolStripMenuItem";
-            this.fat12WriteDiskToolStripMenuItem.Size = new System.Drawing.Size(146, 24);
+            this.fat12WriteDiskToolStripMenuItem.Size = new System.Drawing.Size(180, 24);
             this.fat12WriteDiskToolStripMenuItem.Text = "Write Disk";
             this.fat12WriteDiskToolStripMenuItem.Click += new System.EventHandler(this.fat12WriteDiskToolStripMenuItem_Click);
             // 
@@ -301,7 +301,7 @@
             // chkUpdateFlash
             // 
             this.chkUpdateFlash.AutoSize = true;
-            this.chkUpdateFlash.Location = new System.Drawing.Point(180, 19);
+            this.chkUpdateFlash.Location = new System.Drawing.Point(233, 19);
             this.chkUpdateFlash.Name = "chkUpdateFlash";
             this.chkUpdateFlash.Size = new System.Drawing.Size(98, 17);
             this.chkUpdateFlash.TabIndex = 2;
@@ -311,7 +311,7 @@
             // rbMhz30
             // 
             this.rbMhz30.AutoSize = true;
-            this.rbMhz30.Location = new System.Drawing.Point(96, 19);
+            this.rbMhz30.Location = new System.Drawing.Point(152, 18);
             this.rbMhz30.Name = "rbMhz30";
             this.rbMhz30.Size = new System.Drawing.Size(60, 17);
             this.rbMhz30.TabIndex = 1;

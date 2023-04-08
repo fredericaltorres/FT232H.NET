@@ -51,12 +51,17 @@ namespace MadeInTheUSB.FT232H
         }
         public void Animate()
         {
+            var wait = 55;
             this.AllGpios(false);
-            for (var i = 0; i < this.MaxGpio * 3; i++)
+            for (var i = 0; i < this.MaxGpio * 5; i++)
             {
                 this.ProgressNext();
-                Thread.Sleep(25);
+                Thread.Sleep(wait);
+                wait -= 8;
+                if (wait < 8)
+                    wait = 8;
             }
+            this.AllGpios(false);
         }
         public void DigitalWrite(PinState mode, params int[] pins)
         {

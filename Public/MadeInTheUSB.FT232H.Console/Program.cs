@@ -20,19 +20,23 @@ namespace MadeInTheUSB.FT232H.Console
     {
         static void Main(string[] args)
         {
-            var ft232Device = FT232HDetector.Detect();
-            if (ft232Device.Ok)
-            {
-                System.Console.WriteLine(ft232Device.ToString());
-                foreach (var p in ft232Device.Properties) System.Console.WriteLine($"{p.Key}: {p.Value}");
-            }
+            //var ft232Device = FT232HDetector.Detect();
+            //if (ft232Device.Ok)
+            //{
+            //    System.Console.WriteLine(ft232Device.ToString());
+            //    foreach (var p in ft232Device.Properties) System.Console.WriteLine($"{p.Key}: {p.Value}");
+            //}
             
+            /*
+            I2C
 
-            var i2cDevice2 = new I2CDevice(I2CClockSpeeds.I2C_CLOCK_FAST_MODE_1_Mhz);
-            i2cDevice2.Gpios.Animate();
+            var i2cDevice = new I2CDevice(I2CClockSpeeds.I2C_CLOCK_FAST_MODE_1_Mhz);
+            i2cDevice.Gpios.Animate();
+            //I2CSample_Adafruit9x16LedMatrixGray(i2cDevice);
+            I2CSample_AdaFruit8x8LedMatrix(i2cDevice);
 
-            I2CSample_AdaFruit8x8LedMatrix(i2cDevice2);
             return;
+            */
 
             //OLED_SSD1306_Sample(i2cDevice2);
             //MCP9808_TemperatureSensor_Sample(i2cDevice2);
@@ -47,11 +51,11 @@ namespace MadeInTheUSB.FT232H.Console
             i2cDevice2.Read(buffer);
             var r = (buffer[0] == 0xAB);
             */
-
+            // I2CSample_AdaFruit8x8LedMatrix(i2cDevice2);
             //i2cDevice.Gpios.DigitalWrite(0, PinState.High);
             //i2cDevice.Gpios.DigitalWrite(i2cDevice.Gpios.MaxGpio-1, PinState.High);
             //I2CSample_AdaFruit8x8LedMatrix(i2cDevice2);
-            //I2CSample_Adafruit9x16LedMatrixGray(i2cDevice2);
+            
             //MCP9808_TemperatureSensor_Sample(i2cDevice2);
             //I2C_Gpios(i2cDevice, i2cDevice.Gpios);
 
@@ -65,17 +69,18 @@ namespace MadeInTheUSB.FT232H.Console
             //return;
 
             // MCP3088 and MAX7219 is limited to 10Mhz
-            var clockSpeed = SpiClockSpeeds._2Mhz ; // MpsseSpiConfig._30Mhz; // 
+            var clockSpeed = SpiClockSpeeds._10Mhz; // MpsseSpiConfig._30Mhz; // 
             var ft232hGpioSpiDevice = new SpiDevice(clockSpeed);
             ft232hGpioSpiDevice.Log = !true;
             var spi                 = ft232hGpioSpiDevice.SPI;
             var gpios               = ft232hGpioSpiDevice.GPIO;
+            gpios.Animate();
 
             //GpioSample(gpios, true);
             // CheetahBoosterDemo(gpios, false);
 
             //ADC_MCP3008Demo(spi, gpios);
-            //MAX7219_SPI_8x8_Matrix(spi, gpios);
+            MAX7219_SPI_8x8_Matrix(spi, gpios);
 
             /*const int fatLinkedListSectorCount = 10;
             const string volumeName = "fDrive.v01";

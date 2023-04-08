@@ -15,7 +15,8 @@ namespace MadeInTheUSB.FT232H.Console
     {
         static void MAX7219_SPI_8x8_Matrix(ISPI spi, IDigitalWriteRead gpios) 
         {
-            var matrix = new MAX_7219_SPI_8x8_Matrix(spi, MAX_7219_SPI_8x8_Matrix.MAX7219_WIRING_TO_8x8_LED_MATRIX.OriginBottomRightCorner, deviceCount:4);
+            var deviceCount = 1;
+            var matrix = new MAX_7219_SPI_8x8_Matrix(spi, MAX_7219_SPI_8x8_Matrix.MAX7219_WIRING_TO_8x8_LED_MATRIX.OriginBottomRightCorner, deviceCount: deviceCount);
             matrix.Begin();
             matrix.SetBrightness(1);
             System.Console.Clear();
@@ -37,7 +38,6 @@ namespace MadeInTheUSB.FT232H.Console
                     matrix.CopyToAll(deviceIndex, true);
                     Thread.Sleep(wait);
                     yy += 1;
-                    break;
                 }
                 Thread.Sleep(wait);
                 yy = 2;

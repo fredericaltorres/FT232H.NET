@@ -718,12 +718,11 @@ namespace MadeInTheUSB.FT232H.Components
             for (var row = 0; row < MATRIX_ROW_SIZE; row++)
             {
                 l.Clear();
-                // for (var deviceIndex = 0; deviceIndex < this.DeviceCount; deviceIndex++)
                 for (var deviceIndex = this.DeviceCount - 1; deviceIndex >= 0; deviceIndex--)
                 {
                     int offset = deviceIndex * MATRIX_ROW_SIZE;
                     l.Add(GetSetRowOpCode(row));         // OpCode
-                    l.Add(_pixels[offset + row]); // Data
+                    l.Add(_pixels[offset + row]);        // Data
                 }
                 var r = this.__SpiTransferBuffer(l);
             }

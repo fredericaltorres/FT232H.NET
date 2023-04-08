@@ -65,6 +65,7 @@ namespace MadeInTheUSB.FT232H.Flash.WinApp
                     this.ShowUser($"FT232H [{_ft232Device}]");
                     // MCP3088 and MAX7219 is limited to 10Mhz
                     var clockSpeed = this.rbMhz30.Checked ? SpiClockSpeeds._30Mhz : SpiClockSpeeds._10Mhz;
+                    clockSpeed = SpiClockSpeeds._16Mhz;
                     _gpioSpiDevice = new SpiDevice(clockSpeed);
                     _interfaces = _gpioSpiDevice.Interfaces;
                     return _gpioSpiDevice.Interfaces;
@@ -110,7 +111,7 @@ namespace MadeInTheUSB.FT232H.Flash.WinApp
         private void flashInfo_Click(object sender, EventArgs e)
         {
             DetectIfNeeded();
-            DetectFlashIfNeeded();
+            if (!DetectFlashIfNeeded()) return;
         }
 
         private void DetectIfNeeded()
@@ -121,15 +122,23 @@ namespace MadeInTheUSB.FT232H.Flash.WinApp
             }
         }
 
-        private void DetectFlashIfNeeded()
+        private bool DetectFlashIfNeeded()
         {
             if (_flash == null)
             {
                 _flash = new FlashMemory(this._interfaces.Spi);
-                _flash.ReadIdentification( );
-                this.ShowUser($"");
-                this.ShowUser($"FLASH: {_flash.GetDeviceInfo()}");
+                if(_flash.ReadIdentification())
+                {
+                    this.ShowUser($"FLASH: {_flash.GetDeviceInfo()}");
+                    return true;
+                }
+                else
+                {
+                    this.ShowUser($"FLASH: Not detected");
+                    return false;
+                }
             }
+            else return true;
         }
 
         private void ft232HDetect_Click(object sender, EventArgs e)
@@ -147,7 +156,7 @@ namespace MadeInTheUSB.FT232H.Flash.WinApp
         private void fat12WriteDiskToolStripMenuItem_Click(object sender, EventArgs e)
         {
             DetectIfNeeded();
-            DetectFlashIfNeeded();
+            if (!DetectFlashIfNeeded()) return;
 
             const int fatLinkedListSectorCount = 10;
             const string volumeName = "fDrive.v01";
@@ -176,7 +185,8 @@ namespace MadeInTheUSB.FT232H.Flash.WinApp
         private void fat12ReadDiskToolStripMenuItem_Click(object sender, EventArgs e)
         {
             DetectIfNeeded();
-            DetectFlashIfNeeded();
+            if (!DetectFlashIfNeeded()) return;
+
             var fDriveFS = new FDriveFAT12FileSystem();
 
             var buffer = new List<byte>();
@@ -265,29 +275,35 @@ namespace MadeInTheUSB.FT232H.Flash.WinApp
         private void readToolStripMenuItem_Click(object sender, EventArgs e)
         {
             DetectIfNeeded();
-            DetectFlashIfNeeded();
-            var buffer = new List<byte>();
-            this.ShowUser($"About to Read {_flash.MaxPage} pages");
+            if (!DetectFlashIfNeeded()) return;
 
-            var maxPage = Math.Min(256, _flash.MaxPage);
-            var pageBufferCount = 64; //  256 * 256  = 65536
+            var buffer = new List<byte>();
+
+            //var maxPage = Math.Min(6553, _flash.MaxPage);
+            var maxPage = _flash.MaxPage;
+            var pageBufferCount = 256; //  256 * 256  = 65536
+            this.ShowUser($"About to read {maxPage} pages, batchSize:{pageBufferCount* _flash.PageSize}");
+
+            var ph = new PerformanceHelper().Start();
 
             for (var p = 0; p < maxPage; p+= pageBufferCount)
             {
                 if (p % 10 == 0)
-                    this.ShowState($"Page {p}, {buffer.Count/1024} Kb loaded");
+                    this.ShowState($"{p} page loaded, {buffer.Count/1024/1024.0:0.0} Mb loaded");
                 var tmpBuffer = new List<byte>();
                 _flash.ReadPages(p * _flash.PageSize, pageBufferCount*_flash.PageSize, tmpBuffer);
                 buffer.AddRange(tmpBuffer);
-
                 this._interfaces.Gpios.ProgressNext();
             }
+            this.ShowUser($"Data read size:{buffer.Count}");
+            ph.AddByte(buffer.Count);
+            this.ShowUser($"Performance: {ph.GetResultInfo()}");
 
             var tmpFileName = Path.Combine(Path.GetTempPath(), Path.GetTempFileName());
-            File.WriteAllBytes(tmpFileName, buffer.ToArray());
+            File.WriteAllBytes(tmpFileName, buffer.ToArray().Take(1024*64).ToArray());
             this.ShowState($"Generating view...");
 
-            clearToolStripMenuItem_Click(null, null);
+            // clearToolStripMenuItem_Click(null, null);
 
             var bg = new BinaryToTextGenerator(tmpFileName);
             this.ShowUser(bg.Generate(new BinaryViewerOption { ShowSector = true, SectorSize = GetDisplaySectorSize() }));
@@ -304,7 +320,8 @@ namespace MadeInTheUSB.FT232H.Flash.WinApp
         private void writeToolStripMenuItem_Click(object sender, EventArgs e)
         {
             DetectIfNeeded();
-            DetectFlashIfNeeded();
+            if (!DetectFlashIfNeeded()) return;
+
             byte asciValue = 65;
             this.ShowUser($"About to write {_flash.MaxPage} pages");
             var maxPage = Math.Min(_flash.MaxPage, _flash.MaxPage);
@@ -331,7 +348,8 @@ namespace MadeInTheUSB.FT232H.Flash.WinApp
             if (MessageBox.Show("Do you want to erase the FLASH chip?", "Erase FLASH", MessageBoxButtons.YesNo) == DialogResult.Yes)
             {
                 DetectIfNeeded();
-                DetectFlashIfNeeded();
+                if (!DetectFlashIfNeeded()) return;
+
                 this.ShowUser($"About to erase chip ");
                 _flash.EraseFlash();
             }
@@ -345,7 +363,8 @@ namespace MadeInTheUSB.FT232H.Flash.WinApp
             if(fileName != null)
             {
                 DetectIfNeeded();
-                DetectFlashIfNeeded();
+                if (!DetectFlashIfNeeded()) return;
+
                 var fi = new FileInfo(fileName);
                 
                 var fileBuffer = File.ReadAllBytes(fileName).ToList();
