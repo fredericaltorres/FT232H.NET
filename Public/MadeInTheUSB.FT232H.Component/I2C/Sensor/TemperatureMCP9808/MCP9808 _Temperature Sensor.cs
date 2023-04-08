@@ -80,8 +80,8 @@ namespace MadeInTheUSB
 
         public const double CELCIUS_TO_KELVIN = 274.15;
 
-
         I2CDevice _i2cDevice;
+        public byte DeviceId;
 
         public MCP9808_TemperatureSensor(I2CDevice i2cDevice, byte deviceId = MCP9808_I2CADDR_DEFAULT, int waitTimeAfterWriteOperation = 5, bool debug = false)
         {
@@ -92,12 +92,12 @@ namespace MadeInTheUSB
         {
             try
             {
-                this._i2cDevice.DeviceAddress = deviceAddress;
+                this.DeviceId = deviceAddress;
                 //if (!this._i2cDevice.InitiateDetectionSequence(deviceAddress))
                 //    return false;
 
-                if (!this._i2cDevice.Write1ByteReadUInt16WithRetry(MCP9808_REG_MANUF_ID, MCP9808_REG_MANUF_ID_ANSWER)) return false;
-                if (!this._i2cDevice.Write1ByteReadUInt16WithRetry(MCP9808_REG_DEVICE_ID, MCP9808_REG_DEVICE_ID_ANSWER)) return false;
+                if (!this._i2cDevice.Write1ByteReadUInt16WithRetry(MCP9808_REG_MANUF_ID, MCP9808_REG_MANUF_ID_ANSWER, this.DeviceId)) return false;
+                if (!this._i2cDevice.Write1ByteReadUInt16WithRetry(MCP9808_REG_DEVICE_ID, MCP9808_REG_DEVICE_ID_ANSWER, this.DeviceId)) return false;
                 return true;
             }
             catch (System.Exception ex)
@@ -109,7 +109,7 @@ namespace MadeInTheUSB
 
         public double GetTemperature(TemperatureType type = TemperatureType.Celsius)
         {
-            uint16_t t = this._i2cDevice.Write1ByteReadUInt16(MCP9808_REG_AMBIENT_TEMP);
+            uint16_t t = this._i2cDevice.Write1ByteReadUInt16(MCP9808_REG_AMBIENT_TEMP, this.DeviceId);
             double temp = t & 0x0FFF;
             temp /= 16.0;
             if ((t & 0x1000) == 0x1000) temp -= 256;

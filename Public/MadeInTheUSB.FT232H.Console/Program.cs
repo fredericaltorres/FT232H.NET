@@ -10,6 +10,7 @@ using MadeInTheUSB.FT232H.Components.APA102;
 using MadeInTheUSB.FT232H.Components;
 using static MadeInTheUSB.FT232H.SpiConfig;
 using MadeInTheUSB.FT232H;
+using MadeInTheUSB.Adafruit;
 
 namespace MadeInTheUSB.FT232H.Console
 {
@@ -18,40 +19,12 @@ namespace MadeInTheUSB.FT232H.Console
     
     partial class Program
     {
-
-        static void I2CDemo()
-        {
-            System.Console.Clear();
-            System.Console.WriteLine("Detecting/Initializing device");
-            var i2cDevice = new I2CDevice(I2CClockSpeeds.FAST_MODE_1_Mhz, hardwareProgressBarOn: true);
-
-            System.Console.Clear();
-            ConsoleEx.TitleBar(0, "Nusbio /2 - FT232H Library", ConsoleColor.Yellow, ConsoleColor.DarkBlue);
-            ConsoleEx.TitleBar(1, "I 2 C   D e m o ", ConsoleColor.Yellow, ConsoleColor.DarkBlue);
-            System.Console.WriteLine("");
-
-            i2cDevice.Gpios.Animate();
-            //I2CSample_Adafruit9x16LedMatrixGray(i2cDevice);
-            I2CSample_AdaFruit8x8LedMatrix(i2cDevice);
-
-            // MCP9808_TemperatureSensor_Sample(i2cDevice);
-        }
-
-        private static ConsoleKeyInfo Pause(string message = null)
-        {
-            if(message != null)
-                System.Console.WriteLine(message);
-            System.Console.WriteLine("Hit space to continue");
-            return System.Console.ReadKey(true);
-        }
-
         static void Main(string[] args)
         {
             var ft232Device = FT232HDetector.Detect();
             if (ft232Device.Ok)
             {
                 Pause(ft232Device.ToString());
-                //foreach (var p in ft232Device.Properties) System.Console.WriteLine($"{p.Key}: {p.Value}");
             }
             else
             {
@@ -62,7 +35,7 @@ namespace MadeInTheUSB.FT232H.Console
             {
                 System.Console.Clear();
                 ConsoleEx.TitleBar(0, "Nusbio /2 - FT232H Library", ConsoleColor.Yellow, ConsoleColor.DarkBlue);
-                ConsoleEx.WriteMenu(0, 2, "I)2C Demo, S)PI Demo Q)uit");
+                ConsoleEx.WriteMenu(0, 2, "I)2C Demo, 2)I2C Multi Device Demo S)PI Demo Q)uit");
 
                 var k = System.Console.ReadKey(true);
                 if (k.Key == ConsoleKey.Q)
@@ -73,6 +46,10 @@ namespace MadeInTheUSB.FT232H.Console
                 if (k.Key == ConsoleKey.I)
                 {
                     I2CDemo();
+                }
+                if (k.Key == ConsoleKey.D2)
+                {
+                    I2CMultiDeviceDemo();
                 }
             }
 
@@ -148,6 +125,86 @@ namespace MadeInTheUSB.FT232H.Console
 
             // GpioSample(gpios, false);
 
+        }
+
+        private static void I2CMultiDeviceDemo()
+        {
+            System.Console.Clear();
+            System.Console.WriteLine("Detecting/Initializing device");
+            var i2cDevice = new I2CDevice(I2CClockSpeeds.FAST_MODE_1_Mhz, hardwareProgressBarOn: true);
+            i2cDevice.Log = true;
+
+            System.Console.Clear();
+            ConsoleEx.TitleBar(0, "Nusbio /2 - FT232H Library", ConsoleColor.Yellow, ConsoleColor.DarkBlue);
+            ConsoleEx.TitleBar(1, "I 2 C   Multi Device Demo", ConsoleColor.Yellow, ConsoleColor.DarkBlue);
+            ConsoleEx.WriteMenu(0, 2, "Q)uit");
+            System.Console.WriteLine("");
+
+            var ledBackPack8x8 = new LEDBackpack(i2cDevice, 8, 8);
+            var ledBackPack8x8MaskDefault = (byte)(1 + 4 + 16 + 64);
+            var ledBackPack8x8Mask = ledBackPack8x8MaskDefault;
+            if (!ledBackPack8x8.Detect(0x71))
+            {
+                ledBackPack8x8 = null;
+            }
+
+            var tempSensor = new MCP9808_TemperatureSensor(i2cDevice);
+            if (!tempSensor.Begin())
+            {
+                tempSensor = null;
+            }
+
+            while (true)
+            {
+                if(tempSensor != null)
+                {
+                    var FahrenheitTemp = tempSensor.GetTemperature(TemperatureType.Fahrenheit);
+                    var celciusTemp = tempSensor.GetTemperature(TemperatureType.Celsius);
+                    ConsoleEx.WriteLine($"[{DateTime.Now}] Temp:{FahrenheitTemp:0.00}F /  {celciusTemp:0.00}C", ConsoleColor.White);
+                }
+
+                if(ledBackPack8x8 != null)
+                {
+                    ledBackPack8x8.Clear(value: ledBackPack8x8Mask);
+                    ledBackPack8x8.WriteDisplay();
+                    ledBackPack8x8Mask = (byte)(ledBackPack8x8Mask << 1);
+                    if (ledBackPack8x8Mask == 0)
+                        ledBackPack8x8Mask = ledBackPack8x8MaskDefault;
+                }
+
+                if (System.Console.KeyAvailable)
+                {
+                    var k = System.Console.ReadKey(true);
+                    if(k.Key == ConsoleKey.Q) return;
+                }
+
+                Thread.Sleep(500);
+            }
+        }
+
+        static void I2CDemo()
+        {
+            System.Console.Clear();
+            System.Console.WriteLine("Detecting/Initializing device");
+            var i2cDevice = new I2CDevice(I2CClockSpeeds.FAST_MODE_1_Mhz, hardwareProgressBarOn: true);
+
+            System.Console.Clear();
+            ConsoleEx.TitleBar(0, "Nusbio /2 - FT232H Library", ConsoleColor.Yellow, ConsoleColor.DarkBlue);
+            ConsoleEx.TitleBar(1, "I 2 C   D e m o ", ConsoleColor.Yellow, ConsoleColor.DarkBlue);
+            System.Console.WriteLine("");
+
+            i2cDevice.Gpios.Animate();
+            //I2CSample_Adafruit9x16LedMatrixGray(i2cDevice);
+            I2CSample_AdaFruit8x8LedMatrix(i2cDevice);
+            MCP9808_TemperatureSensor_Sample(i2cDevice);
+        }
+
+        private static ConsoleKeyInfo Pause(string message = null)
+        {
+            if (message != null)
+                System.Console.WriteLine(message);
+            System.Console.WriteLine("Hit space to continue");
+            return System.Console.ReadKey(true);
         }
     }
 }

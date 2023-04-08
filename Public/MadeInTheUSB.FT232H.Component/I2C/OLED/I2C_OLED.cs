@@ -93,6 +93,7 @@ namespace MadeInTheUSB.Display
         private List<byte> _writeDisplayCommands = new List<byte>();
 
         protected I2CDevice _i2cDevice;
+        public byte Deviceid;
 
 
         public I2C_OLED(I2CDevice i2cDevice, int width, int height,
@@ -107,9 +108,9 @@ namespace MadeInTheUSB.Display
             this._writeDisplayCommands = writeDisplayCommands;
         }
 
-        public virtual void Begin(int deviceId, bool invert = false, uint8_t contrast = 128, uint8_t Vpp = 0)
+        public virtual void Begin(byte deviceId, bool invert = false, uint8_t contrast = 128, uint8_t Vpp = 0)
         {
-            this.DeviceId = deviceId;
+            this.Deviceid = deviceId;
         }
 
         public override void DrawPixel(size_t x, size_t y, uint16_t color)
@@ -134,7 +135,7 @@ namespace MadeInTheUSB.Display
                 
                 buffer2.AddRange(_writeDisplayCommands);
                 buffer2.AddRange(tmpBuffer);
-                this._i2cDevice.WriteBuffer(buffer2.ToArray());
+                this._i2cDevice.WriteBuffer(buffer2.ToArray(), this.Deviceid);
                 x += 1;
             }
         }
@@ -192,7 +193,7 @@ namespace MadeInTheUSB.Display
 
         protected void SendCommandOneByte(int command)
         {
-            this._i2cDevice.WriteBuffer(new List<byte>() { SH1106_COMMAND, (byte)command }.ToArray());
+            this._i2cDevice.WriteBuffer(new List<byte>() { SH1106_COMMAND, (byte)command }.ToArray(), this.Deviceid);
         }
         
         public void WriteString(int x, int y, string s, bool clearText = false)

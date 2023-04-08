@@ -39,6 +39,65 @@ namespace MadeInTheUSB.FT232H
         public string LogFile = @"c:\temp\spi.log";
         public bool Log = false;
 
+
+        public enum I2CTransactionType
+        {
+            READ,
+            WRITE,
+            ERROR,
+            WRITE_READ_START,
+            WRITE_READ_END,
+        }
+
+        public void LogI2CTransaction(I2CTransactionType transactionType, byte deviceId, byte[] bufferOut, byte[] bufferIn, string value = null, int recursiveCounter = 0)
+        {
+            if (this.Log)
+            {
+                var sb = new StringBuilder();
+
+                sb.Append($"[{DateTime.Now}]");
+                sb.Append($"IC2 ({transactionType.ToString().PadRight(17)}, 0x{deviceId:X})");
+
+                if(value != null)
+                {
+                    sb.Append($" VALUE:{value}");
+                }
+
+                if (bufferOut!= null && bufferOut.Length > 0)
+                {
+                    sb.Append("OUT:[");
+                    sb.Append(HexaString.ConvertTo(bufferOut, itemFormat: "{0}, "));
+                    sb.Append("]");
+                }
+
+                if (bufferIn != null && bufferIn.Length > 0)
+                {
+                    if (bufferOut != null && bufferOut.Length > 0)
+                    {
+                        sb.Append(", ");
+                    }
+
+                    sb.Append("IN: [");
+                    sb.Append(HexaString.ConvertTo(bufferIn, itemFormat: "{0}, "));
+                    sb.Append("]");
+                }
+
+                try
+                {
+                    File.AppendAllText(this.LogFile, sb.ToString() + Environment.NewLine);
+                }
+                catch (System.Exception ex)
+                {
+                    if (recursiveCounter == 0)
+                    {
+                        Thread.Sleep(11);
+                        LogSpiTransaction(bufferOut, bufferIn, recursiveCounter + 1);
+                    }
+                    else throw;
+                }
+            }
+        }
+
         public void LogSpiTransaction(byte[] bufferOut, byte[] bufferIn, int recursiveCounter = 0)
         {
             if (this.Log)
@@ -48,21 +107,21 @@ namespace MadeInTheUSB.FT232H
                 sb.Append($"[{DateTime.Now}]");
                 sb.Append("SPI_TRAN ");
 
-                if (bufferOut.Length > 0)
+                if (bufferOut != null && bufferOut.Length > 0)
                 {
                     sb.Append("OUT:[");
                     sb.Append(HexaString.ConvertTo(bufferOut, itemFormat: "{0}, "));
                     sb.Append("]");
                 }
 
-                if (bufferIn.Length > 0)
+                if (bufferIn != null && bufferIn.Length > 0)
                 {
-                    if (bufferOut.Length > 0)
+                    if (bufferOut != null && bufferOut.Length > 0)
                     {
                         sb.Append(", ");
                     }
 
-                    sb.Append("IN:[");
+                    sb.Append("IN: [");
                     sb.Append(HexaString.ConvertTo(bufferIn, itemFormat: "{0}, "));
                     sb.Append("]");
                 }

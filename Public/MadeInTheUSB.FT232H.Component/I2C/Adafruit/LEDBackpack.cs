@@ -98,6 +98,8 @@ namespace MadeInTheUSB.Adafruit
         List<byte> HT16K33_CMD_WRITE_DISPLAY_START_ADDRESS = new List<byte>() { 0x00, 0x2, 0x4, 0x6, 0x8, 0xA, 0xC, 0xE };
         private readonly I2CDevice _i2CDevice;
 
+        public byte DeviceId;
+
         public LEDBackpack(I2CDevice i2cDevice, int16_t width, int16_t height): base(width, height)
         {
             _i2CDevice = i2cDevice;
@@ -169,9 +171,8 @@ namespace MadeInTheUSB.Adafruit
 
         private bool _begin(byte addr )
         {
-            //this._I2CDeviceId = addr;
-
-            if (!this._i2CDevice.Write(HT16K33_CMD_TURN_OSCILLATOR_ON)) return false;
+            this.DeviceId = addr;
+            if (!this._i2CDevice.Write(HT16K33_CMD_TURN_OSCILLATOR_ON, this.DeviceId)) return false;
             //if (!this._i2CDevice.Send1ByteCommand(this._I2CDeviceId, HT16K33_CMD_TURN_OSCILLATOR_ON)) return false;
             this.Clear(true);
             this.SetBlinkRate(HT16K33_BLINK_OFF);
@@ -213,14 +214,14 @@ namespace MadeInTheUSB.Adafruit
         {
             if (b > 15) b = 15;
             this._brightness = b;
-            if (!this._i2CDevice.Write(HT16K33_CMD_BRIGHTNESS | b))
+            if (!this._i2CDevice.Write(HT16K33_CMD_BRIGHTNESS | b, this.DeviceId))
                 throw new I2CCommunicationException(DEFAULT_I2C_ERROR_MESSAGE);
         }
 
         public void SetBlinkRate(byte b)
         {
             if (b > 3) b = 0; // turn off if not sure  
-            if (!this._i2CDevice.Write(HT16K33_BLINK_CMD | HT16K33_BLINK_DISPLAYON | (b << 1)))
+            if (!this._i2CDevice.Write(HT16K33_BLINK_CMD | HT16K33_BLINK_DISPLAYON | (b << 1), this.DeviceId))
                 throw new I2CCommunicationException(DEFAULT_I2C_ERROR_MESSAGE);
         }
 
@@ -243,7 +244,7 @@ namespace MadeInTheUSB.Adafruit
                 buf.Add((uint8_t)(_displayBuffer[i] & 0xFF));    // 8 bit of columns
                 buf.Add((uint8_t)(_displayBuffer[i] >> 8));
             }
-            return this._i2CDevice.WriteBuffer(buf.ToArray());
+            return this._i2CDevice.WriteBuffer(buf.ToArray(), this.DeviceId);
         }
 
         //public bool WriteDisplay()
@@ -259,7 +260,7 @@ namespace MadeInTheUSB.Adafruit
             buf.Add(HT16K33_CMD_WRITE_DISPLAY_START_ADDRESS[row]);
             buf.Add((uint8_t)(_displayBuffer[row] & 0xFF));
             buf.Add((uint8_t)(_displayBuffer[row] >> 8));
-            return this._i2CDevice.WriteBuffer(buf.ToArray());
+            return this._i2CDevice.WriteBuffer(buf.ToArray(), this.DeviceId);
         }
     }
 }

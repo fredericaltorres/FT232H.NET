@@ -59,7 +59,6 @@ namespace MadeInTheUSB.Adafruit
 
         public LEDBackpack Add(I2CDevice i2c, int16_t  width, int16_t height, int addr)
         {
-            i2c.DeviceAddress = addr;
             var b = new LEDBackpack(i2c, width, height);
             if (b.Detect((byte)addr)) {
                 this._backpacks.Add(b);

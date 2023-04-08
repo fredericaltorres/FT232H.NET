@@ -137,7 +137,7 @@ namespace MadeInTheUSB
         public const int RATE_ADS1115_475SPS = (0x00C0); ///< 475 samples per second
         public const int RATE_ADS1115_860SPS = (0x00E0); ///< 860 samples per second
 
-        public int DeviceID;
+        public byte DeviceId;
         I2CDevice _i2cDevice;
 
         uint8_t m_bitShift;            ///< bit shift amount
@@ -157,7 +157,7 @@ namespace MadeInTheUSB
         {
             try
             {
-                this.DeviceID = deviceAddress;
+                this.DeviceId = deviceAddress;
                 //if (!this._i2cDevice.InitiateDetectionSequence(deviceAddress))
                 //    return false;
 
@@ -259,7 +259,7 @@ namespace MadeInTheUSB
             //    value = (System.UInt16)((buffer[0] << 8) + buffer[1]);
             //}
 
-            var r = this._i2cDevice.Write1ByteRead2Byte(reg);
+            var r = this._i2cDevice.Write1ByteReadUInt16(reg, this.DeviceId);
             return (UInt16)r;
         }
 
@@ -269,14 +269,14 @@ namespace MadeInTheUSB
             buffer[0] = reg;
             buffer[1] = (byte)(value >> 8);
             buffer[2] = (byte)(value & 0xFF);
-            return this._i2cDevice.WriteBuffer(buffer);
+            return this._i2cDevice.WriteBuffer(buffer, this.DeviceId);
         }
 
         uint16_t readRegister(uint8_t reg)
         {
             var buffer = new byte[1];
             buffer[0] = reg;
-            var r = this._i2cDevice.Write1ByteRead2Byte(reg);
+            var r = this._i2cDevice.Write1ByteReadUInt16(reg, this.DeviceId);
             return (uint16_t)r;
 
             //m_i2c_dev->write(buffer, 1);

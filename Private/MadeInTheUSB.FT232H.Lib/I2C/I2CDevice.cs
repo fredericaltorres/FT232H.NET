@@ -8,13 +8,13 @@ namespace MadeInTheUSB.FT232H
     /// <summary>
     /// https://ftdichip.com/wp-content/uploads/2020/08/AN_177_User_Guide_For_LibMPSSE-I2C.pdf
     /// </summary>
-    public class I2CDevice
+    public class I2CDevice : FT232HDeviceBaseClass
     {
         private static IntPtr _handle = IntPtr.Zero;
         private static SpiChannelConfig _currentGlobalConfig;
 
         private SpiChannelConfig _config;
-        public int DeviceAddress;
+        //public int DeviceAddress;
 
         private I2CConfiguration _i2cConfig;
 
@@ -114,25 +114,25 @@ namespace MadeInTheUSB.FT232H
                 this.GpiosPlus.ProgressNext();
         }
 
-        public bool WriteBuffer(byte[] array)
+        public bool WriteBuffer(byte[] array, int deviceId)
         {
             OnHardwareProgressBar();
-            return _write(array);
+            return WriteArray(array, deviceId);
         }
 
-        bool _write(byte[] array)
+        bool WriteArray(byte[] array, int deviceId)
         {
             int writtenAmount;
 
-            var result = Write(array, array.Length, out writtenAmount,
+            var result = _write(array, array.Length, out writtenAmount,
                 FtdiI2CTransferOptions.FastTransfer |
                 FtdiI2CTransferOptions.StartBit     | 
-                FtdiI2CTransferOptions.StopBit);
+                FtdiI2CTransferOptions.StopBit, (byte)deviceId);
 
             return result == FtdiMpsseSPIResult.Ok;
         }
 
-        public bool Write(int value)
+        public bool Write(int value, byte deviceId)
         {
             this.OnHardwareProgressBar();
             var array = new byte[1];
@@ -176,77 +176,99 @@ BIT7 – BIT31: reserved
 *The I2C_DeviceRead and I2C_DeviceWrite functions send commands to
 */
 
-            var result = Write(array, array.Length, out writtenAmount,
+            var result = _write(array, array.Length, out writtenAmount,
                 FtdiI2CTransferOptions.FastTransfer | 
-                FtdiI2CTransferOptions.StartBit | FtdiI2CTransferOptions.StopBit);
+                FtdiI2CTransferOptions.StartBit | FtdiI2CTransferOptions.StopBit, deviceId);
 
             return result == FtdiMpsseSPIResult.Ok;
         }
 
-        public FtdiMpsseSPIResult Write(byte[] buffer, int sizeToTransfer, out int sizeTransfered, FtdiI2CTransferOptions options)
+        public FtdiMpsseSPIResult _write(byte[] buffer, int sizeToTransfer, out int sizeTransfered, FtdiI2CTransferOptions options, byte deviceId)
         {
-            return LibMpsse_AccessToCppDll.I2C_DeviceWrite(_handle, this.DeviceAddress, sizeToTransfer, buffer, out sizeTransfered, options);
+            var result = LibMpsse_AccessToCppDll.I2C_DeviceWrite(_handle, deviceId, sizeToTransfer, buffer, out sizeTransfered, options);
+            if(result == FtdiMpsseSPIResult.Ok)
+                base.LogI2CTransaction(I2CTransactionType.WRITE, deviceId, buffer, null);
+            else
+                base.LogI2CTransaction(I2CTransactionType.ERROR, deviceId, null, null);
+
+            return result;
         }
 
-        public bool Write1ByteReadUInt16WithRetry(byte reg, UInt16 expected)
+        public bool Write1ByteReadUInt16WithRetry(byte reg, UInt16 expected, byte deviceId)
         {
-            if (this.Write1ByteReadUInt16(reg) == expected)
+            if (this.Write1ByteReadUInt16(reg, deviceId) == expected)
                 return true;
-            Thread.Sleep(10);
-            if (this.Write1ByteReadUInt16(reg) == expected)
+            Thread.Sleep(100);
+            if (this.Write1ByteReadUInt16(reg, deviceId) == expected)
                 return true;
             return false;
         }
 
-        public UInt16 Write1ByteReadUInt16(byte reg)
+        public UInt16 Write1ByteReadUInt16(byte reg, byte deviceId)
         {
-            this.Write(reg);
-            var buffer = this.ReadXByte(2);
+            base.LogI2CTransaction(I2CTransactionType.WRITE_READ_START, deviceId, null, null);
+            this.Write(reg, deviceId);
+            var buffer = this.ReadXByte(2, deviceId);
             var value = (buffer[0] << 8) + buffer[1];
+
+            base.LogI2CTransaction(I2CTransactionType.WRITE_READ_END, deviceId, null, null, value: $"UInt16:{value}");
+
             return (UInt16)value;
         }
-        public List<byte> ReadXByte(int count)
+
+
+        //public int Write1ByteRead2Byte(byte reg, byte deviceId)
+        //{
+        //    this.Write(reg, deviceId);
+        //    var buffer = this.ReadXByte(2, deviceId);
+        //    var value = (buffer[0] << 8) + buffer[1];2
+
+        //    return (UInt16)value;
+        //}
+
+        public List<byte> ReadXByte(int count, byte deviceId)
         {
             var buffer = new byte[count];
-            if (Read(buffer))
-            {
+            if (_read1(buffer, deviceId))
                 return buffer.ToList();
-            }
-            else return null;
+            else
+                return null;
         }
 
-        public int Read1Byte()
+        public int Read1Byte(byte deviceId)
         {
             var buffer = new byte[1];
-            if (Read(buffer))
+            if (_read1(buffer, deviceId))
             {
                 return buffer[0];
             }
             else return -1;
         }
 
-        public int Write1ByteRead2Byte(byte reg)
-        {
-            this.Write(reg);
-            var buffer = this.ReadXByte(2);
-            var value = (buffer[0] << 8) + buffer[1];
 
-            return (UInt16)value;
+        private FtdiMpsseSPIResult _read2(byte[] buffer, int sizeToTransfer, out int sizeTransfered, FtdiI2CTransferOptions options, byte deviceid)
+        {
+            var result = LibMpsse_AccessToCppDll.I2C_DeviceRead(_handle, deviceid, sizeToTransfer, buffer, out sizeTransfered, options);
+            CheckResult(result);
+            if (result == FtdiMpsseSPIResult.Ok)
+                base.LogI2CTransaction(I2CTransactionType.READ, deviceid, null, buffer);
+            else
+                base.LogI2CTransaction(I2CTransactionType.ERROR, deviceid, null, null);
+
+            return result;
         }
 
-        public FtdiMpsseSPIResult Read(byte[] buffer, int sizeToTransfer, out int sizeTransfered, FtdiI2CTransferOptions options)
-        {
-            return LibMpsse_AccessToCppDll.I2C_DeviceRead(_handle, this.DeviceAddress, sizeToTransfer, buffer, out sizeTransfered, options);
-        }
-
-        public bool Read(byte[] buffer)
+        private bool _read1(byte[] buffer, byte deviceId)
         {
             int sizeTransfered = 0;
-            var result = LibMpsse_AccessToCppDll.I2C_DeviceRead(
-                _handle, this.DeviceAddress,
-                buffer.Length, buffer, out sizeTransfered, FtdiI2CTransferOptions.StartBit);
+            var result = LibMpsse_AccessToCppDll.I2C_DeviceRead( _handle, deviceId, buffer.Length, buffer, out sizeTransfered, FtdiI2CTransferOptions.StartBit);
 
             CheckResult(result);
+            if(result == FtdiMpsseSPIResult.Ok)
+                base.LogI2CTransaction(I2CTransactionType.READ, deviceId, null, buffer);
+            else
+                base.LogI2CTransaction(I2CTransactionType.ERROR, deviceId, null, null);
+
             return result == FtdiMpsseSPIResult.Ok;
         }
 

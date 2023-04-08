@@ -81,7 +81,7 @@ namespace MadeInTheUSB.Adafruit
 
         public const int ISSI_PWM_REGISTER_LED0        = 0x24;
 
-        public int DeviceId;
+        public byte DeviceId;
 
         private int _frame;
         byte[,] _buffer = new byte[MAX_WIDTH, MAX_HEIGHT];
@@ -200,7 +200,7 @@ namespace MadeInTheUSB.Adafruit
             var l = new List<byte>();
             l.Add(command);
             l.AddRange(buffer);
-            return this._i2cDevice.WriteBuffer(l.ToArray());
+            return this._i2cDevice.WriteBuffer(l.ToArray(), this.DeviceId);
         }
 
         public void Fill(List<List<byte>> val)
@@ -295,7 +295,7 @@ namespace MadeInTheUSB.Adafruit
             if (_frame != b)
             {
                 _frame = b;
-                return this._i2cDevice.WriteBuffer(new byte[2] { (byte)ISSI_COMMANDREGISTER, (byte)b });
+                return this._i2cDevice.WriteBuffer(new byte[2] { (byte)ISSI_COMMANDREGISTER, (byte)b }, this.DeviceId);
             }
             else
                 return true;
@@ -337,7 +337,7 @@ namespace MadeInTheUSB.Adafruit
         {
             if (!this.SelectFrame(b)) return false;
             //return ((Ii2cOut)this).i2c_WriteBuffer(new byte[2] { (byte)reg, (byte)data });
-            return this._i2cDevice.WriteBuffer(new byte[2] { (byte)reg, (byte)data });
+            return this._i2cDevice.WriteBuffer(new byte[2] { (byte)reg, (byte)data }, this.DeviceId);
         }
     }
 
