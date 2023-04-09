@@ -1,30 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using System.Threading;
 
 namespace MadeInTheUSB.FT232H
 {
-
-    public class Interfaces
-    {
-        public IDigitalWriteRead Gpios;
-        public ISPI Spi;
-    }
-
-    public enum GpioMode
-    {
-        OUTPUT, 
-        INPUT,
-        INPUT_PULL_UP,
-    }
-
     /// <summary>
     /// Implement the IDigitalWriteRead for accessing the gpio 0..7 of the FT232H
     /// </summary>
-    public abstract partial class SpiDeviceBaseClass : FT232HDeviceBaseClass, IDisposable, IDigitalWriteRead, ISPI
+    public  partial class SpiDevice : FT232HDeviceBaseClass, IDisposable, IDigitalWriteRead, ISPI
     {
         private const int _gpioStartIndex = 0;
         private const int _maxGpio = 8;
@@ -34,7 +17,7 @@ namespace MadeInTheUSB.FT232H
         private int _values;
         private int _directions;
 
-        public Interfaces Interfaces => new Interfaces { Spi = this.SPI, Gpios = this.GPIO };
+        public ISpiInterfaces Interfaces => new ISpiInterfaces { Spi = this.SPI, Gpios = this.GPIO };
 
         public IDigitalWriteRead GPIO
         {

@@ -19,7 +19,7 @@ namespace MadeInTheUSB.FT232H.Console
         {
             var flash = new FlashMemory(spi);
             flash.ReadIdentification();
-            System.Console.WriteLine(flash.GetDeviceInfo());
+            System.Console.WriteLine(flash.GetInformation());
 
             var fDriveFS = new FDriveFAT12FileSystem(flash);
             fDriveFS.WriteFlashContentToLocalFile("flash.fat12.bin");
@@ -28,7 +28,7 @@ namespace MadeInTheUSB.FT232H.Console
         {
             var flash = new FlashMemory(spi);
             flash.ReadIdentification();
-            System.Console.WriteLine(flash.GetDeviceInfo());
+            System.Console.WriteLine(flash.GetInformation());
 
             var fDriveFS = new FDriveFAT12FileSystem(flash);
             fDriveFS.WriteFiles(files, volumeName, fatLinkedListSectorCount, updateFlash);
@@ -38,7 +38,7 @@ namespace MadeInTheUSB.FT232H.Console
         {
             var flash = new FlashMemory(spi);
             flash.ReadIdentification();
-            System.Console.WriteLine(flash.GetDeviceInfo());
+            System.Console.WriteLine(flash.GetInformation());
 
             var _64kAbdcString = PerformanceHelper.Get64kStringAbcd();
             var _64kAbdcBuffer = PerformanceHelper.GetAsciiBuffer(_64kAbdcString).ToList();

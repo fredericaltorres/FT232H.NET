@@ -90,15 +90,15 @@ namespace MadeInTheUSB.FT232H
                 {
                     if (recursiveCounter == 0)
                     {
-                        Thread.Sleep(11);
-                        LogSpiTransaction(bufferOut, bufferIn, recursiveCounter + 1);
+                        Thread.Sleep(111);
+                        LogI2CTransaction(transactionType, deviceId, bufferOut, bufferIn, value, recursiveCounter + 1);
                     }
                     else throw;
                 }
             }
         }
 
-        public void LogSpiTransaction(byte[] bufferOut, byte[] bufferIn, int recursiveCounter = 0)
+        public void LogSpiTransaction(byte[] bufferOut, byte[] bufferIn, string message = null, int recursiveCounter = 0)
         {
             if (this.Log)
             {
@@ -106,6 +106,11 @@ namespace MadeInTheUSB.FT232H
 
                 sb.Append($"[{DateTime.Now}]");
                 sb.Append("SPI_TRAN ");
+
+                if (message != null )
+                {
+                    sb.Append(message);
+                }
 
                 if (bufferOut != null && bufferOut.Length > 0)
                 {
@@ -134,8 +139,8 @@ namespace MadeInTheUSB.FT232H
                 {
                     if (recursiveCounter == 0)
                     {
-                        Thread.Sleep(11);
-                        LogSpiTransaction(bufferOut, bufferIn, recursiveCounter + 1);
+                        Thread.Sleep(111);
+                        LogSpiTransaction(bufferOut, bufferIn, message, recursiveCounter + 1);
                     }
                     else throw;
                 }

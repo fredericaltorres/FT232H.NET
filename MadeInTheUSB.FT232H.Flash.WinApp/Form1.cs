@@ -18,9 +18,9 @@ namespace MadeInTheUSB.FT232H.Flash.WinApp
 {
     public partial class Form1 : Form
     {
-        public Interfaces _interfaces;
+        public ISpiInterfaces _interfaces;
         FT232HDetectorInformation _ft232Device;
-        SpiDevice _gpioSpiDevice;
+        SpiDevice _spiDevice;
         FlashMemory _flash;
 
         public bool HardwareDetected => this._interfaces != null;
@@ -55,7 +55,7 @@ namespace MadeInTheUSB.FT232H.Flash.WinApp
             Application.DoEvents();
         }
 
-        public Interfaces DetectFT232H()
+        public ISpiInterfaces DetectFT232H()
         {
             if (_ft232Device == null)
             {
@@ -65,9 +65,10 @@ namespace MadeInTheUSB.FT232H.Flash.WinApp
                     this.ShowUser($"FT232H [{_ft232Device}]");
                     // MCP3088 and MAX7219 is limited to 10Mhz
                     var clockSpeed = this.rbMhz30.Checked ? SpiClockSpeeds._30Mhz : SpiClockSpeeds._10Mhz;
-                    _gpioSpiDevice = new SpiDevice(clockSpeed);
-                    _interfaces = _gpioSpiDevice.Interfaces;
-                    return _gpioSpiDevice.Interfaces;
+                    _spiDevice = new SpiDevice(clockSpeed);
+                    _spiDevice.Log = this.chkTraceProtocol.Checked;
+                    _interfaces = _spiDevice.Interfaces;
+                    return _spiDevice.Interfaces;
                 }
                 else
                 {
@@ -99,9 +100,6 @@ namespace MadeInTheUSB.FT232H.Flash.WinApp
             DetectIfNeeded();
             this.ShowUser($"");
 
-
-
-
             this.ShowUser($"FT232H Properties");
             foreach (var p in _ft232Device.Properties)
                 this.ShowUser($"    {p.Key}: {p.Value}");
@@ -128,7 +126,7 @@ namespace MadeInTheUSB.FT232H.Flash.WinApp
                 _flash = new FlashMemory(this._interfaces.Spi);
                 if(_flash.ReadIdentification())
                 {
-                    this.ShowUser($"FLASH: {_flash.GetDeviceInfo()}");
+                    this.ShowUser($"FLASH: {_flash.GetInformation()}");
                     return true;
                 }
                 else
@@ -268,7 +266,7 @@ namespace MadeInTheUSB.FT232H.Flash.WinApp
             _flash = new FlashMemory(this._interfaces.Spi);
             _flash.ReadIdentification(FlashMemory.FLASH_DEVICE_ID.EEPROM_25AA1024_128Kb);
             this.ShowUser($"");
-            this.ShowUser($"EEPROM: {_flash.GetDeviceInfo()}");
+            this.ShowUser($"EEPROM: {_flash.GetInformation()}");
             
         }
 

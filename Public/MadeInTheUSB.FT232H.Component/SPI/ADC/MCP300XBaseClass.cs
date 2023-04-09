@@ -96,7 +96,7 @@ namespace MadeInTheUSB
             var bufferReceive = new byte[3] { 0, 0, 0 };
             var bufferSend = new List<Byte>() { (byte)command, 0, 0  };
 
-            if (this._spi.Ok(this._spi.QueryReadWrite(bufferSend.ToArray(), bufferReceive)))
+            if (this._spi.Ok(this._spi.QueryReadWriteOneTransaction(bufferSend.ToArray(), bufferReceive)))
             {
 
                 var r1 = new SPIResult().Succeed(bufferReceive.ToList());
@@ -126,7 +126,7 @@ namespace MadeInTheUSB
             var bufferReceive  = new byte[3] { 0, 0, 0 };
             var bufferSend     = new List<Byte>() { 0x1, port2, junk };
 
-            if(this._spi.Ok(this._spi.QueryReadWrite(bufferSend.ToArray(), bufferReceive))) {
+            if(this._spi.Ok(this._spi.QueryReadWriteOneTransaction(bufferSend.ToArray(), bufferReceive))) {
 
                 var r1 = new SPIResult().Succeed(bufferReceive.ToList());
                 var v = ValidateOperation2(r1);

@@ -10,22 +10,13 @@ namespace MadeInTheUSB.FT232H.Components
     /// <summary>
     /// GOOD PDF ABOUT (MPSSE) Mhttp://www.ftdichip.com/Support/Documents/AppNotes/AN_135_MPSSE_Basics.pdf
     /// </summary>
-    public partial class FlashMemory //: GpioSpiDeviceBaseClass
+    public partial class FlashMemory
     {
         public int SizeInByte;
-        public int SizeInKByte => this.SizeInKByte / 1024;
-        public int SizeInMByte => this.SizeInKByte / 1024 / 1024;
-
-        
-
-        //const int READ_GPIO     = 0;
-        //const int WRITE_GPIO    = 1;
-
-        public bool TraceOn { get; set; } = false;
+        public int SizeInKByte => this.SizeInByte / 1024;
+        public int SizeInMByte => this.SizeInByte / 1024 / 1024;
 
         private readonly ISPI _spi;
-
-   
 
         public int MaxPage
         {
@@ -37,12 +28,6 @@ namespace MadeInTheUSB.FT232H.Components
             get { return this.SizeInByte / FlashMemory.MAX_BLOCK_SIZE; }
         }
 
-        private void Trace(string m)
-        {
-            if(this.TraceOn)
-                Debug.WriteLine(m);
-        }
-        
         public FlashMemory(ISPI spi) 
         {
             this._spi = spi;
@@ -146,7 +131,7 @@ namespace MadeInTheUSB.FT232H.Components
                         // Winbond specific
                         var spiBufferWrite = this.GenerateBuffer(FLASH_COMMAND.WINBOND_GET_INFO, 0);
                         var spiBufferRead = GetEepromApiDataBuffer(2);
-                        if (this._spi.Query(spiBufferWrite, spiBufferRead) == FtdiMpsseSPIResult.Ok)
+                        if (this._spi.QueryReadWriteTwoTransaction(spiBufferWrite, spiBufferRead) == FtdiMpsseSPIResult.Ok)
                         {
                             var isWinbond = (Manufacturers)(spiBufferRead[0]) == Manufacturers.Winbond;
                             var winBondDeviceId = (WINBOND_FLASH_DEVICE_ID)spiBufferRead[1];
@@ -163,28 +148,18 @@ namespace MadeInTheUSB.FT232H.Components
                             this.SizeInByte = 16 * 1024 * 1024;
                             break;
                     }
-                
                 }
             }
+            this._spi.LogSpiTransaction(null, null, message:$"SPI Device Flash: {this.GetInformation()}");
             return this.SizeInByte > 0;
         }
-
-        public int GetDeviceSizeInMb()
-        {
-            return SizeInByte / 1024 / 1024;
-        }
-
-        public int GetDeviceSizeInKb()
-        {
-            return SizeInByte / 1024;
-        }
-
-        public string GetDeviceInfo()
+                
+        public string GetInformation()
         {
             var sizeUnit = "Mb";
-            var size = this.GetDeviceSizeInMb();
+            var size = this.SizeInMByte;
             if (size == 0) {
-                size = this.GetDeviceSizeInKb();
+                size = this.SizeInKByte;
                 sizeUnit = "Kb";
             }
 
@@ -260,8 +235,6 @@ namespace MadeInTheUSB.FT232H.Components
                 else  throw new ArgumentException($"Cannot format flash length:{buffer.Count}, addr:{addr}");
             }
 
-            this.Trace($"WritePages addr:{addr}, Len:{buffer.Count}");
-
             var pageSize = ((int)this.PageSize);
             if (buffer.Count % pageSize == 0)
             {
@@ -294,8 +267,6 @@ namespace MadeInTheUSB.FT232H.Components
 
         private bool __WriteOnePage(int address, List<byte> buffer)
         {
-            this.Trace($"__WriteOnePage addr:{address}, Len:{buffer.Count}");
-
             if (!SetWriteRegisterEnable())
                 return false;
 
@@ -324,8 +295,6 @@ namespace MadeInTheUSB.FT232H.Components
 
         public bool ErasePage(int addr, ERASE_BLOCK_SIZE blockSize)
         {
-            this.Trace($"ErasePage addr:{addr}, BlockSize:{blockSize}");
-
             if ((addr % ((int)this.PageSize)) != 0)
                 throw new ArgumentException(string.Format("Address {0} must be a multiple of {1}", addr, this.GetProgramWritePageSize()));
 
@@ -361,7 +330,6 @@ namespace MadeInTheUSB.FT232H.Components
 
         private bool ReadBuffer(int address, int size, List<byte> buffer)
         {
-            this.Trace($"ReadPages addr:{address}, sieze:{size}");
             if (size > MAX_BLOCK_SIZE)
                 throw new ArgumentException($"ReadPage cannot read buffer size:{size}");
 
@@ -369,7 +337,7 @@ namespace MadeInTheUSB.FT232H.Components
             var spiBufferWrite = GetEepromApiReadBuffer(address);
             var spiBufferRead = GetEepromApiDataBuffer(size);
 
-            if (this._spi.Query(spiBufferWrite, spiBufferRead) == FtdiMpsseSPIResult.Ok)
+            if (this._spi.QueryReadWriteTwoTransaction(spiBufferWrite, spiBufferRead) == FtdiMpsseSPIResult.Ok)
             {
                 buffer.AddRange(spiBufferRead);
                 return true;

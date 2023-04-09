@@ -36,13 +36,11 @@ namespace MadeInTheUSB.FT232H.Components
 
         private bool SPIQuery(FLASH_COMMAND api, int answerLen, List<byte> buffer)
         {
-            this.Trace($"SPIQuery api:{api}");
-
             var spiBufferWrite = new byte[1];
             spiBufferWrite[0] = (byte)api;
             var tmpBuffer = this.GetEepromApiDataBuffer(answerLen);
 
-            if(this._spi.Query(spiBufferWrite, tmpBuffer) == FtdiMpsseSPIResult.Ok)
+            if(this._spi.QueryReadWriteTwoTransaction(spiBufferWrite, tmpBuffer) == FtdiMpsseSPIResult.Ok)
             {
                 buffer.Clear();
                 buffer.AddRange(tmpBuffer);
