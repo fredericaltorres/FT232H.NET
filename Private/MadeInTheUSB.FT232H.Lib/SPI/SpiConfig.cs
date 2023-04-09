@@ -34,21 +34,28 @@ namespace MadeInTheUSB.FT232H
 
         public bool IsChipSelect(SpiChipSelectPins cs)
         {
-            var cs2 = (FtdiMpsseSpiConfigOptions)cs;
-            return (this.spiConfigOptions & cs2) == cs2;
+            var n = MakeOptions(cs);
+            return this.spiConfigOptions == n;
         }
 
         public void ChangeChipSelect(SpiChipSelectPins cs)
         {
-            this.spiConfigOptions = FtdiMpsseSpiConfigOptions.Mode0 | FtdiMpsseSpiConfigOptions.CsActivelow | ((FtdiMpsseSpiConfigOptions)cs);
+            this.spiConfigOptions = MakeOptions(cs);
+        }
+
+        public static FtdiMpsseSpiConfigOptions MakeOptions(SpiChipSelectPins selectPin)
+        {
+            var r = FtdiMpsseSpiConfigOptions.Mode0 | FtdiMpsseSpiConfigOptions.CsActivelow | ((FtdiMpsseSpiConfigOptions)selectPin);
+            return r;
         }
 
         public static SpiConfig Init(SpiClockSpeeds clockRate, SpiChipSelectPins selectPin)
         {
-            var f = new SpiConfig {
+            var f = new SpiConfig 
+            {
                 ClockRate = (int)clockRate,
                 LatencyTimer = 10,
-                spiConfigOptions = FtdiMpsseSpiConfigOptions.Mode0 | FtdiMpsseSpiConfigOptions.CsActivelow | ((FtdiMpsseSpiConfigOptions)selectPin)
+                spiConfigOptions = MakeOptions(selectPin)
             };
             return f;
         }

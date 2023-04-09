@@ -177,7 +177,7 @@ namespace MadeInTheUSB.FT232H.Console
                 var tmpBuffer = new List<byte>();
                 flash.ReadPages(p * flash.PageSize, pageBufferCount * flash.PageSize, tmpBuffer);
                 buffer.AddRange(tmpBuffer);
-                var bufferRepr = HexaString.ConvertTo(buffer.ToArray(), max: 256);
+                var bufferRepr = HexaString.ConvertTo(buffer.ToArray(), max: 32, itemFormat:"{0}, ");
                 System.Console.WriteLine($"FLASH Page:{p}, Buffer:{bufferRepr}");
 
                 if (System.Console.KeyAvailable)
