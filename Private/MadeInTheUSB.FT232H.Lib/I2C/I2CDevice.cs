@@ -117,12 +117,14 @@ namespace MadeInTheUSB.FT232H
         public bool WriteBuffer(byte[] array, int deviceId)
         {
             OnHardwareProgressBar();
-            return WriteArray(array, deviceId);
+            return _write(array, deviceId);
         }
 
-        bool WriteArray(byte[] array, int deviceId)
+        bool _write(byte[] array, int deviceId)
         {
             int writtenAmount;
+
+            base.LogI2CTransaction(I2CTransactionType.WRITE, (byte)deviceId, array, null);
 
             var result = _write(array, array.Length, out writtenAmount,
                 FtdiI2CTransferOptions.FastTransfer |
@@ -187,10 +189,9 @@ BIT7 – BIT31: reserved
         {
             var result = LibMpsse_AccessToCppDll.I2C_DeviceWrite(_handle, deviceId, sizeToTransfer, buffer, out sizeTransfered, options);
             if(result == FtdiMpsseSPIResult.Ok)
-                base.LogI2CTransaction(I2CTransactionType.WRITE, deviceId, buffer, null);
+                base.LogI2CTransaction(I2CTransactionType.WRITE, deviceId, null, buffer);
             else
                 base.LogI2CTransaction(I2CTransactionType.ERROR, deviceId, null, null);
-
             return result;
         }
 
@@ -206,33 +207,25 @@ BIT7 – BIT31: reserved
 
         public UInt16 Write1ByteReadUInt16(byte reg, byte deviceId)
         {
-            base.LogI2CTransaction(I2CTransactionType.WRITE_READ_START, deviceId, null, null);
             this.Write(reg, deviceId);
             var buffer = this.ReadXByte(2, deviceId);
             var value = (buffer[0] << 8) + buffer[1];
-
-            base.LogI2CTransaction(I2CTransactionType.WRITE_READ_END, deviceId, null, null, value: $"UInt16:{value}");
-
             return (UInt16)value;
         }
-
-
-        //public int Write1ByteRead2Byte(byte reg, byte deviceId)
-        //{
-        //    this.Write(reg, deviceId);
-        //    var buffer = this.ReadXByte(2, deviceId);
-        //    var value = (buffer[0] << 8) + buffer[1];2
-
-        //    return (UInt16)value;
-        //}
 
         public List<byte> ReadXByte(int count, byte deviceId)
         {
             var buffer = new byte[count];
             if (_read1(buffer, deviceId))
+            {
+                base.LogI2CTransaction(I2CTransactionType.READ, deviceId, null, buffer);
                 return buffer.ToList();
+            }
             else
+            {
+                base.LogI2CTransaction(I2CTransactionType.ERROR, deviceId, null, null);
                 return null;
+            }
         }
 
         public int Read1Byte(byte deviceId)
@@ -245,6 +238,14 @@ BIT7 – BIT31: reserved
             else return -1;
         }
 
+        public int Write1ByteRead2Byte(byte reg, byte deviceId)
+        {
+            this.Write(reg, deviceId);
+            var buffer = this.ReadXByte(2, deviceId);
+            var value = (buffer[0] << 8) + buffer[1];
+
+            return (UInt16)value;
+        }
 
         private FtdiMpsseSPIResult _read2(byte[] buffer, int sizeToTransfer, out int sizeTransfered, FtdiI2CTransferOptions options, byte deviceid)
         {
