@@ -49,7 +49,7 @@ function DeleteFile([string]$file) {
 
 cls
 "MUSB Source Code Management Tool"
-$ROOT = "C:\DVT\MadeInTheUSB\FT232H.NET"
+$ROOT = "C:\DVT\FT232H.NET"
 cd "$ROOT"
 
 switch($action.ToLowerInvariant()) {
@@ -59,8 +59,8 @@ switch($action.ToLowerInvariant()) {
 
         #md "$ROOT\MadeInTheUSB.WebSite.Deployed"
         #DeleteFile "$ROOT\MUSB_FS.VC.db"
-        DeleteSubFolder(Get-ChildItem -path "$ROOT" -rec -Directory -Include obj,bin)
-        DeleteFiles(Get-ChildItem -path "$ROOT" -rec -File -Include *.sdf,*.ipch)
+        DeleteSubFolder(Get-ChildItem -Force -path "$ROOT" -rec -Directory -Include obj,bin)
+        DeleteFiles(Get-ChildItem -Force -path "$ROOT" -rec -File -Include *.sdf,*.ipch,*.db)
     }
     default { "invalid command line" }
 }

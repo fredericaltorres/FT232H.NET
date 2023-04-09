@@ -11,6 +11,9 @@ using MadeInTheUSB.FT232H.Components;
 using static MadeInTheUSB.FT232H.SpiConfig;
 using MadeInTheUSB.FT232H;
 using MadeInTheUSB.Adafruit;
+using BufferUtil;
+using System.IO;
+using BufferUtil.Lib;
 
 namespace MadeInTheUSB.FT232H.Console
 {
@@ -151,6 +154,14 @@ namespace MadeInTheUSB.FT232H.Console
             ConsoleEx.WriteMenu(0, 2, "Q)uit");
             System.Console.WriteLine("");
 
+            var flash = new FlashMemory(spi, SpiChipSelectPins.CsDbus3);
+            flash.ReadIdentification();
+            System.Console.WriteLine(flash.GetInformation());
+            var maxPage = flash.MaxPage;
+            var pageBufferCount = 256; //  256 * 256 = 65536kb buffer
+            var buffer = new List<byte>();
+            var p = 0;
+
             var adc = new MCP3008(spi, SpiChipSelectPins.CsDbus4);
             const double referenceVoltage = 3.3;
 
@@ -162,6 +173,12 @@ namespace MadeInTheUSB.FT232H.Console
                     var voltageValue = adc.ComputeVoltage(referenceVoltage, adcValue);
                     System.Console.WriteLine($"ADC [{adcPort}] = {adcValue}, voltage:{voltageValue}");
                 }
+
+                var tmpBuffer = new List<byte>();
+                flash.ReadPages(p * flash.PageSize, pageBufferCount * flash.PageSize, tmpBuffer);
+                buffer.AddRange(tmpBuffer);
+                var bufferRepr = HexaString.ConvertTo(buffer.ToArray(), max: 256);
+                System.Console.WriteLine($"FLASH Page:{p}, Buffer:{bufferRepr}");
 
                 if (System.Console.KeyAvailable)
                 {

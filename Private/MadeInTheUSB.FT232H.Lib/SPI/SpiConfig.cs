@@ -32,6 +32,17 @@ namespace MadeInTheUSB.FT232H
         public int Pin;
         public short reserved;
 
+        public bool IsChipSelect(SpiChipSelectPins cs)
+        {
+            var cs2 = (FtdiMpsseSpiConfigOptions)cs;
+            return (this.spiConfigOptions & cs2) == cs2;
+        }
+
+        public void ChangeChipSelect(SpiChipSelectPins cs)
+        {
+            this.spiConfigOptions = FtdiMpsseSpiConfigOptions.Mode0 | FtdiMpsseSpiConfigOptions.CsActivelow | ((FtdiMpsseSpiConfigOptions)cs);
+        }
+
         public static SpiConfig Init(SpiClockSpeeds clockRate, SpiChipSelectPins selectPin)
         {
             var f = new SpiConfig {

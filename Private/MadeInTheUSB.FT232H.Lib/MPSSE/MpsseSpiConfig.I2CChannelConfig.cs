@@ -2,7 +2,7 @@
 
 namespace MadeInTheUSB.FT232H
 {
-    public partial struct SpiConfig
+    public partial struct MpsseSpiConfig
     {
         [StructLayout(LayoutKind.Sequential)]
         public struct I2CChannelConfig
