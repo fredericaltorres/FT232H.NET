@@ -17,7 +17,7 @@ namespace MadeInTheUSB.FT232H.Console
     {
         static void FlashMemoryWriteFlashContentToLocalFile(ISPI spi)
         {
-            var flash = new FlashMemory(spi);
+            var flash = new FlashMemory(spi, SpiChipSelectPins.CsDbus3);
             flash.ReadIdentification();
             System.Console.WriteLine(flash.GetInformation());
 
@@ -26,7 +26,7 @@ namespace MadeInTheUSB.FT232H.Console
         }
         static void FlashMemoryWriteFDriveFileSystem(ISPI spi, List<string> files, int fatLinkedListSectorCount, string volumeName, bool updateFlash)
         {
-            var flash = new FlashMemory(spi);
+            var flash = new FlashMemory(spi, SpiChipSelectPins.CsDbus3);
             flash.ReadIdentification();
             System.Console.WriteLine(flash.GetInformation());
 
@@ -36,7 +36,7 @@ namespace MadeInTheUSB.FT232H.Console
 
         static void FlashMemorySample(ISPI spi)
         {
-            var flash = new FlashMemory(spi);
+            var flash = new FlashMemory(spi, SpiChipSelectPins.CsDbus3);
             flash.ReadIdentification();
             System.Console.WriteLine(flash.GetInformation());
 

@@ -86,7 +86,7 @@ namespace MadeInTheUSB.FT232H.Components
         public Int32 BytesSentOutCounter = 0;
 
         ISPI _spi;
-
+        private readonly SpiChipSelectPins _cs;
         static List<object> __CHAR_TABLE = new List<object>() {
 
              " " ,3, 8, "B00000000", "B00000000", "B00000000", "B00000000", "B00000000", // space
@@ -329,10 +329,10 @@ namespace MadeInTheUSB.FT232H.Components
         * csPin		pin for selecting the device 
         * deviceCount	maximum number of devices that can be controled
         */
-        public MAX7219(ISPI spi, int deviceCount = 1, Int16 width = 8, Int16 height = 8) : base(width, height)
+        public MAX7219(ISPI spi, SpiChipSelectPins cs, int deviceCount = 1, Int16 width = 8, Int16 height = 8) : base(width, height)
         {
             this._spi = spi;
-
+            this._cs = cs;
             if (deviceCount <= 0 || deviceCount > MAX_MAX7219_CHAINABLE)
                 deviceCount = MAX_MAX7219_CHAINABLE;
 
@@ -1052,7 +1052,7 @@ namespace MadeInTheUSB.FT232H.Components
             var r = new SPIResult();
             BytesSentOutCounter += buffer.Count;
 
-            if(this._spi.Write(buffer.ToArray())== FtdiMpsseSPIResult.Ok)
+            if(this._spi.Write(buffer.ToArray(), this._cs)== FtdiMpsseSPIResult.Ok)
                 return r.Succeed();
             else
                 return r.Failed();

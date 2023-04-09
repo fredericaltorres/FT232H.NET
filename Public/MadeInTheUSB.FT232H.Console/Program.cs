@@ -36,7 +36,8 @@ namespace MadeInTheUSB.FT232H.Console
                 System.Console.Clear();
                 ConsoleEx.TitleBar(0, "Nusbio /2 - FT232H Library", ConsoleColor.Yellow, ConsoleColor.DarkBlue);
                 ConsoleEx.WriteMenu(0, 2, "I)2C Demo   2)I2C Multi Device Demo   S)PI Demo");
-                ConsoleEx.WriteMenu(0, 3, "Q)uit");
+                ConsoleEx.WriteMenu(0, 3, "S)PI Demo   3)SPI Multi Device Demo");
+                ConsoleEx.WriteMenu(0, 4, "Q)uit");
 
                 var k = System.Console.ReadKey(true);
                 if (k.Key == ConsoleKey.Q)
@@ -51,6 +52,10 @@ namespace MadeInTheUSB.FT232H.Console
                 if (k.Key == ConsoleKey.D2)
                 {
                     I2CMultiDeviceDemo();
+                }
+                if (k.Key == ConsoleKey.D3)
+                {
+                    SPIMultiDeviceDemo();
                 }
             }
 
@@ -125,7 +130,47 @@ namespace MadeInTheUSB.FT232H.Console
             //Api102RgbLedSample(spi);
 
             // GpioSample(gpios, false);
+        }
 
+
+        private static void SPIMultiDeviceDemo()
+        {
+            System.Console.Clear();
+            System.Console.WriteLine("Detecting/Initializing device");
+
+            var clockSpeed = SpiClockSpeeds._10Mhz; // MpsseSpiConfig._30Mhz; // 
+            var ft232hGpioSpiDevice = new SpiDevice(clockSpeed, SpiChipSelectPins.CsDbus4);
+            ft232hGpioSpiDevice.Log = true;
+            var spi = ft232hGpioSpiDevice.SPI;
+            var gpios = ft232hGpioSpiDevice.GPIO;
+            gpios.Animate();
+
+            System.Console.Clear();
+            ConsoleEx.TitleBar(0, "Nusbio /2 - FT232H Library", ConsoleColor.Yellow, ConsoleColor.DarkBlue);
+            ConsoleEx.TitleBar(1, "S PI   Multi Device Demo", ConsoleColor.Yellow, ConsoleColor.DarkBlue);
+            ConsoleEx.WriteMenu(0, 2, "Q)uit");
+            System.Console.WriteLine("");
+
+            var adc = new MCP3008(spi, SpiChipSelectPins.CsDbus4);
+            const double referenceVoltage = 3.3;
+
+            while (true)
+            {
+                for (var adcPort = 0; adcPort < 1; adcPort++)
+                {
+                    var adcValue = adc.Read(adcPort);
+                    var voltageValue = adc.ComputeVoltage(referenceVoltage, adcValue);
+                    System.Console.WriteLine($"ADC [{adcPort}] = {adcValue}, voltage:{voltageValue}");
+                }
+
+                if (System.Console.KeyAvailable)
+                {
+                    var k = System.Console.ReadKey(true);
+                    if (k.Key == ConsoleKey.Q) return;
+                }
+
+                Thread.Sleep(500);
+            }
         }
 
         private static void I2CMultiDeviceDemo()

@@ -30,8 +30,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="BufferUtil.Lib, Version=1.0.3.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\BufferUtil.Lib.1.0.3\lib\netstandard2.0\BufferUtil.Lib.dll</HintPath>
+    <Reference Include="BufferUtil.Lib, Version=1.0.4.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\BufferUtil.Lib.1.0.4\lib\netstandard2.0\BufferUtil.Lib.dll</HintPath>
     </Reference>
     <Reference Include="DynamicSugar, Version=0.2.5.0, Culture=neutral, PublicKeyToken=e8dd8df5156875e2, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>

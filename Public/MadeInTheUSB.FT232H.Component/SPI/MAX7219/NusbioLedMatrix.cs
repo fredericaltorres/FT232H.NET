@@ -74,20 +74,20 @@ namespace MadeInTheUSB.FT232H.Components
         public const int DEFAULT_BRIGTHNESS_DEMO = 2;
 
         public MAX_7219_SPI_8x8_Matrix(
-            ISPI spi,
+            ISPI spi, SpiChipSelectPins cs,
             MAX7219_WIRING_TO_8x8_LED_MATRIX max7219Wiring,
             int deviceCount = 1) :
-            base(spi,  deviceCount)
+            base(spi, cs, deviceCount)
         {
             this.MAX7219Wiring = max7219Wiring;
         }
 
         public static MAX_7219_SPI_8x8_Matrix Initialize(
-            ISPI spi,
+            ISPI spi, SpiChipSelectPins cs,
             MAX7219_WIRING_TO_8x8_LED_MATRIX MAX7218Wiring,
             int deviceCount)
         {
-            var matrix = new MAX_7219_SPI_8x8_Matrix(spi, MAX7218Wiring, deviceCount: deviceCount);
+            var matrix = new MAX_7219_SPI_8x8_Matrix(spi, cs, MAX7218Wiring, deviceCount: deviceCount);
             matrix.Begin(DEFAULT_BRIGTHNESS_DEMO);
             return matrix;
         }

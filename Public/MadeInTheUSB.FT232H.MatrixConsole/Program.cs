@@ -686,7 +686,7 @@ namespace MadeInTheUSB.FT232H.MatrixConsole
                 var origin = NusbioMatrix.MAX7219_WIRING_TO_8x8_LED_MATRIX.OriginBottomRightCorner;
 #endif
 
-            var matrix = MAX_7219_SPI_8x8_Matrix.Initialize(ft232HSpiDevice.SPI, origin, matrixChainedCount);
+            var matrix = MAX_7219_SPI_8x8_Matrix.Initialize(ft232HSpiDevice.SPI, SpiChipSelectPins.CsDbus3, origin, matrixChainedCount);
 
 
             while (true)

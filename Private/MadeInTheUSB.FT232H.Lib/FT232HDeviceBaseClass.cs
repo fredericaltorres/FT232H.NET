@@ -40,6 +40,8 @@ namespace MadeInTheUSB.FT232H
         public bool Log = false;
 
 
+        public static int LogTransactionBufferMaxLength = 1024;
+
         public enum I2CTransactionType
         {
             READ,
@@ -55,8 +57,8 @@ namespace MadeInTheUSB.FT232H
             {
                 var sb = new StringBuilder();
 
-                sb.Append($"[{DateTime.Now}]");
-                sb.Append($"IC2 ({transactionType.ToString().PadRight(17)}, 0x{deviceId:X})");
+                sb.Append($"[{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff")}]");
+                sb.Append($"IC2 {transactionType.ToString().PadRight(17)}, 0x{deviceId:X}");
 
                 if(value != null)
                 {
@@ -66,7 +68,7 @@ namespace MadeInTheUSB.FT232H
                 if (bufferOut!= null && bufferOut.Length > 0)
                 {
                     sb.Append("OUT:[");
-                    sb.Append(HexaString.ConvertTo(bufferOut, itemFormat: "{0}, "));
+                    sb.Append(HexaString.ConvertTo(bufferOut, itemFormat: "{0}, ", max: LogTransactionBufferMaxLength));
                     sb.Append("]");
                 }
 
@@ -78,7 +80,7 @@ namespace MadeInTheUSB.FT232H
                     }
 
                     sb.Append("IN: [");
-                    sb.Append(HexaString.ConvertTo(bufferIn, itemFormat: "{0}, "));
+                    sb.Append(HexaString.ConvertTo(bufferIn, itemFormat: "{0}, ", max: LogTransactionBufferMaxLength));
                     sb.Append("]");
                 }
 
@@ -104,7 +106,7 @@ namespace MadeInTheUSB.FT232H
             {
                 var sb = new StringBuilder();
 
-                sb.Append($"[{DateTime.Now}]");
+                sb.Append($"[{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff")}]");
                 sb.Append("SPI_TRAN ");
 
                 if (message != null )
@@ -115,7 +117,7 @@ namespace MadeInTheUSB.FT232H
                 if (bufferOut != null && bufferOut.Length > 0)
                 {
                     sb.Append("OUT:[");
-                    sb.Append(HexaString.ConvertTo(bufferOut, itemFormat: "{0}, "));
+                    sb.Append(HexaString.ConvertTo(bufferOut, itemFormat: "{0}, ", max: LogTransactionBufferMaxLength));
                     sb.Append("]");
                 }
 
@@ -127,7 +129,7 @@ namespace MadeInTheUSB.FT232H
                     }
 
                     sb.Append("IN: [");
-                    sb.Append(HexaString.ConvertTo(bufferIn, itemFormat: "{0}, "));
+                    sb.Append(HexaString.ConvertTo(bufferIn, itemFormat: "{0}, ", max: LogTransactionBufferMaxLength));
                     sb.Append("]");
                 }
 

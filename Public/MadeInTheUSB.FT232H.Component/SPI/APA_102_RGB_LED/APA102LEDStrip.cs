@@ -101,6 +101,7 @@ namespace MadeInTheUSB.FT232H.Components.APA102
         public List<Color> LedColors;
 
         ISPI _spi;
+        private readonly SpiChipSelectPins _cs;
 
         public APA102LEDStrip SetColor(byte brightness, Color color)
         {
@@ -143,9 +144,10 @@ namespace MadeInTheUSB.FT232H.Components.APA102
             }
         }
 
-        public APA102LEDStrip(int ledCount, ISPI spi)
+        public APA102LEDStrip(int ledCount, ISPI spi, SpiChipSelectPins cs)
         {
             this._spi = spi;
+            this._cs = cs;
             this._brightness = MAX_BRIGHTNESS / 3;
             this.MaxLed      = ledCount;
             this.Init();
@@ -343,7 +345,7 @@ namespace MadeInTheUSB.FT232H.Components.APA102
 
         private void Transfer(params byte[] buffer)
         {
-            this._spi.Write(buffer);
+            this._spi.Write(buffer, this._cs);
         }
 
         public static Color Wheel(int wheelPos)

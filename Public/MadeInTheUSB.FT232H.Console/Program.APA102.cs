@@ -18,11 +18,11 @@ namespace MadeInTheUSB.FT232H.Console
         /// APA 102 use a compatible SPI protocol with no CS and MISO, just CLOCK and MOSI.
         /// </summary>
         /// <param name="spi"></param>
-        static void Api102RgbLedSample(ISPI spi)
+        static void Api102RgbLedSample(ISPI spi, SpiChipSelectPins cs)
         {
             var brightness = APA102LEDStrip.MAX_BRIGHTNESS / 3 * 2;
             var wait       = 100;
-            var api102     = new APA102LEDStrip(1, spi);
+            var api102     = new APA102LEDStrip(1, spi, cs);
             var done       = false;
             while(!done)
             {

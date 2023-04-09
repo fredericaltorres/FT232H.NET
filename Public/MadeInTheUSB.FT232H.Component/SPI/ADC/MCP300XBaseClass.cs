@@ -53,7 +53,7 @@ namespace MadeInTheUSB
     public class MCP300XBaseClass
     {
         private ISPI _spi;
-
+        private readonly SpiChipSelectPins _cs;
         public int MaxAdConverter = 8;
 
         /// <summary>
@@ -71,9 +71,10 @@ namespace MadeInTheUSB
             0x0F // ADC Channel 7
         };
         
-        public MCP300XBaseClass(int maxADConverter, ISPI spi) 
+        public MCP300XBaseClass(int maxADConverter, ISPI spi, SpiChipSelectPins cs) 
         {
             this._spi = spi;
+            this._cs = cs;
             this.MaxAdConverter = maxADConverter;
         }
 
@@ -96,7 +97,7 @@ namespace MadeInTheUSB
             var bufferReceive = new byte[3] { 0, 0, 0 };
             var bufferSend = new List<Byte>() { (byte)command, 0, 0  };
 
-            if (this._spi.Ok(this._spi.QueryReadWriteOneTransaction(bufferSend.ToArray(), bufferReceive)))
+            if (this._spi.Ok(this._spi.QueryReadWriteOneTransaction(bufferSend.ToArray(), bufferReceive, this._cs)))
             {
 
                 var r1 = new SPIResult().Succeed(bufferReceive.ToList());
@@ -126,7 +127,7 @@ namespace MadeInTheUSB
             var bufferReceive  = new byte[3] { 0, 0, 0 };
             var bufferSend     = new List<Byte>() { 0x1, port2, junk };
 
-            if(this._spi.Ok(this._spi.QueryReadWriteOneTransaction(bufferSend.ToArray(), bufferReceive))) {
+            if(this._spi.Ok(this._spi.QueryReadWriteOneTransaction(bufferSend.ToArray(), bufferReceive, this._cs))) {
 
                 var r1 = new SPIResult().Succeed(bufferReceive.ToList());
                 var v = ValidateOperation2(r1);

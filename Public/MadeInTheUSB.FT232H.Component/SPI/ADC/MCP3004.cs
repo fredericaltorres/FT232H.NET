@@ -44,9 +44,8 @@ namespace MadeInTheUSB
 {
     public class MCP3004 : MCP300XBaseClass
     {
-        public MCP3004(ISPI spi) : base(4, spi)
+        public MCP3004(ISPI spi, SpiChipSelectPins cs) : base(4, spi, cs)
         {
         }
     }
 }
-

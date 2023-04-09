@@ -52,7 +52,7 @@ namespace MadeInTheUSB
     /// </summary>
     public class MCP3008 : MCP300XBaseClass
     {
-        public MCP3008(ISPI spi) : base(8, spi)
+        public MCP3008(ISPI spi, SpiChipSelectPins cs) : base(8, spi, cs)
         {
         }
     }

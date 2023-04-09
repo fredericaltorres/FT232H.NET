@@ -20,7 +20,8 @@ namespace MadeInTheUSB.FT232H
         private bool                        _isDisposed;
         private MpsseChannelConfiguration   _ftdiMpsseChannelConfig;
 
-        public SpiDevice(SpiClockSpeeds clockSpeed) : this(SpiConfig.BuildSPI(clockSpeed), null)
+        public SpiDevice(SpiClockSpeeds clockSpeed, SpiChipSelectPins chipSelect = SpiChipSelectPins.CsDbus3) : 
+            this(SpiConfig.BuildSPI(clockSpeed, chipSelect), null)
         {
             this.GpioInit();
         }
@@ -102,26 +103,26 @@ namespace MadeInTheUSB.FT232H
             return r;
         }
 
-        public FtdiMpsseSPIResult Write(byte[] buffer)
+        public FtdiMpsseSPIResult Write(byte[] buffer, SpiChipSelectPins cs)
         {
             int sizeTransfered = 0;
             return _write(buffer, buffer.Length, out sizeTransfered, FtdiSpiTransferOptions.ToogleChipSelect);
         }
 
-        public FtdiMpsseSPIResult QueryReadWriteOneTransaction(byte [] bufferSent, byte [] bufferReceived)
+        public FtdiMpsseSPIResult QueryReadWriteOneTransaction(byte [] bufferSent, byte [] bufferReceived, SpiChipSelectPins cs)
         {
             var r = _readWriteOneTransaction(bufferSent, bufferReceived, FtdiSpiTransferOptions.ToogleChipSelect);
             return r;
         }
 
-        public FtdiMpsseSPIResult Read(byte[] buffer)
+        public FtdiMpsseSPIResult Read(byte[] buffer, SpiChipSelectPins cs)
         {
             int sizeTransfered;
             var r = _read(buffer, buffer.Length, out sizeTransfered, FtdiSpiTransferOptions.ToogleChipSelect);
             return r;
         }        
 
-        public FtdiMpsseSPIResult QueryReadWriteTwoTransaction(byte [] bufferSent, byte [] bufferReceived)
+        public FtdiMpsseSPIResult QueryReadWriteTwoTransaction(byte [] bufferSent, byte [] bufferReceived, SpiChipSelectPins cs)
         {
             int byteSent = 0;
             var ec = this._write(bufferSent, bufferSent.Length, out byteSent, FtdiSpiTransferOptions.ChipselectEnable);

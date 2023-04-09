@@ -16,7 +16,7 @@ namespace MadeInTheUSB.FT232H.Console
         static void MAX7219_SPI_8x8_Matrix(ISPI spi, IDigitalWriteRead gpios) 
         {
             var deviceCount = 1;
-            var matrix = new MAX_7219_SPI_8x8_Matrix(spi, MAX_7219_SPI_8x8_Matrix.MAX7219_WIRING_TO_8x8_LED_MATRIX.OriginBottomRightCorner, deviceCount: deviceCount);
+            var matrix = new MAX_7219_SPI_8x8_Matrix(spi, SpiChipSelectPins.CsDbus3, MAX_7219_SPI_8x8_Matrix.MAX7219_WIRING_TO_8x8_LED_MATRIX.OriginBottomRightCorner, deviceCount: deviceCount);
             matrix.Begin();
             matrix.SetBrightness(1);
             System.Console.Clear();
@@ -68,7 +68,7 @@ namespace MadeInTheUSB.FT232H.Console
         /// <param name="spi"></param>
         static void ADC_MCP3008Demo(ISPI spi, IDigitalWriteRead gpios)
         {
-            var adc = new MCP3008(spi);
+            var adc = new MCP3008(spi, SpiChipSelectPins.CsDbus3);
             var done = false;
             System.Console.Clear();
             const double referenceVoltage = 5;

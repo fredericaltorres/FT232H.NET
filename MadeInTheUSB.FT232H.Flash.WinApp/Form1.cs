@@ -123,7 +123,7 @@ namespace MadeInTheUSB.FT232H.Flash.WinApp
         {
             if (_flash == null)
             {
-                _flash = new FlashMemory(this._interfaces.Spi);
+                _flash = new FlashMemory(this._interfaces.Spi, SpiChipSelectPins.CsDbus3);
                 if(_flash.ReadIdentification())
                 {
                     this.ShowUser($"FLASH: {_flash.GetInformation()}");
@@ -263,7 +263,7 @@ namespace MadeInTheUSB.FT232H.Flash.WinApp
         private void eEPROM25AA1024ToolStripMenuItem_Click(object sender, EventArgs e)
         {
             DetectIfNeeded();
-            _flash = new FlashMemory(this._interfaces.Spi);
+            _flash = new FlashMemory(this._interfaces.Spi, SpiChipSelectPins.CsDbus3);
             _flash.ReadIdentification(FlashMemory.FLASH_DEVICE_ID.EEPROM_25AA1024_128Kb);
             this.ShowUser($"");
             this.ShowUser($"EEPROM: {_flash.GetInformation()}");
