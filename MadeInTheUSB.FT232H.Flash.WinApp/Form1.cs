@@ -328,13 +328,13 @@ namespace MadeInTheUSB.FT232H.Flash.WinApp
 
             /// _flash.ErasePage(0, FlashMemory.ERASE_BLOCK_SIZE.BLOCK_64K);
 
-            for (var p = 51000; p < maxPage; p++)
+            for (var p = 0; p < maxPage; p++)
             {
                 var totalWritten = p * _flash.PageSize;
                 if (p % 10 == 0)
                     this.ShowState($"Writing page {p}/{maxPage},  {totalWritten/1024/1024.0:0.0}/{_flash.SizeInByte / 1024/1024.0:0.0} Mb");
 
-                _flash.WritePages(p * _flash.PageSize, BufferUtils.MakeBuffer(_flash.PageSize, asciValue), verify: !true, eraseBlock: true );
+                _flash.WritePages(p * _flash.PageSize, BufferUtils.MakeBuffer(_flash.PageSize, asciValue), verify: true, eraseBlock: true );
                 asciValue += 1;
                 if (asciValue >= 128)
                     asciValue = 65;

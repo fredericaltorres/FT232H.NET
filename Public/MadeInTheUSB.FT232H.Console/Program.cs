@@ -35,7 +35,8 @@ namespace MadeInTheUSB.FT232H.Console
             {
                 System.Console.Clear();
                 ConsoleEx.TitleBar(0, "Nusbio /2 - FT232H Library", ConsoleColor.Yellow, ConsoleColor.DarkBlue);
-                ConsoleEx.WriteMenu(0, 2, "I)2C Demo, 2)I2C Multi Device Demo S)PI Demo Q)uit");
+                ConsoleEx.WriteMenu(0, 2, "I)2C Demo   2)I2C Multi Device Demo   S)PI Demo");
+                ConsoleEx.WriteMenu(0, 3, "Q)uit");
 
                 var k = System.Console.ReadKey(true);
                 if (k.Key == ConsoleKey.Q)
