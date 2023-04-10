@@ -141,8 +141,7 @@ namespace MadeInTheUSB.FT232H.Console
             System.Console.Clear();
             System.Console.WriteLine("Detecting/Initializing device");
 
-            var clockSpeed = SpiClockSpeeds._10Mhz; // MpsseSpiConfig._30Mhz; // 
-            var ft232hGpioSpiDevice = new SpiDevice(clockSpeed, SpiChipSelectPins.CsDbus4);
+            var ft232hGpioSpiDevice = new SpiDevice(SpiClockSpeeds._10Mhz);
             ft232hGpioSpiDevice.Log = true;
             var spi = ft232hGpioSpiDevice.SPI;
             var gpios = ft232hGpioSpiDevice.GPIO;
@@ -159,26 +158,30 @@ namespace MadeInTheUSB.FT232H.Console
             System.Console.WriteLine(flash.GetInformation());
             var maxPage = flash.MaxPage;
             var pageBufferCount = 256; //  256 * 256 = 65536kb buffer
-            var buffer = new List<byte>();
-            var p = 0;
+            
+            var flashPageAddr = 0;
 
             var adc = new MCP3008(spi, SpiChipSelectPins.CsDbus4);
             const double referenceVoltage = 3.3;
 
             while (true)
             {
+                gpios.ProgressNext();
+
                 for (var adcPort = 0; adcPort < 1; adcPort++)
                 {
                     var adcValue = adc.Read(adcPort);
                     var voltageValue = adc.ComputeVoltage(referenceVoltage, adcValue);
-                    System.Console.WriteLine($"ADC [{adcPort}] = {adcValue}, voltage:{voltageValue}");
+                    System.Console.WriteLine($"ADC [{adcPort}] = {adcValue}, voltage:{voltageValue}{Environment.NewLine}");
                 }
 
                 var tmpBuffer = new List<byte>();
-                flash.ReadPages(p * flash.PageSize, pageBufferCount * flash.PageSize, tmpBuffer);
-                buffer.AddRange(tmpBuffer);
-                var bufferRepr = HexaString.ConvertTo(buffer.ToArray(), max: 32, itemFormat:"{0}, ");
-                System.Console.WriteLine($"FLASH Page:{p}, Buffer:{bufferRepr}");
+                flash.ReadPages(flashPageAddr * flash.PageSize, pageBufferCount * flash.PageSize, tmpBuffer);
+                var bufferRepr = HexaString.ConvertTo(tmpBuffer.ToArray(), max: 32, itemFormat:"{0}, ");
+                System.Console.WriteLine($"FLASH Page:{flashPageAddr}, Size: {tmpBuffer.Count/1024} Kb, Buffer:{bufferRepr}{Environment.NewLine}");
+                flashPageAddr += flash.PageSize;
+                if (flashPageAddr > (64 * 1024 * 10))
+                    flashPageAddr = 0;
 
                 if (System.Console.KeyAvailable)
                 {

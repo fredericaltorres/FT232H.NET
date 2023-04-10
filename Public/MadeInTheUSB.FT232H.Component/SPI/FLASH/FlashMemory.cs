@@ -320,14 +320,8 @@ namespace MadeInTheUSB.FT232H.Components
 
         public bool ReadPages(int address, int size, List<byte> buffer)
         {
-            var tmpBuffer = new List<byte>();
             var sizeToRead = Math.Min(size, MAX_BLOCK_SIZE);
-            if (this.ReadBuffer(address, sizeToRead, tmpBuffer))
-            {
-                buffer.AddRange(tmpBuffer);
-                return true;
-            }
-            else return false;
+            return this.ReadBuffer(address, sizeToRead, buffer);
         }
 
         private bool ReadBuffer(int address, int size, List<byte> buffer)
