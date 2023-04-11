@@ -7,7 +7,7 @@
     <ProjectGuid>{4BAAF81E-23FD-48C0-B199-78B634C6D0B5}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <RootNamespace>MUSB_FT232H_Console</RootNamespace>
-    <AssemblyName>MUSB_FT232H_Console</AssemblyName>
+    <AssemblyName>MadeInTheUSB.FT232H.Console</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>

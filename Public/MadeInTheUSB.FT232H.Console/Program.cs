@@ -149,7 +149,7 @@ namespace MadeInTheUSB.FT232H.Console
 
             System.Console.Clear();
             ConsoleEx.TitleBar(0, "Nusbio /2 - FT232H Library", ConsoleColor.Yellow, ConsoleColor.DarkBlue);
-            ConsoleEx.TitleBar(1, "S PI   Multi Device Demo", ConsoleColor.Yellow, ConsoleColor.DarkBlue);
+            ConsoleEx.TitleBar(1, "S P I   Multi Device Demo", ConsoleColor.Yellow, ConsoleColor.DarkBlue);
             ConsoleEx.WriteMenu(0, 2, "Q)uit");
             System.Console.WriteLine("");
 
@@ -168,17 +168,18 @@ namespace MadeInTheUSB.FT232H.Console
             {
                 gpios.ProgressNext();
 
-                for (var adcPort = 0; adcPort < 1; adcPort++)
+                for (var adcPort = 0; adcPort < 2; adcPort++)
                 {
                     var adcValue = adc.Read(adcPort);
                     var voltageValue = adc.ComputeVoltage(referenceVoltage, adcValue);
-                    System.Console.WriteLine($"ADC [{adcPort}] = {adcValue}, voltage:{voltageValue}{Environment.NewLine}");
+                    ConsoleEx.WriteLine(0, 6 + adcPort, $"ADC [{adcPort}] = {adcValue:0000}, voltage:{voltageValue:0.00}{Environment.NewLine}", ConsoleColor.Cyan);
                 }
 
                 var tmpBuffer = new List<byte>();
                 flash.ReadPages(flashPageAddr * flash.PageSize, pageBufferCount * flash.PageSize, tmpBuffer);
                 var bufferRepr = HexaString.ConvertTo(tmpBuffer.ToArray(), max: 32, itemFormat:"{0}, ");
-                System.Console.WriteLine($"FLASH Page:{flashPageAddr}, Size: {tmpBuffer.Count/1024} Kb, Buffer:{bufferRepr}{Environment.NewLine}");
+                ConsoleEx.WriteLine(0, 9, $"FLASH Page:{flashPageAddr}, Size: {tmpBuffer.Count / 1024} Kb, Buffer:{bufferRepr}{Environment.NewLine}", ConsoleColor.Yellow);
+
                 flashPageAddr += flash.PageSize;
                 if (flashPageAddr > (64 * 1024 * 10))
                     flashPageAddr = 0;
