@@ -59,22 +59,22 @@ namespace MadeInTheUSB.FT232H.Console
                 // Each block or page must be erased before being written
 
                 ph.Start();
-                for (var _64kBlock = 0; _64kBlock < flash.MaxBlock; _64kBlock++)
+                for (var _64kBlock = 0; _64kBlock < flash.Max64KbBlock; _64kBlock++)
                 {
-                    ph.AddByte(FlashMemory.MAX_BLOCK_SIZE);
-                    System.Console.WriteLine($"Writing block:{_64kBlock}/{flash.MaxBlock}, {_64kBlock * 100.0 / flash.MaxBlock:0}%");
+                    ph.AddByte(FlashMemory._64K_BLOCK_SIZE);
+                    System.Console.WriteLine($"Writing block:{_64kBlock}/{flash.Max64KbBlock}, {_64kBlock * 100.0 / flash.Max64KbBlock:0}%");
                     var r = false;
 
                     if (_64kBlock == 11)
                     {
-                        r = flash.WritePages(_64kBlock * FlashMemory.MAX_BLOCK_SIZE, _64k0123Buffer, eraseBlock: true);
+                        r = flash.WritePages(_64kBlock * FlashMemory._64K_BLOCK_SIZE, _64k0123Buffer, eraseBlock: true);
                     }
                     else
                     {
                         if (_64kBlock % 3 == 0)
-                            r = flash.WritePages(_64kBlock * FlashMemory.MAX_BLOCK_SIZE, _64kFredBuffer, eraseBlock: true);
+                            r = flash.WritePages(_64kBlock * FlashMemory._64K_BLOCK_SIZE, _64kFredBuffer, eraseBlock: true);
                         else
-                            r = flash.WritePages(_64kBlock * FlashMemory.MAX_BLOCK_SIZE, _64kAbdcBuffer, eraseBlock: true);
+                            r = flash.WritePages(_64kBlock * FlashMemory._64K_BLOCK_SIZE, _64kAbdcBuffer, eraseBlock: true);
 
                     }
                     if (!r)
@@ -88,14 +88,14 @@ namespace MadeInTheUSB.FT232H.Console
             // Read the 16 Mb of FLASH and verify result
             ph = new PerformanceHelper();
             ph.Start();
-            for (var _64kBlock = 0; _64kBlock < flash.MaxBlock; _64kBlock++)
+            for (var _64kBlock = 0; _64kBlock < flash.Max64KbBlock; _64kBlock++)
             {
-                System.Console.WriteLine($"Reading block:{_64kBlock}/{flash.MaxBlock}, {_64kBlock * 100.0 / flash.MaxBlock:0}%");
+                System.Console.WriteLine($"Reading block:{_64kBlock}/{flash.Max64KbBlock}, {_64kBlock * 100.0 / flash.Max64KbBlock:0}%");
                 var buffer = new List<byte>();
-                if (flash.ReadPages(_64kBlock * FlashMemory.MAX_BLOCK_SIZE, FlashMemory.MAX_BLOCK_SIZE, buffer))
+                if (flash.ReadPages(_64kBlock * FlashMemory._64K_BLOCK_SIZE, FlashMemory._64K_BLOCK_SIZE, buffer))
                 {
                     var resultString = PerformanceHelper.AsciiBufferToString(buffer.ToArray());
-                    ph.AddByte(FlashMemory.MAX_BLOCK_SIZE);
+                    ph.AddByte(FlashMemory._64K_BLOCK_SIZE);
                     var result = false;
                     if (_64kBlock == 11)
                     {

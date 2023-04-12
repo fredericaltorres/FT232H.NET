@@ -24,9 +24,9 @@ namespace MadeInTheUSB.FT232H.Components
             get { return this.SizeInByte / (int)this.PageSize; }
         }
 
-        public int MaxBlock
+        public int Max64KbBlock
         {
-            get { return this.SizeInByte / FlashMemory.MAX_BLOCK_SIZE; }
+            get { return this.SizeInByte / FlashMemory._64K_BLOCK_SIZE; }
         }
 
         public FlashMemory(ISPI spi, SpiChipSelectPins cs) 
@@ -165,7 +165,7 @@ namespace MadeInTheUSB.FT232H.Components
                 sizeUnit = "Kb";
             }
 
-            return $@"DeviceID:{this.DeviceID}, Size:{size} {sizeUnit}, Manufacturer:{this.Manufacturer}, MaxPage:{this.MaxPage}, Page Size:{this.PageSize}, MaxBlock:{this.MaxBlock}, BlockSize:{FlashMemory.MAX_BLOCK_SIZE}";
+            return $@"DeviceID: {this.DeviceID}, Size: {size} {sizeUnit}, Manufacturer: {this.Manufacturer}, MaxPage: {this.MaxPage}, Page Size: {this.PageSize}, Max64KbBlock: {this.Max64KbBlock}";
         }
 
         private bool IsWriteRegisterEnable() 
@@ -251,7 +251,7 @@ namespace MadeInTheUSB.FT232H.Components
                     ///////////var r = this.IsWriteRegisterEnable();
                 }
 
-                if (verify && buffer.Count <= MAX_BLOCK_SIZE)
+                if (verify && buffer.Count <= _64K_BLOCK_SIZE)
                 {
                     var buffer3 = new List<byte>();
                     this.ReadPages(addr, buffer.Count, buffer3);
@@ -320,13 +320,13 @@ namespace MadeInTheUSB.FT232H.Components
 
         public bool ReadPages(int address, int size, List<byte> buffer)
         {
-            var sizeToRead = Math.Min(size, MAX_BLOCK_SIZE);
+            var sizeToRead = Math.Min(size, _64K_BLOCK_SIZE);
             return this.ReadBuffer(address, sizeToRead, buffer);
         }
 
         private bool ReadBuffer(int address, int size, List<byte> buffer)
         {
-            if (size > MAX_BLOCK_SIZE)
+            if (size > _64K_BLOCK_SIZE)
                 throw new ArgumentException($"ReadPage cannot read buffer size:{size}");
 
             int byteSent = 0;

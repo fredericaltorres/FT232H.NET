@@ -35,7 +35,7 @@ namespace MadeInTheUSB.FT232H.Components
             CHIP_ERASE      = 0x60    // chip erase (may take several seconds depending on size)
         }
         
-        public const int MAX_BLOCK_SIZE      = 64 * 1024;
+        public const int _64K_BLOCK_SIZE = 64 * 1024;
         const int EEPROM_DEFAULT_PAGE_SIZE_WRITE = 512;
         const int MAX_TRY = 8;
     }

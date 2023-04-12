@@ -142,7 +142,7 @@ namespace MadeInTheUSB.FT232H.Console
             System.Console.WriteLine("Detecting/Initializing device");
 
             var ft232hGpioSpiDevice = new SpiDevice(SpiClockSpeeds._10Mhz);
-            ft232hGpioSpiDevice.Log = true;
+            ft232hGpioSpiDevice.Log = !true;
             var spi = ft232hGpioSpiDevice.SPI;
             var gpios = ft232hGpioSpiDevice.GPIO;
             gpios.Animate();
@@ -155,30 +155,29 @@ namespace MadeInTheUSB.FT232H.Console
 
             var flash = new FlashMemory(spi, SpiChipSelectPins.CsDbus3);
             flash.ReadIdentification();
-            System.Console.WriteLine(flash.GetInformation());
             var maxPage = flash.MaxPage;
             var pageBufferCount = 256; //  256 * 256 = 65536kb buffer
-            
             var flashPageAddr = 0;
-
-            var adc = new MCP3008(spi, SpiChipSelectPins.CsDbus4);
+            var adc = new MCP3008(spi, SpiChipSelectPins.CsDbus7);
             const double referenceVoltage = 3.3;
 
             while (true)
             {
                 gpios.ProgressNext();
 
-                for (var adcPort = 0; adcPort < 2; adcPort++)
+                for (var adcPort = 0; adcPort < 3; adcPort++)
                 {
                     var adcValue = adc.Read(adcPort);
                     var voltageValue = adc.ComputeVoltage(referenceVoltage, adcValue);
-                    ConsoleEx.WriteLine(0, 6 + adcPort, $"ADC [{adcPort}] = {adcValue:0000}, voltage:{voltageValue:0.00}{Environment.NewLine}", ConsoleColor.Cyan);
+                    ConsoleEx.WriteLine(0, 4 + adcPort, $"ADC [{adcPort}] = {adcValue:0000}, voltage:{voltageValue:0.00}{Environment.NewLine}", ConsoleColor.Cyan);
                 }
 
                 var tmpBuffer = new List<byte>();
                 flash.ReadPages(flashPageAddr * flash.PageSize, pageBufferCount * flash.PageSize, tmpBuffer);
                 var bufferRepr = HexaString.ConvertTo(tmpBuffer.ToArray(), max: 32, itemFormat:"{0}, ");
-                ConsoleEx.WriteLine(0, 9, $"FLASH Page:{flashPageAddr}, Size: {tmpBuffer.Count / 1024} Kb, Buffer:{bufferRepr}{Environment.NewLine}", ConsoleColor.Yellow);
+                
+                ConsoleEx.WriteLine(0, 9, $"FLASH {flash.GetInformation()}", ConsoleColor.Gray);
+                ConsoleEx.WriteLine(0,10, $"FLASH Page:{flashPageAddr}, Size: {tmpBuffer.Count / 1024} Kb, Buffer:{bufferRepr}{Environment.NewLine}", ConsoleColor.Yellow);
 
                 flashPageAddr += flash.PageSize;
                 if (flashPageAddr > (64 * 1024 * 10))
@@ -190,7 +189,7 @@ namespace MadeInTheUSB.FT232H.Console
                     if (k.Key == ConsoleKey.Q) return;
                 }
 
-                Thread.Sleep(500);
+                Thread.Sleep(750);
             }
         }
 
