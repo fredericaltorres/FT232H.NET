@@ -68,6 +68,7 @@ using uint16_t = System.UInt16;
 using uint8_t = System.Byte;
 using MadeInTheUSB.WinUtil;
 using MadeInTheUSB.FT232H;
+using System.Diagnostics;
 
 namespace MadeInTheUSB.Adafruit
 {
@@ -91,7 +92,8 @@ namespace MadeInTheUSB.Adafruit
         public const int MAX_ROW = 8;
 
         private byte[] _displayBuffer = new byte[MAX_ROW];
-        private const byte DEFAULT_I2C_ADDRESS = 0x70;
+        private const byte DEFAULT_I2C_ADDRESS_0 = 0x71;
+        private const byte DEFAULT_I2C_ADDRESS_1 = 0x70;
         /// <summary>
         /// See datasheet section "Display Memory – RAM Structure"
         /// </summary>
@@ -147,16 +149,17 @@ namespace MadeInTheUSB.Adafruit
         }
 
 
-        public bool Detect(byte addr = DEFAULT_I2C_ADDRESS)
+        public bool Detect(byte addr0 = DEFAULT_I2C_ADDRESS_0, byte addr1 = DEFAULT_I2C_ADDRESS_1)
         {
             try
             {
-                return this.Begin(addr);
+                if (this.Begin(addr0)) return true;
+                if (this.Begin(addr1)) return true;
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
-                return false;
             }
+            return false;
         }
 
         public void SetRotation(int v)
@@ -164,7 +167,7 @@ namespace MadeInTheUSB.Adafruit
             base.Rotation = (byte)v;
         }
 
-        public bool Begin(int addr = DEFAULT_I2C_ADDRESS)
+        public bool Begin(int addr = DEFAULT_I2C_ADDRESS_0)
         {
             return this._begin((byte)addr);
         }
@@ -172,13 +175,17 @@ namespace MadeInTheUSB.Adafruit
         private bool _begin(byte addr )
         {
             this.DeviceId = addr;
-            if (!this._i2CDevice.Write(HT16K33_CMD_TURN_OSCILLATOR_ON, this.DeviceId)) return false;
-            //if (!this._i2CDevice.Send1ByteCommand(this._I2CDeviceId, HT16K33_CMD_TURN_OSCILLATOR_ON)) return false;
-            this.Clear(true);
-            this.SetBlinkRate(HT16K33_BLINK_OFF);
-            this.SetBrightness(5);
-            
-            return true;
+
+            if (this._i2CDevice.DetectDevice(this.DeviceId))
+            {
+                if (!this._i2CDevice.Write(HT16K33_CMD_TURN_OSCILLATOR_ON, this.DeviceId)) return false;
+                this.Clear(true);
+                this.SetBlinkRate(HT16K33_BLINK_OFF);
+                this.SetBrightness(5);
+
+                return true;
+            }
+            else return false;
         }
 
         public void AnimateSetBrightness(int MAX_REPEAT, int onWaitTime = 20, int offWaitTime = 30)

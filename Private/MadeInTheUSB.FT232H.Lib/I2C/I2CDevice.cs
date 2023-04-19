@@ -134,54 +134,57 @@ namespace MadeInTheUSB.FT232H
             return result == FtdiMpsseSPIResult.Ok;
         }
 
-        public bool Write(int value, byte deviceId)
+        public bool Write(int value, byte deviceId, bool checkForNAck = false)
         {
             this.OnHardwareProgressBar();
             var array = new byte[1];
             array[0] = Convert.ToByte(value);
             int writtenAmount;
 
-/*
-This parameter specifies data transfer options. The bit positions
-defined for each of these options are:
-BIT0: if set then a start condition is generated in the I2C bus
-before the transfer begins.A bit mask is defined for this options
-in file ftdi_i2c.h as I2C_TRANSFER_OPTIONS_START_BIT
-BIT1: if set then a stop condition is generated in the I2C bus
-after the transfer ends.A bit mask is defined for this options in
-file ftdi_i2c.h as I2C_TRANSFER_OPTIONS_STOP_BIT
-BIT2: if set then the function will return when a device nAcks
-after a byte has been transferred. If not set then the function
-will continue transferring the stream of bytes even if the device
-nAcks.A bit mask is defined for this options in file ftdi_i2c.h as
-I2C_TRANSFER_OPTIONS_BREAK_ON_NACK
-BIT3: reserved(only used in I2C_DeviceRead)
-BIT4: setting this bit will invoke a multi byte I2C transfer
-without having delays between the START, ADDRESS, DATA and
-STOP phases.Size of the transfer in parameters sizeToTransfer
-and sizeTransferred are in bytes.The bit mask defined for this
-bit is I2C_TRANSFER_OPTIONS_FAST_TRANSFER_BYTES *
-BIT5: setting this bit would invoke a multi bit transfer without
-having delays between the START, ADDRESS, DATA and STOP
-phases.Size of the transfer in parameters sizeToTransfer and
-sizeTransferred are in bytes.The bit mask defined for this bit is
-I2C_TRANSFER_OPTIONS_FAST_TRANSFER_BITS *
-BIT6: the deviceAddress parameter is ignored if this bit is set.
-This feature may be useful in generating a special I2C bus
-conditions that do not require any address to be passed. Setting
-this bit is effective only when either
-I2C_TRANSFER_OPTIONS_FAST_TRANSFER_BYTES or
-I2C_TRANSFER_OPTIONS_FAST_TRANSFER_BITS is set.The bit
-mask defined for this bit is
-I2C_TRANSFER_OPTIONS_NO_ADDRESS*
-BIT7 – BIT31: reserved
-*The I2C_DeviceRead and I2C_DeviceWrite functions send commands to
-*/
+            /*
+            This parameter specifies data transfer options. The bit positions
+            defined for each of these options are:
+            BIT0: if set then a start condition is generated in the I2C bus
+            before the transfer begins.A bit mask is defined for this options
+            in file ftdi_i2c.h as I2C_TRANSFER_OPTIONS_START_BIT
+            BIT1: if set then a stop condition is generated in the I2C bus
+            after the transfer ends.A bit mask is defined for this options in
+            file ftdi_i2c.h as I2C_TRANSFER_OPTIONS_STOP_BIT
+            BIT2: if set then the function will return when a device nAcks
+            after a byte has been transferred. If not set then the function
+            will continue transferring the stream of bytes even if the device
+            nAcks.A bit mask is defined for this options in file ftdi_i2c.h as
+            I2C_TRANSFER_OPTIONS_BREAK_ON_NACK
+            BIT3: reserved(only used in I2C_DeviceRead)
+            BIT4: setting this bit will invoke a multi byte I2C transfer
+            without having delays between the START, ADDRESS, DATA and
+            STOP phases.Size of the transfer in parameters sizeToTransfer
+            and sizeTransferred are in bytes.The bit mask defined for this
+            bit is I2C_TRANSFER_OPTIONS_FAST_TRANSFER_BYTES *
+            BIT5: setting this bit would invoke a multi bit transfer without
+            having delays between the START, ADDRESS, DATA and STOP
+            phases.Size of the transfer in parameters sizeToTransfer and
+            sizeTransferred are in bytes.The bit mask defined for this bit is
+            I2C_TRANSFER_OPTIONS_FAST_TRANSFER_BITS *
+            BIT6: the deviceAddress parameter is ignored if this bit is set.
+            This feature may be useful in generating a special I2C bus
+            conditions that do not require any address to be passed. Setting
+            this bit is effective only when either
+            I2C_TRANSFER_OPTIONS_FAST_TRANSFER_BYTES or
+            I2C_TRANSFER_OPTIONS_FAST_TRANSFER_BITS is set.The bit
+            mask defined for this bit is
+            I2C_TRANSFER_OPTIONS_NO_ADDRESS*
+            BIT7 – BIT31: reserved
+            *The I2C_DeviceRead and I2C_DeviceWrite functions send commands to
+            */
 
-            var result = _write(array, array.Length, out writtenAmount,
-                FtdiI2CTransferOptions.FastTransfer | 
-                FtdiI2CTransferOptions.StartBit | FtdiI2CTransferOptions.StopBit, deviceId);
-
+            var flags = FtdiI2CTransferOptions.FastTransfer | FtdiI2CTransferOptions.StartBit | FtdiI2CTransferOptions.StopBit;
+            if (checkForNAck)
+            {
+                // flags |= FtdiI2CTransferOptions.BreakOnNack | FtdiI2CTransferOptions.NackLastByte;
+                flags |= FtdiI2CTransferOptions.NackLastByte;
+            }
+            var result = _write(array, array.Length, out writtenAmount, flags, deviceId);
             return result == FtdiMpsseSPIResult.Ok;
         }
 
@@ -259,17 +262,27 @@ BIT7 – BIT31: reserved
             return result;
         }
 
+        public bool DetectDevice(byte deviceId)
+        {
+            byte[] buffer = new byte[1] { 0 };
+            int sizeTransfered = 0;
+            var flags = FtdiI2CTransferOptions.StartBit;
+            var result = LibMpsse_AccessToCppDll.I2C_DeviceRead(_handle, deviceId, buffer.Length, buffer, out sizeTransfered, flags);
+            base.LogI2CTransaction(I2CTransactionType.DETECT_DEVICE, deviceId, null, null, $"{result == FtdiMpsseSPIResult.Ok}");
+            return result == FtdiMpsseSPIResult.Ok;
+        }
+
         private bool _read1(byte[] buffer, byte deviceId)
         {
             int sizeTransfered = 0;
-            var result = LibMpsse_AccessToCppDll.I2C_DeviceRead( _handle, deviceId, buffer.Length, buffer, out sizeTransfered, FtdiI2CTransferOptions.StartBit);
-
+            var flags = FtdiI2CTransferOptions.StartBit;
+            
+            var result = LibMpsse_AccessToCppDll.I2C_DeviceRead( _handle, deviceId, buffer.Length, buffer, out sizeTransfered, flags);
             CheckResult(result);
-            if(result == FtdiMpsseSPIResult.Ok)
+            if (result == FtdiMpsseSPIResult.Ok)
                 base.LogI2CTransaction(I2CTransactionType.READ, deviceId, null, buffer);
             else
                 base.LogI2CTransaction(I2CTransactionType.ERROR, deviceId, null, null);
-
             return result == FtdiMpsseSPIResult.Ok;
         }
 

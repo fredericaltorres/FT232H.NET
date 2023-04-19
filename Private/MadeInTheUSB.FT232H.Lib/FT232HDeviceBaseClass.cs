@@ -49,6 +49,7 @@ namespace MadeInTheUSB.FT232H
             ERROR,
             WRITE_READ_START,
             WRITE_READ_END,
+            DETECT_DEVICE,
         }
 
         public void LogI2CTransaction(I2CTransactionType transactionType, byte deviceId, byte[] bufferOut, byte[] bufferIn, string value = null, int recursiveCounter = 0)
@@ -58,16 +59,16 @@ namespace MadeInTheUSB.FT232H
                 var sb = new StringBuilder();
 
                 sb.Append($"[{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff")}]");
-                sb.Append($"IC2 {transactionType.ToString().PadRight(17)}, 0x{deviceId:X}");
+                sb.Append($"IC2 {transactionType.ToString().PadRight(17)} 0x{deviceId:X} ");
 
                 if(value != null)
                 {
-                    sb.Append($" VALUE:{value}");
+                    sb.Append($" VALUE: {value}");
                 }
 
                 if (bufferOut!= null && bufferOut.Length > 0)
                 {
-                    sb.Append("OUT:[");
+                    sb.Append(" OUT:[");
                     sb.Append(HexaString.ConvertTo(bufferOut, itemFormat: "{0}, ", max: LogTransactionBufferMaxLength));
                     sb.Append("]");
                 }
@@ -79,7 +80,7 @@ namespace MadeInTheUSB.FT232H
                         sb.Append(", ");
                     }
 
-                    sb.Append("IN: [");
+                    sb.Append(" IN: [");
                     sb.Append(HexaString.ConvertTo(bufferIn, itemFormat: "{0}, ", max: LogTransactionBufferMaxLength));
                     sb.Append("]");
                 }

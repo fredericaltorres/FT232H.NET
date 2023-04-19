@@ -209,7 +209,7 @@ namespace MadeInTheUSB.FT232H.Console
             var ledBackPack8x8 = new LEDBackpack(i2cDevice, 8, 8);
             var ledBackPack8x8MaskDefault = (byte)(1 + 4 + 16 + 64);
             var ledBackPack8x8Mask = ledBackPack8x8MaskDefault;
-            if (!ledBackPack8x8.Detect(0x71))
+            if (!ledBackPack8x8.Detect())
             {
                 ledBackPack8x8 = null;
             }
@@ -244,7 +244,7 @@ namespace MadeInTheUSB.FT232H.Console
                     if(k.Key == ConsoleKey.Q) return;
                 }
 
-                Thread.Sleep(500);
+                Thread.Sleep(1000);
             }
         }
 

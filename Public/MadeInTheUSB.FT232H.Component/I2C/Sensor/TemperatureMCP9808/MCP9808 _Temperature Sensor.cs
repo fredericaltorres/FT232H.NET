@@ -93,12 +93,16 @@ namespace MadeInTheUSB
             try
             {
                 this.DeviceId = deviceAddress;
-                //if (!this._i2cDevice.InitiateDetectionSequence(deviceAddress))
-                //    return false;
+                if (this._i2cDevice.DetectDevice(this.DeviceId))
+                {
+                    //if (!this._i2cDevice.InitiateDetectionSequence(deviceAddress))
+                    //    return false;
 
-                if (!this._i2cDevice.Write1ByteReadUInt16WithRetry(MCP9808_REG_MANUF_ID, MCP9808_REG_MANUF_ID_ANSWER, this.DeviceId)) return false;
-                if (!this._i2cDevice.Write1ByteReadUInt16WithRetry(MCP9808_REG_DEVICE_ID, MCP9808_REG_DEVICE_ID_ANSWER, this.DeviceId)) return false;
-                return true;
+                    if (!this._i2cDevice.Write1ByteReadUInt16WithRetry(MCP9808_REG_MANUF_ID, MCP9808_REG_MANUF_ID_ANSWER, this.DeviceId)) return false;
+                    if (!this._i2cDevice.Write1ByteReadUInt16WithRetry(MCP9808_REG_DEVICE_ID, MCP9808_REG_DEVICE_ID_ANSWER, this.DeviceId)) return false;
+                    return true;
+                }
+                else return false;
             }
             catch (System.Exception ex)
             {
