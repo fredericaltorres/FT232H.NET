@@ -193,11 +193,47 @@ namespace MadeInTheUSB.FT232H.Console
             }
         }
 
+        private static bool _MultiLEDBackpackManagerDemoOn = true;
+
+        private static void MultiLEDBackpackManagerDemo(MultiLEDBackpackManager _multiLEDBackpackManager)
+        {
+            var wait = 0;
+            
+            var yy = 0;
+
+            if (_MultiLEDBackpackManagerDemoOn)
+            {
+                _multiLEDBackpackManager.Clear(true);
+                while (yy <= 3)
+                {
+                    _multiLEDBackpackManager.DrawRoundRect(yy, yy, 8 - (yy * 2), 8 - (yy * 2), 2, 1);
+                    _multiLEDBackpackManager.WriteDisplay();
+                    Thread.Sleep(wait);
+                    yy += 1;
+                }
+                Thread.Sleep(wait);
+            }
+            else
+            {
+                yy = 2;
+                while (yy >= 0)
+                {
+                    _multiLEDBackpackManager.DrawRoundRect(yy, yy, 8 - (yy * 2), 8 - (yy * 2), 2, 0);
+                    _multiLEDBackpackManager.WriteDisplay();
+                    Thread.Sleep(wait);
+                    yy -= 1;
+                }
+                _multiLEDBackpackManager.Clear(true);
+                Thread.Sleep(wait);
+            }
+            _MultiLEDBackpackManagerDemoOn = !_MultiLEDBackpackManagerDemoOn;
+        }
+
         private static void I2CMultiDeviceDemo()
         {
             System.Console.Clear();
             System.Console.WriteLine("Detecting/Initializing device");
-            var i2cDevice = new I2CDevice(I2CClockSpeeds.FAST_MODE_1_Mhz, hardwareProgressBarOn: true);
+            var i2cDevice = new I2CDevice(I2CClockSpeeds.FAST_MODE_1_Mhz, hardwareProgressBarOn: true, fastMode: true);
             i2cDevice.Log = true;
 
             System.Console.Clear();
@@ -206,13 +242,9 @@ namespace MadeInTheUSB.FT232H.Console
             ConsoleEx.WriteMenu(0, 2, "Q)uit");
             System.Console.WriteLine("");
 
-            var ledBackPack8x8 = new LEDBackpack(i2cDevice, 8, 8);
-            var ledBackPack8x8MaskDefault = (byte)(1 + 4 + 16 + 64);
-            var ledBackPack8x8Mask = ledBackPack8x8MaskDefault;
-            if (!ledBackPack8x8.Detect())
-            {
-                ledBackPack8x8 = null;
-            }
+            var ledBackPackManager = new MultiLEDBackpackManager();
+            ledBackPackManager.Add(i2cDevice, 8, 8, 0x70);
+            ledBackPackManager.Add(i2cDevice, 8, 8, 0x71);
 
             var tempSensor = new MCP9808_TemperatureSensor(i2cDevice);
             if (!tempSensor.Begin())
@@ -229,14 +261,9 @@ namespace MadeInTheUSB.FT232H.Console
                     ConsoleEx.WriteLine($"[{DateTime.Now}] Temp:{FahrenheitTemp:0.00}F /  {celciusTemp:0.00}C", ConsoleColor.White);
                 }
 
-                if (ledBackPack8x8 != null)
+                if (ledBackPackManager != null)
                 {
-                    ledBackPack8x8.Clear(value: ledBackPack8x8Mask);
-                    ledBackPack8x8.WriteDisplay();
-                    ledBackPack8x8Mask = (byte)(ledBackPack8x8Mask << 1);
-                    if (ledBackPack8x8Mask == 0)
-                        ledBackPack8x8Mask = ledBackPack8x8MaskDefault;
-                    ConsoleEx.WriteLine($"[{DateTime.Now}] 8x8 Matrix Mask:{ledBackPack8x8Mask}", ConsoleColor.White);                    
+                    MultiLEDBackpackManagerDemo(ledBackPackManager);
                 }
 
                 if (System.Console.KeyAvailable)
@@ -244,8 +271,7 @@ namespace MadeInTheUSB.FT232H.Console
                     var k = System.Console.ReadKey(true);
                     if(k.Key == ConsoleKey.Q) return;
                 }
-
-                Thread.Sleep(500);
+                //Thread.Sleep(50);
             }
         }
 
