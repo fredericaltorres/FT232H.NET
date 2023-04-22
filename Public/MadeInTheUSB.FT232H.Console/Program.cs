@@ -214,28 +214,29 @@ namespace MadeInTheUSB.FT232H.Console
                 ledBackPack8x8 = null;
             }
 
-            //var tempSensor = new MCP9808_TemperatureSensor(i2cDevice);
-            //if (!tempSensor.Begin())
-            //{
-            //    tempSensor = null;
-            //}
+            var tempSensor = new MCP9808_TemperatureSensor(i2cDevice);
+            if (!tempSensor.Begin())
+            {
+                tempSensor = null;
+            }
 
             while (true)
             {
-                //if(tempSensor != null)
-                //{
-                //    var FahrenheitTemp = tempSensor.GetTemperature(TemperatureType.Fahrenheit);
-                //    var celciusTemp = tempSensor.GetTemperature(TemperatureType.Celsius);
-                //    ConsoleEx.WriteLine($"[{DateTime.Now}] Temp:{FahrenheitTemp:0.00}F /  {celciusTemp:0.00}C", ConsoleColor.White);
-                //}
+                if (tempSensor != null)
+                {
+                    var FahrenheitTemp = tempSensor.GetTemperature(TemperatureType.Fahrenheit);
+                    var celciusTemp = tempSensor.GetTemperature(TemperatureType.Celsius);
+                    ConsoleEx.WriteLine($"[{DateTime.Now}] Temp:{FahrenheitTemp:0.00}F /  {celciusTemp:0.00}C", ConsoleColor.White);
+                }
 
-                if(ledBackPack8x8 != null)
+                if (ledBackPack8x8 != null)
                 {
                     ledBackPack8x8.Clear(value: ledBackPack8x8Mask);
                     ledBackPack8x8.WriteDisplay();
                     ledBackPack8x8Mask = (byte)(ledBackPack8x8Mask << 1);
                     if (ledBackPack8x8Mask == 0)
                         ledBackPack8x8Mask = ledBackPack8x8MaskDefault;
+                    ConsoleEx.WriteLine($"[{DateTime.Now}] 8x8 Matrix Mask:{ledBackPack8x8Mask}", ConsoleColor.White);                    
                 }
 
                 if (System.Console.KeyAvailable)
@@ -244,7 +245,7 @@ namespace MadeInTheUSB.FT232H.Console
                     if(k.Key == ConsoleKey.Q) return;
                 }
 
-                //Thread.Sleep(50);
+                Thread.Sleep(500);
             }
         }
 

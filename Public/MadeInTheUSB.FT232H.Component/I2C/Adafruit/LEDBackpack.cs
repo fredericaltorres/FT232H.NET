@@ -149,7 +149,7 @@ namespace MadeInTheUSB.Adafruit
         }
 
 
-        public bool Detect(byte addr0 = DEFAULT_I2C_ADDRESS_1, byte addr1 = DEFAULT_I2C_ADDRESS_0)
+        public bool Detect(byte addr0 = DEFAULT_I2C_ADDRESS_0, byte addr1 = DEFAULT_I2C_ADDRESS_1)
         {
             try
             {

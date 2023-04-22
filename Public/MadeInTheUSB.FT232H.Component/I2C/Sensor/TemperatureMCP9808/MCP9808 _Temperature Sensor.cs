@@ -113,18 +113,29 @@ namespace MadeInTheUSB
 
         public double GetTemperature(TemperatureType type = TemperatureType.Celsius)
         {
-            uint16_t t = this._i2cDevice.Write1ByteReadUInt16(MCP9808_REG_AMBIENT_TEMP, this.DeviceId);
-            double temp = t & 0x0FFF;
-            temp /= 16.0;
-            if ((t & 0x1000) == 0x1000) temp -= 256;
-
-            switch (type)
+            try
             {
-                case TemperatureType.Celsius: return temp;
-                case TemperatureType.Fahrenheit: return CelsiusToFahrenheit(temp);
-                case TemperatureType.Kelvin: return temp * CELCIUS_TO_KELVIN;
-                default:
-                    throw new ArgumentException();
+                uint16_t t = this._i2cDevice.Write1ByteReadUInt16(MCP9808_REG_AMBIENT_TEMP, this.DeviceId);
+                double temp = t & 0x0FFF;
+                temp /= 16.0;
+                if ((t & 0x1000) == 0x1000) temp -= 256;
+
+                switch (type)
+                {
+                    case TemperatureType.Celsius: return temp;
+                    case TemperatureType.Fahrenheit: return CelsiusToFahrenheit(temp);
+                    case TemperatureType.Kelvin: return temp * CELCIUS_TO_KELVIN;
+                    default:
+                        throw new ArgumentException();
+                }
+            }
+            finally 
+            {
+                // Noticed that call to this IC2 command affect other device if executed to fast
+                // I noticied 15 ms seems to work.
+                // I beleive it is this device that cause the issue to other device
+                // The MCP9808 must affect the state of the I2C bus for another 15 ms after the reading!!!
+                Thread.Sleep(15);
             }
         }
 

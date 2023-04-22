@@ -265,12 +265,13 @@ namespace MadeInTheUSB.FT232H
 
         public bool DetectDevice(byte deviceId)
         {
-            byte[] buffer = new byte[1] { 0 };
-            int sizeTransfered = 0;
-            var flags = FtdiI2CTransferOptions.StartBit | FtdiI2CTransferOptions.StopBit;
-            var result = LibMpsse_AccessToCppDll.I2C_DeviceRead(_handle, deviceId, buffer.Length, buffer, out sizeTransfered, flags);
-            base.LogI2CTransaction(I2CTransactionType.DETECT_DEVICE, deviceId, null, null, $"{result == FtdiMpsseSPIResult.Ok}");
-            return result == FtdiMpsseSPIResult.Ok;
+            //byte[] buffer = new byte[1] { 0 };
+            //int sizeTransfered = 0;
+            //var flags = FtdiI2CTransferOptions.StartBit | FtdiI2CTransferOptions.StopBit;
+            //var result = LibMpsse_AccessToCppDll.I2C_DeviceRead(_handle, deviceId, buffer.Length, buffer, out sizeTransfered, flags);
+            //base.LogI2CTransaction(I2CTransactionType.DETECT_DEVICE, deviceId, null, null, $"{result == FtdiMpsseSPIResult.Ok}");
+            //return result == FtdiMpsseSPIResult.Ok;
+            return true;
         }
 
         private bool _read1(byte[] buffer, byte deviceId)
