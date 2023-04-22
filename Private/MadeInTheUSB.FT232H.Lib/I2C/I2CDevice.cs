@@ -7,6 +7,7 @@ namespace MadeInTheUSB.FT232H
 {
     /// <summary>
     /// https://ftdichip.com/wp-content/uploads/2020/08/AN_177_User_Guide_For_LibMPSSE-I2C.pdf
+    /// DRIVER: C:\DVT\FT232H.NET\Private\MadeInTheUSB.FT232H.Lib\libmpsse-windows-1.0.3\release\Project\VisualStudio\libmpsse.sln
     /// </summary>
     public class I2CDevice : FT232HDeviceBaseClass
     {
@@ -14,23 +15,23 @@ namespace MadeInTheUSB.FT232H
         private static SpiChannelConfig _currentGlobalConfig;
 
         private SpiChannelConfig _config;
-        //public int DeviceAddress;
-
         private I2CConfiguration _i2cConfig;
-
         private I2CClockSpeeds _clockSpeed;
-        private const int LatencyTimer = 200;//255; // Hz
-
+        private const int _latencyTimer = 200; //255; // Hz
         private byte _direction;
         private byte _gpo;
+        private FtdiI2CTransferOptions _fastModeFlag = FtdiI2CTransferOptions.None;
 
         public IDigitalWriteRead Gpios = null;
         public I2CGpioIImplementationDevice GpiosPlus;
-
         public bool HardwareProgressBarOn = false;
 
-        public I2CDevice(I2CClockSpeeds clockSpeed = I2CClockSpeeds.FAST_MODE_400Khz, bool hardwareProgressBarOn = false)
+        public I2CDevice(I2CClockSpeeds clockSpeed = I2CClockSpeeds.FAST_MODE_400Khz, bool hardwareProgressBarOn = false, bool fastMode = false)
         {
+            if(fastMode)
+            {
+                _fastModeFlag = FtdiI2CTransferOptions.FastTransfer;
+            }
             _clockSpeed = clockSpeed;
             this.Init();
             HardwareProgressBarOn = hardwareProgressBarOn;
@@ -41,7 +42,7 @@ namespace MadeInTheUSB.FT232H
             var config = new SpiChannelConfig
             {
                 ClockRate = (int)_clockSpeed,
-                LatencyTimer = LatencyTimer
+                LatencyTimer = _latencyTimer
             };
 
             _i2cConfig = _i2cConfig ?? I2CConfiguration.ChannelZeroConfiguration;
@@ -127,8 +128,8 @@ namespace MadeInTheUSB.FT232H
             base.LogI2CTransaction(I2CTransactionType.WRITE, (byte)deviceId, array, null);
 
             var result = _write(array, array.Length, out writtenAmount,
-                FtdiI2CTransferOptions.FastTransfer |
-                FtdiI2CTransferOptions.StartBit     | 
+                _fastModeFlag |
+                FtdiI2CTransferOptions.StartBit     |
                 FtdiI2CTransferOptions.StopBit, (byte)deviceId);
 
             return result == FtdiMpsseSPIResult.Ok;
@@ -178,7 +179,7 @@ namespace MadeInTheUSB.FT232H
             *The I2C_DeviceRead and I2C_DeviceWrite functions send commands to
             */
 
-            var flags = FtdiI2CTransferOptions.FastTransfer | FtdiI2CTransferOptions.StartBit | FtdiI2CTransferOptions.StopBit;
+            var flags = _fastModeFlag | FtdiI2CTransferOptions.StartBit | FtdiI2CTransferOptions.StopBit;
             if (checkForNAck)
             {
                 // flags |= FtdiI2CTransferOptions.BreakOnNack | FtdiI2CTransferOptions.NackLastByte;

@@ -197,7 +197,7 @@ namespace MadeInTheUSB.FT232H.Console
         {
             System.Console.Clear();
             System.Console.WriteLine("Detecting/Initializing device");
-            var i2cDevice = new I2CDevice(I2CClockSpeeds.FAST_MODE_1_Mhz, hardwareProgressBarOn: true);
+            var i2cDevice = new I2CDevice(I2CClockSpeeds.FAST_MODE_400Khz, hardwareProgressBarOn: true, fastMode: true);
             i2cDevice.Log = true;
 
             System.Console.Clear();
@@ -244,7 +244,7 @@ namespace MadeInTheUSB.FT232H.Console
                     if(k.Key == ConsoleKey.Q) return;
                 }
 
-                Thread.Sleep(1000);
+                Thread.Sleep(400);
             }
         }
 
@@ -252,7 +252,7 @@ namespace MadeInTheUSB.FT232H.Console
         {
             System.Console.Clear();
             System.Console.WriteLine("Detecting/Initializing device");
-            var i2cDevice = new I2CDevice(I2CClockSpeeds.FAST_MODE_1_Mhz, hardwareProgressBarOn: true);
+            var i2cDevice = new I2CDevice(I2CClockSpeeds.FAST_MODE_1_Mhz, hardwareProgressBarOn: !true);
 
             System.Console.Clear();
             ConsoleEx.TitleBar(0, "Nusbio /2 - FT232H Library", ConsoleColor.Yellow, ConsoleColor.DarkBlue);
@@ -260,9 +260,9 @@ namespace MadeInTheUSB.FT232H.Console
             System.Console.WriteLine("");
 
             i2cDevice.Gpios.Animate();
-            //I2CSample_Adafruit9x16LedMatrixGray(i2cDevice);
-            I2CSample_AdaFruit8x8LedMatrix(i2cDevice);
-            MCP9808_TemperatureSensor_Sample(i2cDevice);
+            I2CSample_Adafruit9x16LedMatrixGray(i2cDevice);
+            //I2CSample_AdaFruit8x8LedMatrix(i2cDevice);
+            //MCP9808_TemperatureSensor_Sample(i2cDevice);
         }
 
         private static ConsoleKeyInfo Pause(string message = null)

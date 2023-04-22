@@ -5,6 +5,7 @@ namespace MadeInTheUSB.FT232H
     [Flags]
     public enum FtdiI2CTransferOptions : int
     {
+        None = 0, // Added by Fred
         StartBit = 0x00000001,
         StopBit = 0x00000002,
         BreakOnNack = 0x00000004,

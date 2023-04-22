@@ -116,31 +116,33 @@ namespace MadeInTheUSB.Adafruit
             try
             {
                 this.DeviceId = deviceAddress;
-
-                //if(!this._i2cDevice.InitiateDetectionSequence(deviceAddress))
-                //    return false;
+                if (!this._i2cDevice.DetectDevice(this.DeviceId))
+                    return false;
 
                 this._frame = 0;
 
-                if (!WriteRegister8(ISSI_BANK_FUNCTIONREG, ISSI_REG_SHUTDOWN, 0x00)) return false; // shutdown
+                if (!WriteRegister(ISSI_BANK_FUNCTIONREG, ISSI_REG_SHUTDOWN, 0x00)) return false; // shutdown
                 Thread.Sleep(10);
-                //if (!WriteRegister8(ISSI_BANK_FUNCTIONREG, ISSI_REG_SHUTDOWN, 0x01)) return false; // out of shutdown
 
                 // picture mode
-                if (!WriteRegister8(ISSI_BANK_FUNCTIONREG, ISSI_REG_CONFIG, ISSI_REG_CONFIG_PICTUREMODE)) return false;
+                if (!WriteRegister(ISSI_BANK_FUNCTIONREG, ISSI_REG_CONFIG, ISSI_REG_CONFIG_PICTUREMODE)) return false;
 
                 if (!DisplayFrame(_frame)) return false;
 
-                // all LEDs on & 0 PWM
+                // All LEDs on & 0 PWM
                 Clear(); // set each led to 0 PWM
 
                 for (uint8_t f = 0; f < 8; f++)
                 {
+                    Console.WriteLine($"Init frame {f}");
                     for (uint8_t i = 0; i <= 0x11; i++)
-                        if (!WriteRegister8(f, i, 0xff)) return false;  // each 8 LEDs on
+                    {
+                        Console.WriteLine($"Set pixel {i} = 0xff");
+                        if (!WriteRegister(f, i, 0xff)) return false;
+                    }
                 }
 
-                if (!WriteRegister8(ISSI_BANK_FUNCTIONREG, ISSI_REG_SHUTDOWN, 0x01)) return false; // out of shutdown
+                if (!WriteRegister(ISSI_BANK_FUNCTIONREG, ISSI_REG_SHUTDOWN, 0x01)) return false; // out of shutdown
 
                 return AudioSync(false);
             }
@@ -287,7 +289,7 @@ namespace MadeInTheUSB.Adafruit
         public bool DisplayFrame(int f)
         {
             if (f > 7) f = 0;
-            return this.WriteRegister8(ISSI_BANK_FUNCTIONREG, ISSI_REG_PICTUREFRAME, (uint8_t)f);
+            return this.WriteRegister(ISSI_BANK_FUNCTIONREG, ISSI_REG_PICTUREFRAME, (uint8_t)f);
         }
 
         public bool SelectFrame(int b)
@@ -315,28 +317,27 @@ namespace MadeInTheUSB.Adafruit
                 frame = this._frame;
             if (lednum >= 144)
                 return;
-            WriteRegister8((uint8_t)frame, (uint8_t)(ISSI_PWM_REGISTER_LED0 + lednum), pwm);
+            WriteRegister((uint8_t)frame, (uint8_t)(ISSI_PWM_REGISTER_LED0 + lednum), pwm);
         }
 
         private bool AudioSync(bool sync)
         {
             if (sync)
             {
-                return this.WriteRegister8(ISSI_BANK_FUNCTIONREG, ISSI_REG_AUDIOSYNC, 0x1);
+                return this.WriteRegister(ISSI_BANK_FUNCTIONREG, ISSI_REG_AUDIOSYNC, 0x1);
             }
             else
             {
-                return this.WriteRegister8(ISSI_BANK_FUNCTIONREG, ISSI_REG_AUDIOSYNC, 0x0);
+                return this.WriteRegister(ISSI_BANK_FUNCTIONREG, ISSI_REG_AUDIOSYNC, 0x0);
             }
         }
 
         //private uint __currentBaud = 0;
         //private bool __resetBaudRate = false;
 
-        private bool WriteRegister8(uint8_t b, uint8_t reg, uint8_t data)
+        private bool WriteRegister(uint8_t b, uint8_t reg, uint8_t data)
         {
             if (!this.SelectFrame(b)) return false;
-            //return ((Ii2cOut)this).i2c_WriteBuffer(new byte[2] { (byte)reg, (byte)data });
             return this._i2cDevice.WriteBuffer(new byte[2] { (byte)reg, (byte)data }, this.DeviceId);
         }
     }
