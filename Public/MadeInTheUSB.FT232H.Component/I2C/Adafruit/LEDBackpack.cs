@@ -92,8 +92,8 @@ namespace MadeInTheUSB.Adafruit
         public const int MAX_ROW = 8;
 
         private byte[] _displayBuffer = new byte[MAX_ROW];
-        private const byte DEFAULT_I2C_ADDRESS_0 = 0x71;
-        private const byte DEFAULT_I2C_ADDRESS_1 = 0x70;
+        private const byte DEFAULT_I2C_ADDRESS_0 = 0x70;
+        private const byte DEFAULT_I2C_ADDRESS_1 = 0x71;
         /// <summary>
         /// See datasheet section "Display Memory – RAM Structure"
         /// </summary>
@@ -149,7 +149,7 @@ namespace MadeInTheUSB.Adafruit
         }
 
 
-        public bool Detect(byte addr0 = DEFAULT_I2C_ADDRESS_0, byte addr1 = DEFAULT_I2C_ADDRESS_1)
+        public bool Detect(byte addr0 = DEFAULT_I2C_ADDRESS_1, byte addr1 = DEFAULT_I2C_ADDRESS_0)
         {
             try
             {

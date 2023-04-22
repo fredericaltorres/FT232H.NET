@@ -197,7 +197,7 @@ namespace MadeInTheUSB.FT232H.Console
         {
             System.Console.Clear();
             System.Console.WriteLine("Detecting/Initializing device");
-            var i2cDevice = new I2CDevice(I2CClockSpeeds.FAST_MODE_400Khz, hardwareProgressBarOn: true, fastMode: true);
+            var i2cDevice = new I2CDevice(I2CClockSpeeds.FAST_MODE_1_Mhz, hardwareProgressBarOn: true);
             i2cDevice.Log = true;
 
             System.Console.Clear();
@@ -214,20 +214,20 @@ namespace MadeInTheUSB.FT232H.Console
                 ledBackPack8x8 = null;
             }
 
-            var tempSensor = new MCP9808_TemperatureSensor(i2cDevice);
-            if (!tempSensor.Begin())
-            {
-                tempSensor = null;
-            }
+            //var tempSensor = new MCP9808_TemperatureSensor(i2cDevice);
+            //if (!tempSensor.Begin())
+            //{
+            //    tempSensor = null;
+            //}
 
             while (true)
             {
-                if(tempSensor != null)
-                {
-                    var FahrenheitTemp = tempSensor.GetTemperature(TemperatureType.Fahrenheit);
-                    var celciusTemp = tempSensor.GetTemperature(TemperatureType.Celsius);
-                    ConsoleEx.WriteLine($"[{DateTime.Now}] Temp:{FahrenheitTemp:0.00}F /  {celciusTemp:0.00}C", ConsoleColor.White);
-                }
+                //if(tempSensor != null)
+                //{
+                //    var FahrenheitTemp = tempSensor.GetTemperature(TemperatureType.Fahrenheit);
+                //    var celciusTemp = tempSensor.GetTemperature(TemperatureType.Celsius);
+                //    ConsoleEx.WriteLine($"[{DateTime.Now}] Temp:{FahrenheitTemp:0.00}F /  {celciusTemp:0.00}C", ConsoleColor.White);
+                //}
 
                 if(ledBackPack8x8 != null)
                 {
@@ -244,7 +244,7 @@ namespace MadeInTheUSB.FT232H.Console
                     if(k.Key == ConsoleKey.Q) return;
                 }
 
-                Thread.Sleep(400);
+                //Thread.Sleep(50);
             }
         }
 
