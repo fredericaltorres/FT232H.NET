@@ -1,7 +1,9 @@
 ﻿using BufferUtil.Lib;
+using DynamicSugar;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 
@@ -13,13 +15,10 @@ namespace MadeInTheUSB.FT232H
     public class FT232HDeviceBaseClass
     {
         internal static IntPtr _spiHandle = IntPtr.Zero;
-        //internal static IntPtr                _i2cHandle = IntPtr.Zero;
         protected I2CDevice_MPSSE_NotUsed _i2cDevice = null;
-        //internal static SpiConfig _globalConfig;
         protected const int _maxGpio = 8;
         protected const int ValuesDefaultMask = 0;
         protected const int DirectionDefaultMask = 0xFF;
-                
         protected const int _gpioStartIndex = 0;
 
         public byte GpioStartIndex { get { return _gpioStartIndex; } }
@@ -36,9 +35,8 @@ namespace MadeInTheUSB.FT232H
             256, 512, 1024, 2048
         };
 
-        public string LogFile = @"c:\temp\spi.log";
+        public static string LogFile = @"c:\temp\nusbio.protocol.log";
         public bool Log = false;
-
 
         public static int LogTransactionBufferMaxLength = 1024;
 
@@ -52,14 +50,59 @@ namespace MadeInTheUSB.FT232H
             DETECT_DEVICE,
         }
 
+        private static Dictionary<byte, string> registeredDeviceForLogging = new Dictionary<byte, string>();
+
+        public void RegisterDeviceIdForLogging(byte deviceId, Type netType)
+        {
+            if(!registeredDeviceForLogging.ContainsKey(deviceId))
+            {
+                registeredDeviceForLogging.Add(deviceId, netType.Name);
+            }
+        }
+
+        static List<string> _cachedRows = new List<string>();
+        const int _cachedRowsSize = 64;
+        public void ForceWriteLogCache()
+        {
+            WriteCache(null, forceWriteCache: true);
+        }
+
+        public static void WriteCache(string s, bool forceWriteCache = false)
+        {
+            if(s != null)
+                _cachedRows.Add(s);
+            if (_cachedRows.Count == _cachedRowsSize || forceWriteCache)
+            {
+                var sb = new StringBuilder();
+                foreach (var ss in _cachedRows)
+                    sb.AppendLine(ss);
+                File.AppendAllText(LogFile, sb.ToString());
+                _cachedRows.Clear();
+            }
+        }
+
+        public static string TrimPad(string s, int max)
+        {
+            if(s.Length > max) 
+                s = s.Substring(0, max);
+            return s.PadLeft(max);
+        }
+
         public void LogI2CTransaction(I2CTransactionType transactionType, byte deviceId, byte[] bufferOut, byte[] bufferIn, string value = null, int recursiveCounter = 0)
         {
             if (this.Log)
             {
                 var sb = new StringBuilder();
 
-                sb.Append($"[{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff")}]");
-                sb.Append($"IC2 {transactionType.ToString().PadRight(17)} 0x{deviceId:X} ");
+                sb.Append($"[{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff")}] ");
+                sb.Append($"IC2 {transactionType.ToString().PadRight(17)} ");
+
+                if (registeredDeviceForLogging.ContainsKey(deviceId))
+                    sb.Append(TrimPad(registeredDeviceForLogging[deviceId], 16)).Append(" ");
+                else
+                    sb.Append(TrimPad("", 16)).Append(" ");
+
+                sb.Append($"0x{deviceId:X} ");
 
                 if(value != null)
                 {
@@ -68,7 +111,7 @@ namespace MadeInTheUSB.FT232H
 
                 if (bufferOut!= null && bufferOut.Length > 0)
                 {
-                    sb.Append(" OUT:[");
+                    sb.Append("OUT:[");
                     sb.Append(HexaString.ConvertTo(bufferOut, itemFormat: "{0}, ", max: LogTransactionBufferMaxLength));
                     sb.Append("]");
                 }
@@ -80,14 +123,14 @@ namespace MadeInTheUSB.FT232H
                         sb.Append(", ");
                     }
 
-                    sb.Append(" IN: [");
+                    sb.Append("IN: [");
                     sb.Append(HexaString.ConvertTo(bufferIn, itemFormat: "{0}, ", max: LogTransactionBufferMaxLength));
                     sb.Append("]");
                 }
 
                 try
                 {
-                    File.AppendAllText(this.LogFile, sb.ToString() + Environment.NewLine);
+                    WriteCache(sb.ToString());
                 }
                 catch (System.Exception ex)
                 {
@@ -136,7 +179,7 @@ namespace MadeInTheUSB.FT232H
 
                 try
                 {
-                    File.AppendAllText(this.LogFile, sb.ToString() + Environment.NewLine);
+                    WriteCache(sb.ToString());
                 }
                 catch(System.Exception ex)
                 {

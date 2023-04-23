@@ -100,6 +100,9 @@ namespace MadeInTheUSB
 
                     if (!this._i2cDevice.Write1ByteReadUInt16WithRetry(MCP9808_REG_MANUF_ID, MCP9808_REG_MANUF_ID_ANSWER, this.DeviceId)) return false;
                     if (!this._i2cDevice.Write1ByteReadUInt16WithRetry(MCP9808_REG_DEVICE_ID, MCP9808_REG_DEVICE_ID_ANSWER, this.DeviceId)) return false;
+
+                    this._i2cDevice.RegisterDeviceIdForLogging(this.DeviceId, this.GetType());
+
                     return true;
                 }
                 else return false;
@@ -111,7 +114,7 @@ namespace MadeInTheUSB
             }
         }
 
-        public double GetTemperature(TemperatureType type = TemperatureType.Celsius)
+        public double GetTemperature(TemperatureType type = TemperatureType.Celsius, int resetTime = 50)
         {
             try
             {
@@ -135,7 +138,7 @@ namespace MadeInTheUSB
                 // I noticied 15 ms seems to work.
                 // I beleive it is this device that cause the issue to other device
                 // The MCP9808 must affect the state of the I2C bus for another 15 ms after the reading!!!
-                Thread.Sleep(15);
+                Thread.Sleep(resetTime);
             }
         }
 

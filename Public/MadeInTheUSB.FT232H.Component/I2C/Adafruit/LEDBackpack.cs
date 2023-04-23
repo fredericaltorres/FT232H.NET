@@ -104,7 +104,7 @@ namespace MadeInTheUSB.Adafruit
 
         public LEDBackpack(I2CDevice i2cDevice, int16_t width, int16_t height): base(width, height)
         {
-            _i2CDevice = i2cDevice;
+            _i2CDevice = i2cDevice;            
         }
 
         public void DrawPixel(int x, int y, bool color)
@@ -169,12 +169,19 @@ namespace MadeInTheUSB.Adafruit
 
         public bool Begin(int addr = DEFAULT_I2C_ADDRESS_0)
         {
-            return this._begin((byte)addr);
+            var r = this._begin((byte)addr);
+            if(r)
+            {
+                this._i2CDevice.RegisterDeviceIdForLogging((byte)addr, this.GetType());
+            }
+            return r;
         }
 
         private bool _begin(byte addr )
         {
             this.DeviceId = addr;
+
+            this._i2CDevice.RegisterDeviceIdForLogging((byte)addr, this.GetType());
 
             if (this._i2CDevice.DetectDevice(this.DeviceId))
             {

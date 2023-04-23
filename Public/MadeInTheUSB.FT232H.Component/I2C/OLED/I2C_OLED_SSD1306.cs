@@ -155,6 +155,8 @@ namespace MadeInTheUSB.Display
         {
             this.DeviceId = deviceId; // 0x3D;
 
+            this._i2cDevice.RegisterDeviceIdForLogging((byte)this.DeviceId, this.GetType());
+
             if (this.Is64RowsDevice)
                 Init128x64();
             else

@@ -81,13 +81,11 @@ namespace MadeInTheUSB.FT232H
                     FTDIDeviceInfo cInfo;
                     var channelInfoStatus = LibMpsse_AccessToCppDll.I2C_GetChannelInfo(i, out cInfo);
                     CheckResult(channelInfoStatus);
-                    System.Console.WriteLine($"Flags: {cInfo.Flags}");
-                    System.Console.WriteLine($"Type: {cInfo.Type}");
-                    System.Console.WriteLine($"ID: {cInfo.ID}");
-                    System.Console.WriteLine($"LocId: {cInfo.LocId}");
-                    System.Console.WriteLine($"SerialNumber: {cInfo.SerialNumber}");
-                    System.Console.WriteLine($"Description: {cInfo.Description}");
-                    System.Console.WriteLine($"ftHandle: {cInfo.ftHandle}");
+                    //System.Console.WriteLine($"Flags: {cInfo.Flags}");
+                    //System.Console.WriteLine($"Type: {cInfo.Type}");
+                    //System.Console.WriteLine($"ID: {cInfo.ID}");
+                    //System.Console.WriteLine($"LocId: {cInfo.LocId}");
+                    System.Console.WriteLine($"Nusbio/2 (FT232H-I2C mode) SerialNumber: {cInfo.SerialNumber}, Description: {cInfo.Description}");
                 }
             }
 

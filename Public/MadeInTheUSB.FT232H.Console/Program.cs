@@ -233,9 +233,23 @@ namespace MadeInTheUSB.FT232H.Console
         private static void I2CMultiDeviceDemo()
         {
             System.Console.Clear();
-            System.Console.WriteLine("Detecting/Initializing device");
+            System.Console.WriteLine("Detect/initialize Nusbio/2 (FT232H)");
             var i2cDevice = new I2CDevice(I2CClockSpeeds.FAST_MODE_1_Mhz, hardwareProgressBarOn: true, fastMode: true);
             i2cDevice.Log = true;
+
+            System.Console.WriteLine("Detect/initialize 8x8 Matrix Device");
+            var ledBackPackManager = new MultiLEDBackpackManager();
+            ledBackPackManager.Add(i2cDevice, 8, 8, 0x70);
+
+            System.Console.WriteLine("Detect/initialize temperature sensor MCP9808 Device");
+            var tempSensor = new MCP9808_TemperatureSensor(i2cDevice);
+            if (!tempSensor.Begin())
+                tempSensor = null;
+
+            System.Console.WriteLine("Detect/initialize OLED Device 128x32");
+            var oled = new I2C_OLED_SSD1306(i2cDevice, 128, 32);
+            if (!oled.Begin())
+                oled = null;
 
             System.Console.Clear();
             ConsoleEx.TitleBar(0, "Nusbio /2 - FT232H Library", ConsoleColor.Yellow, ConsoleColor.DarkBlue);
@@ -243,29 +257,16 @@ namespace MadeInTheUSB.FT232H.Console
             ConsoleEx.WriteMenu(0, 2, "Q)uit");
             System.Console.WriteLine("");
 
-            var ledBackPackManager = new MultiLEDBackpackManager();
-            ledBackPackManager.Add(i2cDevice, 8, 8, 0x70);
-            ledBackPackManager.Add(i2cDevice, 8, 8, 0x71);
-
-            var tempSensor = new MCP9808_TemperatureSensor(i2cDevice);
-            if (!tempSensor.Begin())
-            {
-                tempSensor = null;
-            }
-
-            var oled = new I2C_OLED_SSD1306(i2cDevice, 128, 32);
-            if (!oled.Begin())
-            {
-                oled = null;
-            }
-
             while (true)
             {
+                i2cDevice.ForceWriteLogCache();
+                ConsoleEx.WriteLine($"", ConsoleColor.White);
+
                 var tempInfoString = "No temperature info";
                 if (tempSensor != null)
                 {
-                    var FahrenheitTemp = tempSensor.GetTemperature(TemperatureType.Fahrenheit);
-                    var celciusTemp = tempSensor.GetTemperature(TemperatureType.Celsius);
+                    var FahrenheitTemp = tempSensor.GetTemperature(TemperatureType.Fahrenheit, resetTime: 50);
+                    var celciusTemp = tempSensor.GetTemperature(TemperatureType.Celsius, resetTime:50);
                     tempInfoString = $"{FahrenheitTemp:0.00}F / {celciusTemp:0.00}C";
                     ConsoleEx.WriteLine($"[{DateTime.Now}] Temp:{tempInfoString}", ConsoleColor.White);
                 }
@@ -285,7 +286,6 @@ namespace MadeInTheUSB.FT232H.Console
                     var k = System.Console.ReadKey(true);
                     if(k.Key == ConsoleKey.Q) return;
                 }
-                //Thread.Sleep(50);
             }
         }
 
