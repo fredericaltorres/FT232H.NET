@@ -261,11 +261,18 @@ namespace MadeInTheUSB.FT232H.Console
 
             while (true)
             {
+                var tempInfoString = "No temperature info";
                 if (tempSensor != null)
                 {
                     var FahrenheitTemp = tempSensor.GetTemperature(TemperatureType.Fahrenheit);
                     var celciusTemp = tempSensor.GetTemperature(TemperatureType.Celsius);
-                    ConsoleEx.WriteLine($"[{DateTime.Now}] Temp:{FahrenheitTemp:0.00}F /  {celciusTemp:0.00}C", ConsoleColor.White);
+                    tempInfoString = $"{FahrenheitTemp:0.00}F / {celciusTemp:0.00}C";
+                    ConsoleEx.WriteLine($"[{DateTime.Now}] Temp:{tempInfoString}", ConsoleColor.White);
+                }
+
+                if(oled != null)
+                {
+                    oled.DrawWindow(" OLED ", tempInfoString);
                 }
 
                 if (ledBackPackManager != null)

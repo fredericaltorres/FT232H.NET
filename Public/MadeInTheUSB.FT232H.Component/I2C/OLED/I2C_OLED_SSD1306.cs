@@ -151,15 +151,10 @@ namespace MadeInTheUSB.Display
             base.SendCommand((byte)command, commands);
         }
 
-        public bool Begin(bool invert = false, uint8_t contrast = 128, uint8_t Vpp = 0)
+        public bool Begin(byte deviceId = 0x3C, bool invert = false, uint8_t contrast = 128, uint8_t Vpp = 0)
         {
-            //this.DeviceId = this._i2cDevice.DetectI2CDevice(PossibleI2COleAddress);
-            //if (this.DeviceId == -1)
-            //    return false;
+            this.DeviceId = deviceId; // 0x3D;
 
-            this.DeviceId = 0x3D;
-            this.DeviceId = 0x3C;
-            
             if (this.Is64RowsDevice)
                 Init128x64();
             else
