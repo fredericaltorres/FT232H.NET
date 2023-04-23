@@ -20,7 +20,7 @@ namespace MadeInTheUSB.FT232H
         private const int _latencyTimer = 200; //255; // Hz
         private byte _direction;
         private byte _gpo;
-        private FtdiI2CTransferOptions _fastModeFlag = FtdiI2CTransferOptions.None;
+        public  FtdiI2CTransferOptions FastModeFlag = FtdiI2CTransferOptions.None;
 
         public IDigitalWriteRead Gpios = null;
         public I2CGpioIImplementationDevice GpiosPlus;
@@ -30,7 +30,7 @@ namespace MadeInTheUSB.FT232H
         {
             if(fastMode)
             {
-                _fastModeFlag = FtdiI2CTransferOptions.FastTransfer;
+                FastModeFlag = FtdiI2CTransferOptions.FastTransfer;
             }
             _clockSpeed = clockSpeed;
             this.Init();
@@ -63,7 +63,7 @@ namespace MadeInTheUSB.FT232H
 
         void InitLibAndHandle()
         {
-            FtdiMpsseSPIResult result;
+            FtdiMpsseResult result;
 
             if (_handle != IntPtr.Zero)
                 return;
@@ -96,7 +96,7 @@ namespace MadeInTheUSB.FT232H
             CheckResult(result);
 
             if (_handle == IntPtr.Zero)
-                throw new I2CException(FtdiMpsseSPIResult.InvalidHandle);
+                throw new I2CException(FtdiMpsseResult.InvalidHandle);
 
             result = LibMpsse_AccessToCppDll.I2C_InitChannel(_handle, ref _config);
 
@@ -128,11 +128,11 @@ namespace MadeInTheUSB.FT232H
             base.LogI2CTransaction(I2CTransactionType.WRITE, (byte)deviceId, array, null);
 
             var result = _write(array, array.Length, out writtenAmount,
-                _fastModeFlag |
+                FastModeFlag |
                 FtdiI2CTransferOptions.StartBit     |
                 FtdiI2CTransferOptions.StopBit, (byte)deviceId);
 
-            return result == FtdiMpsseSPIResult.Ok;
+            return result == FtdiMpsseResult.Ok;
         }
 
         public bool Write(int value, byte deviceId, bool checkForNAck = false)
@@ -179,20 +179,20 @@ namespace MadeInTheUSB.FT232H
             *The I2C_DeviceRead and I2C_DeviceWrite functions send commands to
             */
 
-            var flags = _fastModeFlag | FtdiI2CTransferOptions.StartBit | FtdiI2CTransferOptions.StopBit;
+            var flags = FastModeFlag | FtdiI2CTransferOptions.StartBit | FtdiI2CTransferOptions.StopBit;
             if (checkForNAck)
             {
                 // flags |= FtdiI2CTransferOptions.BreakOnNack | FtdiI2CTransferOptions.NackLastByte;
                 flags |= FtdiI2CTransferOptions.NackLastByte;
             }
             var result = _write(array, array.Length, out writtenAmount, flags, deviceId);
-            return result == FtdiMpsseSPIResult.Ok;
+            return result == FtdiMpsseResult.Ok;
         }
 
-        public FtdiMpsseSPIResult _write(byte[] buffer, int sizeToTransfer, out int sizeTransfered, FtdiI2CTransferOptions options, byte deviceId)
+        public FtdiMpsseResult _write(byte[] buffer, int sizeToTransfer, out int sizeTransfered, FtdiI2CTransferOptions options, byte deviceId)
         {
             var result = LibMpsse_AccessToCppDll.I2C_DeviceWrite(_handle, deviceId, sizeToTransfer, buffer, out sizeTransfered, options);
-            if(result == FtdiMpsseSPIResult.Ok)
+            if(result == FtdiMpsseResult.Ok)
                 base.LogI2CTransaction(I2CTransactionType.WRITE, deviceId, null, buffer);
             else
                 base.LogI2CTransaction(I2CTransactionType.ERROR, deviceId, null, null);
@@ -251,11 +251,11 @@ namespace MadeInTheUSB.FT232H
             return (UInt16)value;
         }
 
-        private FtdiMpsseSPIResult _read2(byte[] buffer, int sizeToTransfer, out int sizeTransfered, FtdiI2CTransferOptions options, byte deviceid)
+        private FtdiMpsseResult _read2(byte[] buffer, int sizeToTransfer, out int sizeTransfered, FtdiI2CTransferOptions options, byte deviceid)
         {
             var result = LibMpsse_AccessToCppDll.I2C_DeviceRead(_handle, deviceid, sizeToTransfer, buffer, out sizeTransfered, options);
             CheckResult(result);
-            if (result == FtdiMpsseSPIResult.Ok)
+            if (result == FtdiMpsseResult.Ok)
                 base.LogI2CTransaction(I2CTransactionType.READ, deviceid, null, buffer);
             else
                 base.LogI2CTransaction(I2CTransactionType.ERROR, deviceid, null, null);
@@ -281,16 +281,16 @@ namespace MadeInTheUSB.FT232H
             
             var result = LibMpsse_AccessToCppDll.I2C_DeviceRead( _handle, deviceId, buffer.Length, buffer, out sizeTransfered, flags);
             CheckResult(result);
-            if (result == FtdiMpsseSPIResult.Ok)
+            if (result == FtdiMpsseResult.Ok)
                 base.LogI2CTransaction(I2CTransactionType.READ, deviceId, null, buffer);
             else
                 base.LogI2CTransaction(I2CTransactionType.ERROR, deviceId, null, null);
-            return result == FtdiMpsseSPIResult.Ok;
+            return result == FtdiMpsseResult.Ok;
         }
 
-        protected static void CheckResult(FtdiMpsseSPIResult result)
+        protected static void CheckResult(FtdiMpsseResult result)
         {
-            if (result != FtdiMpsseSPIResult.Ok)
+            if (result != FtdiMpsseResult.Ok)
                 throw new I2CException(result);
         }
 
@@ -352,7 +352,7 @@ namespace MadeInTheUSB.FT232H
             int value;
             var status = LibMpsse_AccessToCppDll.FT_ReadGPIO(_handle, out value);
             CheckResult(status);
-            if (status != FtdiMpsseSPIResult.Ok)
+            if (status != FtdiMpsseResult.Ok)
                 return -1;
             return value;
         }

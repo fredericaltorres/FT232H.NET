@@ -43,7 +43,7 @@ namespace MadeInTheUSB.FT232H
             var result = CheckResult(LibMpsse_AccessToCppDll.SPI_OpenChannel(_ftdiMpsseChannelConfig.ChannelIndex, out _spiHandle));
 
             if (_spiHandle == IntPtr.Zero)
-                throw new SpiChannelNotConnectedException(FtdiMpsseSPIResult.InvalidHandle);
+                throw new SpiChannelNotConnectedException(FtdiMpsseResult.InvalidHandle);
 
             result = CheckResult(LibMpsse_AccessToCppDll.SPI_InitChannel(_spiHandle, ref _spiConfig));
         }
@@ -56,9 +56,9 @@ namespace MadeInTheUSB.FT232H
             libMPSSE_Initializator.Cleanup();
         }
 
-        public FtdiMpsseSPIResult CheckResult(FtdiMpsseSPIResult spiResult)
+        public FtdiMpsseResult CheckResult(FtdiMpsseResult spiResult)
         {
-            if (spiResult != FtdiMpsseSPIResult.Ok)
+            if (spiResult != FtdiMpsseResult.Ok)
                 throw new SpiChannelNotConnectedException(spiResult);
             return spiResult;
         }
@@ -72,12 +72,12 @@ namespace MadeInTheUSB.FT232H
             }
         }
 
-        public bool Ok(FtdiMpsseSPIResult spiResult)
+        public bool Ok(FtdiMpsseResult spiResult)
         {
-            return (spiResult == FtdiMpsseSPIResult.Ok);
+            return (spiResult == FtdiMpsseResult.Ok);
         }
 
-        private FtdiMpsseSPIResult _write(byte[] buffer, int sizeToTransfer, out int sizeTransfered, SpiChipSelectPins cs, FtdiSpiTransferOptions options = FtdiSpiTransferOptions.ToogleChipSelect)
+        private FtdiMpsseResult _write(byte[] buffer, int sizeToTransfer, out int sizeTransfered, SpiChipSelectPins cs, FtdiSpiTransferOptions options = FtdiSpiTransferOptions.ToogleChipSelect)
         {
             EnforceRightConfiguration(cs);
             var r = LibMpsse_AccessToCppDll.SPI_Write(_spiHandle, buffer, sizeToTransfer, out sizeTransfered, options);
@@ -85,7 +85,7 @@ namespace MadeInTheUSB.FT232H
             return r;
         }
 
-        public FtdiMpsseSPIResult _read(byte[] buffer, int sizeToTransfer, out int sizeTransfered, FtdiSpiTransferOptions options, SpiChipSelectPins cs)
+        public FtdiMpsseResult _read(byte[] buffer, int sizeToTransfer, out int sizeTransfered, FtdiSpiTransferOptions options, SpiChipSelectPins cs)
         {
             EnforceRightConfiguration(cs);
             var r = LibMpsse_AccessToCppDll.SPI_Read(_spiHandle, buffer, sizeToTransfer, out sizeTransfered, options);
@@ -93,7 +93,7 @@ namespace MadeInTheUSB.FT232H
             return r;
         }
 
-        private FtdiMpsseSPIResult _readWriteOneTransaction(byte[] bufferSend, byte[] bufferReceive, FtdiSpiTransferOptions options, SpiChipSelectPins cs)
+        private FtdiMpsseResult _readWriteOneTransaction(byte[] bufferSend, byte[] bufferReceive, FtdiSpiTransferOptions options, SpiChipSelectPins cs)
         {
             EnforceRightConfiguration(cs);
             int sizeTransferred;
@@ -102,33 +102,33 @@ namespace MadeInTheUSB.FT232H
             return r;
         }
 
-        public FtdiMpsseSPIResult Write(byte[] buffer, SpiChipSelectPins cs)
+        public FtdiMpsseResult Write(byte[] buffer, SpiChipSelectPins cs)
         {
             int sizeTransfered = 0;
             return _write(buffer, buffer.Length, out sizeTransfered, cs, FtdiSpiTransferOptions.ToogleChipSelect);
         }
 
-        public FtdiMpsseSPIResult QueryReadWriteOneTransaction(byte [] bufferSent, byte [] bufferReceived, SpiChipSelectPins cs)
+        public FtdiMpsseResult QueryReadWriteOneTransaction(byte [] bufferSent, byte [] bufferReceived, SpiChipSelectPins cs)
         {
             var r = _readWriteOneTransaction(bufferSent, bufferReceived, FtdiSpiTransferOptions.ToogleChipSelect, cs);
             return r;
         }
 
-        public FtdiMpsseSPIResult Read(byte[] buffer, SpiChipSelectPins cs)
+        public FtdiMpsseResult Read(byte[] buffer, SpiChipSelectPins cs)
         {
             int sizeTransfered;
             var r = _read(buffer, buffer.Length, out sizeTransfered, FtdiSpiTransferOptions.ToogleChipSelect, cs);
             return r;
         }        
 
-        public FtdiMpsseSPIResult QueryReadWriteTwoTransaction(byte [] bufferSent, byte [] bufferReceived, SpiChipSelectPins cs)
+        public FtdiMpsseResult QueryReadWriteTwoTransaction(byte [] bufferSent, byte [] bufferReceived, SpiChipSelectPins cs)
         {
             int byteSent = 0;
             var ec = this._write(bufferSent, bufferSent.Length, out byteSent, cs, FtdiSpiTransferOptions.ChipselectEnable);
-            if (ec == FtdiMpsseSPIResult.Ok)
+            if (ec == FtdiMpsseResult.Ok)
             {
                 ec = this._read(bufferReceived, bufferReceived.Length, out byteSent, FtdiSpiTransferOptions.ChipselectDisable, cs);
-                return (ec == FtdiMpsseSPIResult.Ok) ? FtdiMpsseSPIResult.Ok : ec;
+                return (ec == FtdiMpsseResult.Ok) ? FtdiMpsseResult.Ok : ec;
             }
             else return ec;
         }

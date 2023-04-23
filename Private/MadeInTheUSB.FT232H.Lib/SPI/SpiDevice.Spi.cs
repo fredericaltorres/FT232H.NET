@@ -74,7 +74,7 @@ namespace MadeInTheUSB.FT232H
                 _values &= ~PowerOf2[pin];
 
             var r = LibMpsse_AccessToCppDll.FT_WriteGPIO(_spiHandle, _directions, _values);
-            if (r != FtdiMpsseSPIResult.Ok)
+            if (r != FtdiMpsseResult.Ok)
             {
                 if (Debugger.IsAttached) Debugger.Break();
                 throw new GpioException(r, nameof(DigitalWrite));
@@ -96,7 +96,7 @@ namespace MadeInTheUSB.FT232H
                 _directions &= ~PowerOf2[pin];
 
             var r = LibMpsse_AccessToCppDll.FT_WriteGPIO(_spiHandle, _directions, _values);
-            if (r != FtdiMpsseSPIResult.Ok)
+            if (r != FtdiMpsseResult.Ok)
             {
                 if (Debugger.IsAttached) Debugger.Break();
                 throw new GpioException(r, nameof(SetPinMode));
@@ -105,14 +105,14 @@ namespace MadeInTheUSB.FT232H
         public void SetGpioMask(byte mask)
         {
             var r = this.WriteGPIOMask(mask);
-            if (r != FtdiMpsseSPIResult.Ok)
+            if (r != FtdiMpsseResult.Ok)
                 throw new GpioException(r, nameof(SetGpioMask));
         }
         public byte GetGpioMask(bool forceRead = false)
         {
             var values = this.ReadGPIOMask();
             if (values == -1)
-                throw new GpioException(FtdiMpsseSPIResult.IoError, nameof(GetGpioMask));
+                throw new GpioException(FtdiMpsseResult.IoError, nameof(GetGpioMask));
             return (byte)values;
         }
         public byte GpioStartIndex { get { return _gpioStartIndex; } }
@@ -120,11 +120,11 @@ namespace MadeInTheUSB.FT232H
         {
             throw new NotImplementedException();
         }
-        private FtdiMpsseSPIResult WriteGPIOMask(byte values)
+        private FtdiMpsseResult WriteGPIOMask(byte values)
         {
             return LibMpsse_AccessToCppDll.FT_WriteGPIO(_spiHandle, values);
         }
-        private FtdiMpsseSPIResult WriteGPIOMask(byte directions, byte values)
+        private FtdiMpsseResult WriteGPIOMask(byte directions, byte values)
         {
             _values = values;
             _directions = directions;
@@ -134,7 +134,7 @@ namespace MadeInTheUSB.FT232H
         {
             int vals;
             var r = LibMpsse_AccessToCppDll.FT_ReadGPIO(_spiHandle, out vals);
-            if (r == FtdiMpsseSPIResult.Ok)
+            if (r == FtdiMpsseResult.Ok)
                 return vals;
             else
                 return -1;

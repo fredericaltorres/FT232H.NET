@@ -49,6 +49,7 @@
 using uint8_t = System.Byte;
 using MadeInTheUSB.FT232H;
 using System.Collections.Generic;
+using System;
 
 namespace MadeInTheUSB.Display
 {
@@ -72,39 +73,39 @@ namespace MadeInTheUSB.Display
 
         public enum SSD1306_API
         {
-            SETCONTRAST = 0x81,
-            DISPLAYALLON_RESUME = 0xA4,
-            DISPLAYALLON = 0xA5,
-            NORMALDISPLAY = 0xA6,
-            INVERTDISPLAY = 0xA7,
-            DISPLAYOFF = 0xAE,
-            DISPLAYON = 0xAF,
-            SETDISPLAYOFFSET = 0xD3,
+            SET_CONTRAST = 0x81,
+            DISPLAY_ALL_ON_RESUME = 0xA4,
+            DISPLAY_ALL_ON = 0xA5,
+            NORMAL_DISPLAY = 0xA6,
+            INVERT_DISPLAY = 0xA7,
+            DISPLAY_OFF = 0xAE,
+            DISPLAY_ON = 0xAF,
+            SET_DISPLAY_OFFSET = 0xD3,
 
             SET_COM_PINS_CONFIGURATION = 0xDA,
             SET_COM_PINS_CONFIGURATION_64_ROWS_PARAMETER = 0x12,
             SET_COM_PINS_CONFIGURATION_32_ROWS_PARAMETER = 0x02,
 
-            SETVCOMDETECT = 0xDB,
-            SETVCOMDETECT_PARAMETER = 0x40,
-            SEGREMAP = 0xA0,
-            SETDISPLAYCLOCKDIV = 0xD5,
-            SETDISPLAYCLOCKDIV_PARAMETER = 0x80,
+            SET_VCOM_DETECT = 0xDB,
+            SET_VCOMDETECT_PARAMETER = 0x40,
+            SEG_REMAP = 0xA0,
+            SET_DISPLAY_CLOCK_DIV = 0xD5,
+            SET_DISPLAY_CLOCK_DIV_PARAMETER = 0x80,
 
-            SETPRECHARGE = 0xD9,
-            SETMULTIPLEX = 0xA8,
-            SSD1306_SETLOWCOLUMN = 0x00,
-            SETHIGHCOLUMN = 0x10,
-            SETHIGHCOLUMN_PARAMETER = 0x01,
+            SET_PRECHARGE = 0xD9,
+            SET_MULTIPLEX = 0xA8,
+            SET_LOW_COLUMN = 0x00,
+            SET_HIGH_COLUMN = 0x10,
+            SET_HIGH_COLUMN_PARAMETER = 0x01,
 
-            SETSTARTLINE = 0x40,
-            MEMORYMODE = 0x20,
-            COLUMNADDR = 0x21,
-            COLUMNADDR_START = 0,
-            COLUMNADDR_END = 128 - 1,
+            SET_START_LINE = 0x40,
+            MEMORY_MODE = 0x20,
+            COLUMN_ADDR = 0x21,
+            COLUMN_ADDR_START = 0,
+            COLUMN_ADDR_END = 128 - 1,
             SET_COM_OUTPUT_SCAN_DIRECTION_INC = 0xC0,
-            COMSCANDEC = 0xC8,
-            CHARGEPUMP = 0x8D,
+            COM_SCAN_DEC = 0xC8,
+            CHARGE_PUMP = 0x8D,
 
             //EXTERNAL_VCC = 0x01,
             //SWITCH_CAP_VCC = 0x02,
@@ -123,20 +124,20 @@ namespace MadeInTheUSB.Display
             LEFT_HORIZONTAL_SCROLL = 0x27,
             VERTICAL_AND_RIGHT_HORIZONTAL_SCROLL = 0x29,
             VERTICAL_AND_LEFT_HORIZONTAL_SCROLL = 0x2A,
-            SH1106_SETLOWCOLUMN = 0x02,
-            SH1106_PAGE_ADDR = 0xB0,
-            SH1106_SET_SEGMENT_REMAP = 0xA1,
+            //SH1106_SETLOWCOLUMN = 0x02,
+            //SH1106_PAGE_ADDR = 0xB0,
+            //SH1106_SET_SEGMENT_REMAP = 0xA1,
             PAGE_ADDR = 0x22,
             START_PAGE_ADDR = 0,
-            END_PAGE_ADDR_32_ROWS = 3,/*(int height) this.Height == 64 ? 7 : 3;*/
-            END_PAGE_ADDR_64_ROWS = 7,/*(int height) this.Height == 64 ? 7 : 3;*/
+            END_PAGE_ADDR_32_ROWS = 4-1,/*(int height) this.Height == 64 ? 7 : 3;*/
+            END_PAGE_ADDR_64_ROWS = 8-1,/*(int height) this.Height == 64 ? 7 : 3;*/
         };
 
 
         public static List<byte> PossibleI2COleAddress = new List<uint8_t>()  { 0x3C, 0x3D }; // 0x78, 
 
         public I2C_OLED_SSD1306(I2CDevice i2cDevice, int width, int height, bool debug = false) : 
-            base(i2cDevice, width, height, new List<uint8_t>() { (byte)SSD1306_API.SETSTARTLINE }, OledDriver.SSD1306)
+            base(i2cDevice, width, height, new List<uint8_t>() { (byte)SSD1306_API.SET_START_LINE }, OledDriver.SSD1306)
         {
         }
 
@@ -156,9 +157,9 @@ namespace MadeInTheUSB.Display
             //if (this.DeviceId == -1)
             //    return false;
 
+            this.DeviceId = 0x3D;
             this.DeviceId = 0x3C;
-            //this.DeviceId = 0x3D;
-
+            
             if (this.Is64RowsDevice)
                 Init128x64();
             else
@@ -171,52 +172,52 @@ namespace MadeInTheUSB.Display
 
         private void Init128x64()
         {
-            this.SendCommand(SSD1306_API.DISPLAYOFF);
-            this.SendCommand(SSD1306_API.SETDISPLAYCLOCKDIV, (byte)SSD1306_API.SETDISPLAYCLOCKDIV_PARAMETER);
+            this.SendCommand(SSD1306_API.DISPLAY_OFF);
+            this.SendCommand(SSD1306_API.SET_DISPLAY_CLOCK_DIV, (byte)SSD1306_API.SET_DISPLAY_CLOCK_DIV_PARAMETER);
 
-            this.SendCommand(SSD1306_API.SETMULTIPLEX, this.Height - 1); // 64MUX for 128 x 64 version - 32MUX for 128 x 32 version
+            this.SendCommand(SSD1306_API.SET_MULTIPLEX, this.Height - 1); // 64MUX for 128 x 64 version - 32MUX for 128 x 32 version
 
-            this.SendCommand(SSD1306_API.SETDISPLAYOFFSET, 0x00); // no offset h64
-            this.SendCommand((byte)(SSD1306_API.SETSTARTLINE | 0x0));
-            this.SendCommand(SSD1306_API.CHARGEPUMP);
+            this.SendCommand(SSD1306_API.SET_DISPLAY_OFFSET, 0x00); // no offset h64
+            this.SendCommand((byte)(SSD1306_API.SET_START_LINE | 0x0));
+            this.SendCommand(SSD1306_API.CHARGE_PUMP);
             this.SendCommand(this.IsExternalVcc ? SSD1306_API._0x10 : SSD1306_API._0x14);
-            this.SendCommand(SSD1306_API.MEMORYMODE, (byte)SSD1306_MEMORY_MODE.HORIZONTAL_MODE);
+            this.SendCommand(SSD1306_API.MEMORY_MODE, (byte)SSD1306_MEMORY_MODE.HORIZONTAL_MODE);
 
 
-            this.SendCommand(((byte)SSD1306_API.SEGREMAP) | 0x1); // REMAPPING OF X DIRECTION FRED
+            this.SendCommand(((byte)SSD1306_API.SEG_REMAP) | 0x1); // REMAPPING OF X DIRECTION FRED
 
             this.SendCommand(SSD1306_API.SET_COM_OUTPUT_SCAN_DIRECTION_INC, 0);
-            this.SendCommand(SSD1306_API.COMSCANDEC);
+            this.SendCommand(SSD1306_API.COM_SCAN_DEC);
 
             this.SendCommand(SSD1306_API.SET_COM_PINS_CONFIGURATION, (byte)SSD1306_API.SET_COM_PINS_CONFIGURATION_64_ROWS_PARAMETER);
             //this.SendCommand(SSD1306_API.SET_COM_PINS_CONFIGURATION, (byte)0x02);
 
-            this.SendCommand(SSD1306_API.SETCONTRAST);
+            this.SendCommand(SSD1306_API.SET_CONTRAST);
             this.SendCommand(this.IsExternalVcc ? SSD1306_API._0x9F : SSD1306_API._0xCF);
-            this.SendCommand(SSD1306_API.SETPRECHARGE, (byte)(this.IsExternalVcc ? SSD1306_API._0x22 : SSD1306_API._0xF1));
-            this.SendCommand(SSD1306_API.SETVCOMDETECT, (byte)SSD1306_API.SETVCOMDETECT_PARAMETER);
-            this.SendCommand(SSD1306_API.DISPLAYALLON_RESUME);
-            this.SendCommand(SSD1306_API.NORMALDISPLAY);
+            this.SendCommand(SSD1306_API.SET_PRECHARGE, (byte)(this.IsExternalVcc ? SSD1306_API._0x22 : SSD1306_API._0xF1));
+            this.SendCommand(SSD1306_API.SET_VCOM_DETECT, (byte)SSD1306_API.SET_VCOMDETECT_PARAMETER);
+            this.SendCommand(SSD1306_API.DISPLAY_ALL_ON_RESUME);
+            this.SendCommand(SSD1306_API.NORMAL_DISPLAY);
 
             // this.SendCommand(SSD1306_API.DEACTIVATE_SCROLL);
 
-            this.SendCommand(SSD1306_API.DISPLAYON);
+            this.SendCommand(SSD1306_API.DISPLAY_ON);
         }
 
         private void Init128x32()
         {
-            this.SendCommand(SSD1306_API.DISPLAYOFF);
-            this.SendCommand(SSD1306_API.SETDISPLAYCLOCKDIV, (byte)SSD1306_API.SETDISPLAYCLOCKDIV_PARAMETER);
-            this.SendCommand(SSD1306_API.SETSTARTLINE | 0x0);
-            this.SendCommand(SSD1306_API.CHARGEPUMP);
+            this.SendCommand(SSD1306_API.DISPLAY_OFF);
+            this.SendCommand(SSD1306_API.SET_DISPLAY_CLOCK_DIV, (byte)SSD1306_API.SET_DISPLAY_CLOCK_DIV_PARAMETER);
+            this.SendCommand(SSD1306_API.SET_START_LINE | 0x0);
+            this.SendCommand(SSD1306_API.CHARGE_PUMP);
             this.SendCommand(this.IsExternalVcc ? SSD1306_API._0x10 : SSD1306_API._0x14);
-            this.SendCommand(SSD1306_API.SETMULTIPLEX, this.Height - 1); // 64MUX for 128 x 64 version - 32MUX for 128 x 32 version
-            this.SendCommand(SSD1306_API.SETDISPLAYOFFSET, 0x00); // no offset h64
-            this.SendCommand(SSD1306_API.MEMORYMODE, (byte)SSD1306_MEMORY_MODE.HORIZONTAL_MODE);
-            this.SendCommand(((byte)SSD1306_API.SEGREMAP) | 0x1); //
-            this.SendCommand(SSD1306_API.COMSCANDEC);
+            this.SendCommand(SSD1306_API.SET_MULTIPLEX, this.Height - 1); // 64MUX for 128 x 64 version - 32MUX for 128 x 32 version
+            this.SendCommand(SSD1306_API.SET_DISPLAY_OFFSET, 0x00); // no offset h64
+            this.SendCommand(SSD1306_API.MEMORY_MODE, (byte)SSD1306_MEMORY_MODE.HORIZONTAL_MODE);
+            this.SendCommand(((byte)SSD1306_API.SEG_REMAP) | 0x1); //
+            this.SendCommand(SSD1306_API.COM_SCAN_DEC);
             this.SendCommand(SSD1306_API.SET_COM_PINS_CONFIGURATION, (byte)(this.Is64RowsDevice ? SSD1306_API.SET_COM_PINS_CONFIGURATION_64_ROWS_PARAMETER : SSD1306_API.SET_COM_PINS_CONFIGURATION_32_ROWS_PARAMETER));
-            this.SendCommand(SSD1306_API.SETCONTRAST);
+            this.SendCommand(SSD1306_API.SET_CONTRAST);
             if (this.Is64RowsDevice)
             {
                 this.SendCommand(this.IsExternalVcc ? SSD1306_API._0x9F : SSD1306_API._0xCF);
@@ -225,11 +226,11 @@ namespace MadeInTheUSB.Display
             {
                 this.SendCommand(SSD1306_API._0x8F); // 32 rows
             }
-            this.SendCommand(SSD1306_API.SETPRECHARGE, (byte)(this.IsExternalVcc ? SSD1306_API._0x22 : SSD1306_API._0xF1));
-            this.SendCommand(SSD1306_API.SETVCOMDETECT, (byte)SSD1306_API.SETVCOMDETECT_PARAMETER);
-            this.SendCommand(SSD1306_API.DISPLAYALLON_RESUME);
+            this.SendCommand(SSD1306_API.SET_PRECHARGE, (byte)(this.IsExternalVcc ? SSD1306_API._0x22 : SSD1306_API._0xF1));
+            this.SendCommand(SSD1306_API.SET_VCOM_DETECT, (byte)SSD1306_API.SET_VCOMDETECT_PARAMETER);
+            this.SendCommand(SSD1306_API.DISPLAY_ALL_ON_RESUME);
             // this.SendCommand(SSD1306_API.DISPLAYALLON_RESUME);
-            this.SendCommand(SSD1306_API.NORMALDISPLAY);
+            this.SendCommand(SSD1306_API.NORMAL_DISPLAY);
             this.SendCommand(SSD1306_API.DEACTIVATE_SCROLL);
 
             //this.SendCommand(SSD1306_API.SH1106_PAGE_ADDR);
@@ -237,12 +238,24 @@ namespace MadeInTheUSB.Display
             //this.SendCommand(SSD1306_API.PAGE_ADDR, (byte)SSD1306_API.START_PAGE_ADDR, (byte)(this.Is64RowsDevice ? SSD1306_API.END_PAGE_ADDR_64_ROWS : SSD1306_API.END_PAGE_ADDR_32_ROWS));
             //this.SendCommand(SSD1306_API.COLUMNADDR, (byte)SSD1306_API.COLUMNADDR_START, (byte)SSD1306_API.COLUMNADDR_END);
 
-            this.SendCommand(SSD1306_API.DISPLAYON);
+            this.SendCommand((byte)SSD1306_API.COLUMN_ADDR, (byte)SSD1306_API.COLUMN_ADDR_START, (byte)SSD1306_API.COLUMN_ADDR_END);
+            this.SendCommand((byte)SSD1306_API.PAGE_ADDR, (byte)SSD1306_API.START_PAGE_ADDR, (byte)(this.Height == 64 ? SSD1306_API.END_PAGE_ADDR_64_ROWS : SSD1306_API.END_PAGE_ADDR_32_ROWS));
+
+            this.SendCommand(SSD1306_API.DISPLAY_ON);
         }
 
         public void Contrast(byte val)
         {
-            this.SendCommand(SSD1306_API.SETCONTRAST, val);
+            this.SendCommand(SSD1306_API.SET_CONTRAST, val);
+        }
+
+        public void Test()
+        {
+            for(var i=0; i < BUF_LEN; i++) 
+            {
+                _buffer[i] = (byte)0xFF;
+            }
+            this.WriteDisplay();
         }
     }
 }

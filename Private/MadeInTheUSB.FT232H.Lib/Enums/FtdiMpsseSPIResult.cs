@@ -4,7 +4,7 @@ using System.Text;
 
 namespace MadeInTheUSB.FT232H
 {
-    public enum FtdiMpsseSPIResult
+    public enum FtdiMpsseResult
     {
         Ok = 0,
         InvalidHandle,

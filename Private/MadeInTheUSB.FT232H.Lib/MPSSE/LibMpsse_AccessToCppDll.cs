@@ -33,56 +33,56 @@ namespace MadeInTheUSB.FT232H
     internal class LibMpsse_AccessToCppDll
     {
         [DllImport(libMPSSE_Initializator.DllName, SetLastError = true, CallingConvention = CallingConvention.Cdecl)]
-        public extern static FtdiMpsseSPIResult I2C_GetNumChannels(out int numChannels);
+        public extern static FtdiMpsseResult I2C_GetNumChannels(out int numChannels);
 
         [DllImport(libMPSSE_Initializator.DllName, SetLastError = true, CallingConvention = CallingConvention.Cdecl)]
-        public static extern FtdiMpsseSPIResult I2C_OpenChannel(int index, out System.IntPtr handle);
+        public static extern FtdiMpsseResult I2C_OpenChannel(int index, out System.IntPtr handle);
 
         [DllImport(libMPSSE_Initializator.DllName, SetLastError = true, CallingConvention = CallingConvention.Cdecl)]
-        public static extern FtdiMpsseSPIResult I2C_InitChannel(System.IntPtr handle, ref SpiChannelConfig config);
+        public static extern FtdiMpsseResult I2C_InitChannel(System.IntPtr handle, ref SpiChannelConfig config);
 
         [DllImport(libMPSSE_Initializator.DllName, SetLastError = true, CallingConvention = CallingConvention.Cdecl)]
-        public extern static FtdiMpsseSPIResult I2C_GetChannelInfo(int index, out FTDIDeviceInfo chanInfo);
+        public extern static FtdiMpsseResult I2C_GetChannelInfo(int index, out FTDIDeviceInfo chanInfo);
 
         [DllImport(libMPSSE_Initializator.DllName, SetLastError = true, CallingConvention = CallingConvention.Cdecl)]
-        public static extern FtdiMpsseSPIResult I2C_DeviceRead(System.IntPtr handle, int deviceAddress, int sizeToTransfer, byte[] buffer, out int sizeTransfered, FtdiI2CTransferOptions options);
+        public static extern FtdiMpsseResult I2C_DeviceRead(System.IntPtr handle, int deviceAddress, int sizeToTransfer, byte[] buffer, out int sizeTransfered, FtdiI2CTransferOptions options);
 
         [DllImport(libMPSSE_Initializator.DllName, SetLastError = true, CallingConvention = CallingConvention.Cdecl)]
-        public static extern FtdiMpsseSPIResult I2C_DeviceWrite(System.IntPtr handle, int deviceAddress, int sizeToTransfer, byte[] buffer, out int sizeTransfered, FtdiI2CTransferOptions options);
+        public static extern FtdiMpsseResult I2C_DeviceWrite(System.IntPtr handle, int deviceAddress, int sizeToTransfer, byte[] buffer, out int sizeTransfered, FtdiI2CTransferOptions options);
 
         [DllImport(libMPSSE_Initializator.DllName, SetLastError = true, CallingConvention = CallingConvention.Cdecl)]
-        public static extern FtdiMpsseSPIResult FT_WriteGPIO(System.IntPtr handle, byte dir, byte value);
+        public static extern FtdiMpsseResult FT_WriteGPIO(System.IntPtr handle, byte dir, byte value);
 
         [DllImport(libMPSSE_Initializator.DllName, SetLastError = true, CallingConvention = CallingConvention.Cdecl)]
-        public static extern FtdiMpsseSPIResult FT_ReadGPIO(System.IntPtr handle, out int value);
+        public static extern FtdiMpsseResult FT_ReadGPIO(System.IntPtr handle, out int value);
 
 
 
 
 
         [DllImport(libMPSSE_Initializator.DllName, SetLastError = true, CallingConvention = CallingConvention.Cdecl)]
-        public extern static FtdiMpsseSPIResult SPI_OpenChannel(int index, out IntPtr handle);
+        public extern static FtdiMpsseResult SPI_OpenChannel(int index, out IntPtr handle);
 
         [DllImport(libMPSSE_Initializator.DllName, SetLastError = true, CallingConvention = CallingConvention.Cdecl)]
-        public extern static FtdiMpsseSPIResult SPI_CloseChannel(IntPtr handle);
+        public extern static FtdiMpsseResult SPI_CloseChannel(IntPtr handle);
 
         [DllImport(libMPSSE_Initializator.DllName, SetLastError = true, CallingConvention = CallingConvention.Cdecl)]
-        public extern static FtdiMpsseSPIResult SPI_GetNumChannels(out int numChannels);
+        public extern static FtdiMpsseResult SPI_GetNumChannels(out int numChannels);
 
         [DllImport(libMPSSE_Initializator.DllName, SetLastError = true, CallingConvention = CallingConvention.Cdecl)]
-        public extern static FtdiMpsseSPIResult SPI_GetChannelInfo(int index, out MpsseDeviceInfo chanInfo);
+        public extern static FtdiMpsseResult SPI_GetChannelInfo(int index, out MpsseDeviceInfo chanInfo);
 
         [DllImport(libMPSSE_Initializator.DllName, SetLastError = true, CallingConvention = CallingConvention.Cdecl)]
-        public extern static FtdiMpsseSPIResult SPI_InitChannel(IntPtr handle, ref SpiConfig config);
+        public extern static FtdiMpsseResult SPI_InitChannel(IntPtr handle, ref SpiConfig config);
 
         [DllImport(libMPSSE_Initializator.DllName, SetLastError = true, CallingConvention = CallingConvention.Cdecl)]
-        public extern static FtdiMpsseSPIResult SPI_ChangeCS(IntPtr handle, FtdiMpsseSpiConfigOptions spiConfigOptions);
+        public extern static FtdiMpsseResult SPI_ChangeCS(IntPtr handle, FtdiMpsseSpiConfigOptions spiConfigOptions);
 
         [DllImport(libMPSSE_Initializator.DllName, SetLastError = true, CallingConvention = CallingConvention.Cdecl)]
-        public extern static FtdiMpsseSPIResult SPI_IsBusy(IntPtr handle, out bool state);
+        public extern static FtdiMpsseResult SPI_IsBusy(IntPtr handle, out bool state);
 
         [DllImport(libMPSSE_Initializator.DllName, SetLastError = true, CallingConvention = CallingConvention.Cdecl)]
-        public extern static FtdiMpsseSPIResult SPI_Read(
+        public extern static FtdiMpsseResult SPI_Read(
             IntPtr handle,
             byte[] buffer,
             int sizeToTransfer,
@@ -90,7 +90,7 @@ namespace MadeInTheUSB.FT232H
             FtdiSpiTransferOptions options);
 
         [DllImport(libMPSSE_Initializator.DllName, SetLastError = true, CallingConvention = CallingConvention.Cdecl)]
-        public extern static FtdiMpsseSPIResult SPI_ReadWrite(
+        public extern static FtdiMpsseResult SPI_ReadWrite(
             IntPtr handle,
             byte[] inBuffer,
             byte[] outBuffer,
@@ -99,20 +99,20 @@ namespace MadeInTheUSB.FT232H
             FtdiSpiTransferOptions transferOptions);
 
         [DllImport(libMPSSE_Initializator.DllName, SetLastError = true, CallingConvention = CallingConvention.Cdecl)]
-        public extern static FtdiMpsseSPIResult SPI_Write(IntPtr handle, byte[] buffer, int sizeToTransfer, out int sizeTransfered, FtdiSpiTransferOptions options);
+        public extern static FtdiMpsseResult SPI_Write(IntPtr handle, byte[] buffer, int sizeToTransfer, out int sizeTransfered, FtdiSpiTransferOptions options);
 
         // Written by Fred on 01.2016
         // http://www.ftdichip.com/Support/Documents/AppNotes/AN_178_User%20Guide%20for%20LibMPSSE-SPI.pdf
         //Private Declare Function MPSEE_SPI_GPIOWrite Lib "libmpsse" Alias "FT_WriteGPIO" (ByVal SPI_ProbeHandle As UInt32, 
         // ByVal Direction As Byte, ByVal Value As Byte) As UInt32
         [DllImport(libMPSSE_Initializator.DllName, SetLastError = true, CallingConvention = CallingConvention.Cdecl)]
-        public extern static FtdiMpsseSPIResult FT_WriteGPIO(
+        public extern static FtdiMpsseResult FT_WriteGPIO(
             IntPtr handle,
             int direction /*0-in 1-out*/,
             int value /*0-low 1-high*/);
 
         [DllImport(libMPSSE_Initializator.DllName, SetLastError = true, CallingConvention = CallingConvention.Cdecl)]
-        public extern static FtdiMpsseSPIResult FT_WriteGPIO(IntPtr handle, int value /*0-low 1-high*/);
+        public extern static FtdiMpsseResult FT_WriteGPIO(IntPtr handle, int value /*0-low 1-high*/);
         
 
         //[DllImport(LibMpsse.DllName, SetLastError = true, CallingConvention = CallingConvention.Cdecl)]

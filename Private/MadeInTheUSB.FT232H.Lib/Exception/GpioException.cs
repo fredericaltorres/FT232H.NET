@@ -7,8 +7,8 @@ namespace MadeInTheUSB.FT232H
 {
     public class GpioException : Exception
     {
-        public FtdiMpsseSPIResult Reason { get; private set; }
-        public GpioException(FtdiMpsseSPIResult res, string message) : base($"GPIO operation failed, {message}. code:{res}")
+        public FtdiMpsseResult Reason { get; private set; }
+        public GpioException(FtdiMpsseResult res, string message) : base($"GPIO operation failed, {message}. code:{res}")
         {
             Reason = res;
         }

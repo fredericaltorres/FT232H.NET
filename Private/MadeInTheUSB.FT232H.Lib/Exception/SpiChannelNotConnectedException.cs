@@ -7,9 +7,9 @@ namespace MadeInTheUSB.FT232H
 {
     public class SpiChannelNotConnectedException : Exception
     {
-        public FtdiMpsseSPIResult Reason { get; private set; }
+        public FtdiMpsseResult Reason { get; private set; }
 
-        public SpiChannelNotConnectedException(FtdiMpsseSPIResult res)
+        public SpiChannelNotConnectedException(FtdiMpsseResult res)
         {
             Reason = res;
         }

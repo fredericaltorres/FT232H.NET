@@ -1052,7 +1052,7 @@ namespace MadeInTheUSB.FT232H.Components
             var r = new SPIResult();
             BytesSentOutCounter += buffer.Count;
 
-            if(this._spi.Write(buffer.ToArray(), this._cs)== FtdiMpsseSPIResult.Ok)
+            if(this._spi.Write(buffer.ToArray(), this._cs)== FtdiMpsseResult.Ok)
                 return r.Succeed();
             else
                 return r.Failed();

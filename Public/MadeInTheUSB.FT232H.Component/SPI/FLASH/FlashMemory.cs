@@ -133,7 +133,7 @@ namespace MadeInTheUSB.FT232H.Components
                         // Winbond specific
                         var spiBufferWrite = this.GenerateBuffer(FLASH_COMMAND.WINBOND_GET_INFO, 0);
                         var spiBufferRead = GetEepromApiDataBuffer(2);
-                        if (this._spi.QueryReadWriteTwoTransaction(spiBufferWrite, spiBufferRead, this._cs) == FtdiMpsseSPIResult.Ok)
+                        if (this._spi.QueryReadWriteTwoTransaction(spiBufferWrite, spiBufferRead, this._cs) == FtdiMpsseResult.Ok)
                         {
                             var isWinbond = (Manufacturers)(spiBufferRead[0]) == Manufacturers.Winbond;
                             var winBondDeviceId = (WINBOND_FLASH_DEVICE_ID)spiBufferRead[1];
@@ -273,7 +273,7 @@ namespace MadeInTheUSB.FT232H.Components
                 return false;
 
             var spiBufferWrite = GetEepromApiWriteBuffer(address, buffer);
-            var r1 = this._spi.Write(spiBufferWrite, this._cs) == FtdiMpsseSPIResult.Ok;
+            var r1 = this._spi.Write(spiBufferWrite, this._cs) == FtdiMpsseResult.Ok;
 
             this.WaitForOperation(30, 4, "w");
 
@@ -333,7 +333,7 @@ namespace MadeInTheUSB.FT232H.Components
             var spiBufferWrite = GetEepromApiReadBuffer(address);
             var spiBufferRead = GetEepromApiDataBuffer(size);
 
-            if (this._spi.QueryReadWriteTwoTransaction(spiBufferWrite, spiBufferRead, this._cs) == FtdiMpsseSPIResult.Ok)
+            if (this._spi.QueryReadWriteTwoTransaction(spiBufferWrite, spiBufferRead, this._cs) == FtdiMpsseResult.Ok)
             {
                 buffer.AddRange(spiBufferRead);
                 return true;

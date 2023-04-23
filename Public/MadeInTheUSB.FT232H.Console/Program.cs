@@ -14,6 +14,7 @@ using MadeInTheUSB.Adafruit;
 using BufferUtil;
 using System.IO;
 using BufferUtil.Lib;
+using MadeInTheUSB.Display;
 
 namespace MadeInTheUSB.FT232H.Console
 {
@@ -252,6 +253,12 @@ namespace MadeInTheUSB.FT232H.Console
                 tempSensor = null;
             }
 
+            var oled = new I2C_OLED_SSD1306(i2cDevice, 128, 32);
+            if (!oled.Begin())
+            {
+                oled = null;
+            }
+
             while (true)
             {
                 if (tempSensor != null)
@@ -287,7 +294,8 @@ namespace MadeInTheUSB.FT232H.Console
             System.Console.WriteLine("");
 
             i2cDevice.Gpios.Animate();
-            I2CSample_Adafruit9x16LedMatrixGray(i2cDevice);
+            OLED_SSD1306_Sample(i2cDevice);
+            //I2CSample_Adafruit9x16LedMatrixGray(i2cDevice);
             //I2CSample_AdaFruit8x8LedMatrix(i2cDevice);
             //MCP9808_TemperatureSensor_Sample(i2cDevice);
         }

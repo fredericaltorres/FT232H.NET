@@ -71,7 +71,7 @@ namespace MadeInTheUSB.FT232H.Console
             Thread.Sleep(1000 * 2);
         }
 
-        public static void OledCircleDemo(I2C_OLED oled)
+        public static void OledCircleDemo(I2C_OLED oled, int wait)
         {
             System.Console.Clear();
             ConsoleEx.TitleBar(0, "Circle Demo");
@@ -90,7 +90,8 @@ namespace MadeInTheUSB.FT232H.Console
                 oled.WriteDisplay();
 
                 System.Console.WriteLine("Circle {0:000},{1:000} r:{2:000}", x, y, r);
-                Thread.Sleep(125);
+                if(wait > 0)
+                    Thread.Sleep(wait);
             }
             Thread.Sleep(1000 * 2);
         }
@@ -246,16 +247,11 @@ namespace MadeInTheUSB.FT232H.Console
             var oled = new I2C_OLED_SSD1306(i2cDevice, 128 , 32);
             if (oled.Begin())
             {
-                oled.DrawLine(0, 0, oled.Width, 0, 1); oled.WriteDisplay();
-                oled.DrawLine(0, 16, oled.Width, 16, 1); oled.WriteDisplay();
-                oled.DrawLine(0, 32, oled.Width, 32, 1); oled.WriteDisplay();
-                oled.DrawLine(0, 48, oled.Width, 48, 1); oled.WriteDisplay();
-                oled.DrawLine(0, 64, oled.Width, 64, 1); oled.WriteDisplay();
-                //oled.DrawLine(0, 0, oled.Width, oled.Height, 1);
-
+                oled.Test();
+                oled.Clear(refresh: true);
                 oled.DrawWindow(" Hello ",  "Fast Speed");
-                OledRectangleDemo(oled, 20);
-                OledCircleDemo(oled);
+                OledRectangleDemo(oled, 0);
+                OledCircleDemo(oled, 0);
                 OledCircleFractalDemo(oled, true);
                 OledCircleFractalDemo(oled, !true);
                 oled.Clear(true);

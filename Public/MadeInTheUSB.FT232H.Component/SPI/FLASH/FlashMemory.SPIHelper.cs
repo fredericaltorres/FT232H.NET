@@ -31,7 +31,7 @@ namespace MadeInTheUSB.FT232H.Components
 
         private bool SPISend(List<byte> buffer)
         {
-            return this._spi.Write(buffer.ToArray(), this._cs) == FtdiMpsseSPIResult.Ok;
+            return this._spi.Write(buffer.ToArray(), this._cs) == FtdiMpsseResult.Ok;
         }
 
         private bool SPIQuery(FLASH_COMMAND api, int answerLen, List<byte> buffer)
@@ -40,7 +40,7 @@ namespace MadeInTheUSB.FT232H.Components
             spiBufferWrite[0] = (byte)api;
             var tmpBuffer = this.GetEepromApiDataBuffer(answerLen);
 
-            if(this._spi.QueryReadWriteTwoTransaction(spiBufferWrite, tmpBuffer, this._cs) == FtdiMpsseSPIResult.Ok)
+            if(this._spi.QueryReadWriteTwoTransaction(spiBufferWrite, tmpBuffer, this._cs) == FtdiMpsseResult.Ok)
             {
                 buffer.Clear();
                 buffer.AddRange(tmpBuffer);
@@ -99,7 +99,7 @@ namespace MadeInTheUSB.FT232H.Components
         private bool SendCommand(FLASH_COMMAND cmd)
         {
             var spiBufferWrite = new byte[] { (byte)cmd };
-            return this._spi.Write(spiBufferWrite, this._cs) == FtdiMpsseSPIResult.Ok;
+            return this._spi.Write(spiBufferWrite, this._cs) == FtdiMpsseResult.Ok;
         }
     }
 }

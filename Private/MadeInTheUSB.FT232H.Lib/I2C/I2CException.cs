@@ -18,11 +18,19 @@ namespace MadeInTheUSB.FT232H
 
     public class I2CException : Exception
     {
-        public FtdiMpsseSPIResult Reason { get; private set; }
+        public FtdiMpsseResult Reason { get; private set; }
+        public Type DeviceType { get; private set; }
 
-        public I2CException(FtdiMpsseSPIResult res)
+        public I2CException(FtdiMpsseResult result, Type deviceType = null) 
+            : base($"Result:{result}, deviceType:{(deviceType == null ? "" : deviceType.FullName)}")
         {
-            Reason = res;
+            Reason = result;
+            DeviceType = deviceType;
+        }
+        public I2CException(Type deviceType = null)
+            : base($"deviceType:{(deviceType == null ? "" : deviceType.FullName)}")
+        {
+            DeviceType = deviceType;
         }
     }
 }

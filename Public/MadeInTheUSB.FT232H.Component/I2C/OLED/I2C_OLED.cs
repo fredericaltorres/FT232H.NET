@@ -80,8 +80,15 @@ namespace MadeInTheUSB.Display
         public const int SH1106_X_PIXELS    = 128;
         public const int SH1106_Y_PIXELS    = 32;
         public const int SH1106_ROWS        = 8;
+
+        /*
+            32 rows x 128 pixel
+            Each rows is 128 / 8 = 16 bytes, Each row has to be programmed individually
+            Each row ~ 16 Bytes x 32 = 512 byte for the all buffer with 32 rows
+            (1024 for 64 rows)
+         */
         public const int BUF_LEN            =  512; // (512*8)/128 == 32 Rows
-        private uint8_t[] _buffer           = new uint8_t[BUF_LEN];
+        protected uint8_t[] _buffer           = new uint8_t[BUF_LEN];
 
         public const int SH1106_SUCCESS = 1;
         public const int SH1106_ERROR   = 0;
@@ -93,9 +100,7 @@ namespace MadeInTheUSB.Display
         private List<byte> _writeDisplayCommands = new List<byte>();
 
         protected I2CDevice _i2cDevice;
-        public byte Deviceid;
-
-
+        
         public I2C_OLED(I2CDevice i2cDevice, int width, int height,
             List<byte> writeDisplayCommands,
             OledDriver driver = OledDriver.SSD1306, bool debug = false) : base((Int16)width, (Int16)height)
@@ -110,7 +115,7 @@ namespace MadeInTheUSB.Display
 
         public virtual void Begin(byte deviceId, bool invert = false, uint8_t contrast = 128, uint8_t Vpp = 0)
         {
-            this.Deviceid = deviceId;
+            this.DeviceId = deviceId;
         }
 
         public override void DrawPixel(size_t x, size_t y, uint16_t color)
@@ -118,11 +123,11 @@ namespace MadeInTheUSB.Display
             this.SetPixel(x, y, color == 1);
         }
 
-        public void WriteDisplay()
+        public void WriteDisplay_slow()
         {
             var bytePerRows = 16;
             var x = 0;
-            this.SendCommand((byte)SSD1306_API.COLUMNADDR, (byte)SSD1306_API.COLUMNADDR_START, (byte)SSD1306_API.COLUMNADDR_END);
+            this.SendCommand((byte)SSD1306_API.COLUMN_ADDR, (byte)SSD1306_API.COLUMN_ADDR_START, (byte)SSD1306_API.COLUMN_ADDR_END);
             this.SendCommand((byte)SSD1306_API.PAGE_ADDR, (byte)SSD1306_API.START_PAGE_ADDR,
                              (byte)(this.Height == 64 ? SSD1306_API.END_PAGE_ADDR_64_ROWS : SSD1306_API.END_PAGE_ADDR_32_ROWS));
 
@@ -132,12 +137,31 @@ namespace MadeInTheUSB.Display
                 if (tmpBuffer.Count == 0)
                     break;
                 var buffer2 = new List<byte>();
-                
+
                 buffer2.AddRange(_writeDisplayCommands);
                 buffer2.AddRange(tmpBuffer);
-                this._i2cDevice.WriteBuffer(buffer2.ToArray(), this.Deviceid);
+                this._i2cDevice.WriteBuffer(buffer2.ToArray(), this.DeviceId);
                 x += 1;
             }
+        }
+
+        static bool _initialized = false;
+
+        public void WriteDisplay()
+        {
+            var bytePerRows = 16;
+            var x = 0;
+            if(!_initialized)
+            {
+                // this.SendCommand((byte)SSD1306_API.COLUMN_ADDR, (byte)SSD1306_API.COLUMN_ADDR_START, (byte)SSD1306_API.COLUMN_ADDR_END);
+                //this.SendCommand((byte)SSD1306_API.PAGE_ADDR, (byte)SSD1306_API.START_PAGE_ADDR, (byte)(this.Height == 64 ? SSD1306_API.END_PAGE_ADDR_64_ROWS : SSD1306_API.END_PAGE_ADDR_32_ROWS));
+            }
+            _initialized = true;
+           
+            var buffer2 = new List<byte>();
+            buffer2.AddRange(_writeDisplayCommands);
+            buffer2.AddRange(this._buffer);
+            this._i2cDevice.WriteBuffer(buffer2.ToArray(), this.DeviceId);
         }
         
         public void SetBuffer(int index, byte val, bool refresh = false)
@@ -193,7 +217,10 @@ namespace MadeInTheUSB.Display
 
         protected void SendCommandOneByte(int command)
         {
-            this._i2cDevice.WriteBuffer(new List<byte>() { SH1106_COMMAND, (byte)command }.ToArray(), this.Deviceid);
+            if(!this._i2cDevice.WriteBuffer(new List<byte>() { SH1106_COMMAND, (byte)command }.ToArray(), this.DeviceId))
+            {
+                throw new I2CException(deviceType: this.GetType());
+            }
         }
         
         public void WriteString(int x, int y, string s, bool clearText = false)

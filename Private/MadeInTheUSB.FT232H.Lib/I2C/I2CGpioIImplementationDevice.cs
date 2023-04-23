@@ -74,7 +74,7 @@ namespace MadeInTheUSB.FT232H
         {
             var values = this.ReadGPIOMask();
             if (values == -1)
-                throw new GpioException(FtdiMpsseSPIResult.IoError, nameof(GetGpioMask));
+                throw new GpioException(FtdiMpsseResult.IoError, nameof(GetGpioMask));
             return (byte)values;
         }
 
