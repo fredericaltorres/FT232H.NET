@@ -16,6 +16,8 @@ using uint32_t = System.UInt32;
 using uint16_t = System.UInt16;
 using uint8_t = System.Byte;
 using static MadeInTheUSB.APDS_9900_DigitalInfraredGestureSensor;
+using MadeInTheUSB.FT232H.Component.I2C.EEPROM;
+using BufferUtil;
 
 namespace MadeInTheUSB.FT232H.Console
 {
@@ -239,6 +241,20 @@ namespace MadeInTheUSB.FT232H.Console
                     }
                     Thread.Sleep(10);
                 }
+            }
+        }
+        
+        static void I2CEEPROM_AT24C256_Sample(I2CDevice i2cDevice)
+        {
+            const byte asciValue = 64;
+            var eeprom = new I2CEEPROM_AT24C256(i2cDevice);
+            if(eeprom.Begin())
+            {
+                var dataOut = BufferUtils.MakeBuffer(eeprom.PageSize, asciValue);
+                var rOut = eeprom.WritePages(0, dataOut);
+
+                var dataIn = new List<byte>();
+                var rIn = eeprom.ReadPages(0, eeprom.PageSize, dataIn);
             }
         }
 

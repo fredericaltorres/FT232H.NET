@@ -113,22 +113,23 @@ namespace MadeInTheUSB.FT232H
                 this.GpiosPlus.ProgressNext();
         }
 
-        public bool WriteBuffer(byte[] array, int deviceId)
+        public bool WriteBuffer(byte[] array, int deviceId, bool terminateTransmission = true)
         {
             OnHardwareProgressBar();
-            return _write(array, deviceId);
+            return _write(array, deviceId, terminateTransmission);
         }
 
-        bool _write(byte[] array, int deviceId)
+        bool _write(byte[] array, int deviceId, bool terminateTransmission = true)
         {
             int writtenAmount;
 
             base.LogI2CTransaction(I2CTransactionType.WRITE, (byte)deviceId, array, null);
 
-            var result = _write(array, array.Length, out writtenAmount,
-                FastModeFlag |
-                FtdiI2CTransferOptions.StartBit     |
-                FtdiI2CTransferOptions.StopBit, (byte)deviceId);
+            var flags = FastModeFlag | FtdiI2CTransferOptions.StartBit;
+            if(terminateTransmission)
+                flags |= FtdiI2CTransferOptions.StopBit;
+
+            var result = _write(array, array.Length, out writtenAmount, flags, (byte)deviceId);
 
             return result == FtdiMpsseResult.Ok;
         }
@@ -275,8 +276,8 @@ namespace MadeInTheUSB.FT232H
         private bool _read1(byte[] buffer, byte deviceId)
         {
             int sizeTransfered = 0;
-            var flags = FtdiI2CTransferOptions.StartBit;
-            
+            var flags = FtdiI2CTransferOptions.StartBit | FtdiI2CTransferOptions.StopBit;
+
             var result = LibMpsse_AccessToCppDll.I2C_DeviceRead( _handle, deviceId, buffer.Length, buffer, out sizeTransfered, flags);
             CheckResult(result);
             if (result == FtdiMpsseResult.Ok)

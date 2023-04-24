@@ -305,10 +305,11 @@ namespace MadeInTheUSB.FT232H.Console
             System.Console.WriteLine("");
 
             i2cDevice.Gpios.Animate();
-            OLED_SSD1306_Sample(i2cDevice);
+            I2CEEPROM_AT24C256_Sample(i2cDevice);
+            //OLED_SSD1306_Sample(i2cDevice);
             //I2CSample_Adafruit9x16LedMatrixGray(i2cDevice);
             //I2CSample_AdaFruit8x8LedMatrix(i2cDevice);
-            //MCP9808_TemperatureSensor_Sample(i2cDevice);
+            MCP9808_TemperatureSensor_Sample(i2cDevice);
         }
 
         private static ConsoleKeyInfo Pause(string message = null)
