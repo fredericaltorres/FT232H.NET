@@ -45,8 +45,8 @@ namespace MadeInTheUSB.FT232H
             READ,
             WRITE,
             ERROR,
-            WRITE_READ_START,
-            WRITE_READ_END,
+            WR_RD_START,
+            WR_RD_END,
             DETECT_DEVICE,
         }
 
@@ -95,7 +95,7 @@ namespace MadeInTheUSB.FT232H
                 var sb = new StringBuilder();
 
                 sb.Append($"[{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff")}] ");
-                sb.Append($"IC2 {transactionType.ToString().PadRight(17)} ");
+                sb.Append($"IC2 {transactionType.ToString().PadRight(11)} ");
 
                 if (registeredDeviceForLogging.ContainsKey(deviceId))
                     sb.Append(TrimPad(registeredDeviceForLogging[deviceId], 16)).Append(" ");

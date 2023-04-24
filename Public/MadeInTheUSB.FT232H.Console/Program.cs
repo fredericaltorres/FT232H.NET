@@ -240,6 +240,7 @@ namespace MadeInTheUSB.FT232H.Console
             System.Console.WriteLine("Detect/initialize 8x8 Matrix Device");
             var ledBackPackManager = new MultiLEDBackpackManager();
             ledBackPackManager.Add(i2cDevice, 8, 8, 0x70);
+            ledBackPackManager.SetBrightness(1);
 
             System.Console.WriteLine("Detect/initialize temperature sensor MCP9808 Device");
             var tempSensor = new MCP9808_TemperatureSensor(i2cDevice);
@@ -259,9 +260,7 @@ namespace MadeInTheUSB.FT232H.Console
 
             while (true)
             {
-                i2cDevice.ForceWriteLogCache();
-                ConsoleEx.WriteLine($"", ConsoleColor.White);
-
+                i2cDevice.ForceWriteLogCache();                
                 var tempInfoString = "No temperature info";
                 if (tempSensor != null)
                 {
@@ -284,9 +283,14 @@ namespace MadeInTheUSB.FT232H.Console
                 if (System.Console.KeyAvailable)
                 {
                     var k = System.Console.ReadKey(true);
-                    if(k.Key == ConsoleKey.Q) return;
+                    if (k.Key == ConsoleKey.Q)
+                    {
+                        oled.Clear(true);
+                        return;
+                    }
                 }
             }
+            
         }
 
         static void I2CDemo()
