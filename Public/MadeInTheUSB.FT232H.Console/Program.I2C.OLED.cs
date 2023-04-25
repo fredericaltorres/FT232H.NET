@@ -246,15 +246,32 @@ namespace MadeInTheUSB.FT232H.Console
         
         static void I2CEEPROM_AT24C256_Sample(I2CDevice i2cDevice)
         {
-            const byte asciValue = 64;
+            byte asciValue = 64;
             var eeprom = new I2CEEPROM_AT24C256(i2cDevice);
             if(eeprom.Begin())
             {
-                var dataOut = BufferUtils.MakeBuffer(eeprom.PageSize, asciValue);
-                var rOut = eeprom.WritePages(0, dataOut);
+                const bool writeMode = false;
+                if (writeMode)
+                {
+                    for (var page = 0; page < eeprom.MaxPage; page++)
+                    {
+                        System.Console.WriteLine($"Writing page {page}, {page * eeprom.PageSize} b written");
+                        var dataOut = BufferUtils.MakeBuffer(eeprom.PageSize, asciValue++);
+                        var rOut = eeprom.WritePages(page, dataOut);
+                        if (asciValue > 64 + 26)
+                            asciValue = 64;
+                    }
+                }
 
-                var dataIn = new List<byte>();
-                var rIn = eeprom.ReadPages(0, eeprom.PageSize, dataIn);
+                for (var page = 0; page < eeprom.MaxPage; page++)
+                {
+                    var dataIn = new List<byte>();
+                    var rIn = eeprom.ReadPages(page, eeprom.PageSize, dataIn);
+                    
+                    var resultString = PerformanceHelper.AsciiBufferToString(dataIn.ToArray());
+                    System.Console.WriteLine($"Reading page {page}, {page * eeprom.PageSize} b written");
+                    System.Console.WriteLine(resultString);
+                }
             }
         }
 

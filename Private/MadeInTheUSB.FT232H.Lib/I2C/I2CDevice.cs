@@ -276,7 +276,8 @@ namespace MadeInTheUSB.FT232H
         private bool _read1(byte[] buffer, byte deviceId)
         {
             int sizeTransfered = 0;
-            var flags = FtdiI2CTransferOptions.StartBit | FtdiI2CTransferOptions.StopBit;
+            //var flags = FtdiI2CTransferOptions.StartBit | FtdiI2CTransferOptions.StopBit;
+            var flags = FtdiI2CTransferOptions.StartBit ;
 
             var result = LibMpsse_AccessToCppDll.I2C_DeviceRead( _handle, deviceId, buffer.Length, buffer, out sizeTransfered, flags);
             CheckResult(result);
