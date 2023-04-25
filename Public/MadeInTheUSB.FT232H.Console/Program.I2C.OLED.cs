@@ -250,29 +250,54 @@ namespace MadeInTheUSB.FT232H.Console
             var eeprom = new I2CEEPROM_AT24C256(i2cDevice);
             if(eeprom.Begin())
             {
-                const bool writeMode = false;
+                const bool writeMode = !true;
                 if (writeMode)
                 {
                     for (var page = 0; page < eeprom.MaxPage; page++)
                     {
-                        System.Console.WriteLine($"Writing page  {page}/{eeprom.MaxPage}, {page * eeprom.PageSize} b written");
-                        var dataOut = BufferUtils.MakeBuffer(eeprom.PageSize, asciValue++);
+                        System.Console.WriteLine($"Writing page:{page}/{eeprom.MaxPage}, {page * eeprom.PageSize} b written");
+                        var dataOut = MakeEEPROMTestBuffer(asciValue, eeprom.PageSize); asciValue += 1;
                         var rOut = eeprom.WritePages(page * eeprom.PageSize, dataOut);
                         if (asciValue > 64 + 26)
                             asciValue = 64;
                     }
                 }
 
+                var allDataIn = new List<byte>();
+                var max64KbBlock = eeprom.Max64KbBlock;
+                var rInAll = eeprom.ReadPages(0, (eeprom.Max64KbBlock + 1) * 64 * 1024, allDataIn);
+                var allActualBuffer = PerformanceHelper.AsciiBufferToString(allDataIn.ToArray());
+                System.Console.WriteLine($"Reading page:{eeprom.SizeInByte} b written");
+                System.Console.WriteLine(allActualBuffer);
+
+                asciValue = 64;
                 for (var page = 0; page < eeprom.MaxPage; page++)
                 {
+                    var exptectedBuffer = PerformanceHelper.AsciiBufferToString(MakeEEPROMTestBuffer(asciValue, eeprom.PageSize).ToArray()); asciValue += 1;
                     var dataIn = new List<byte>();
-                    var rIn = eeprom.ReadPages(page * eeprom.PageSize, eeprom.PageSize, dataIn);
-                    
-                    var resultString = PerformanceHelper.AsciiBufferToString(dataIn.ToArray());
-                    System.Console.WriteLine($"Reading page {page}, {page * eeprom.PageSize} b written");
-                    System.Console.WriteLine(resultString);
+                    var rIn = eeprom.ReadPages(page * eeprom.PageSize, eeprom.PageSize*2, dataIn);
+
+                    var actualBuffer = PerformanceHelper.AsciiBufferToString(dataIn.ToArray());
+                    if (actualBuffer != exptectedBuffer)
+                        throw new ApplicationException($"Un expected page data {page}, actual:{actualBuffer}, expected:{exptectedBuffer}");
+
+                    System.Console.WriteLine($"Reading page:{page}/{eeprom.MaxPage}, {page * eeprom.PageSize} b written");
+                    System.Console.WriteLine(actualBuffer);
+
+                    if (asciValue > 64 + 26)
+                        asciValue = 64;
                 }
+
+                    
             }
+        }
+
+        private static List<byte> MakeEEPROMTestBuffer(byte asciValue, int size)
+        {
+            var buffer = BufferUtils.MakeBuffer(size, asciValue);
+            buffer[0] = (byte)'[';
+            buffer[buffer.Count-1] = (byte)']';
+            return buffer;
         }
 
         static void OLED_SSD1306_Sample(I2CDevice i2cDevice)
