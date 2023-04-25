@@ -263,13 +263,19 @@ namespace MadeInTheUSB.FT232H.Console
                     }
                 }
 
+                // Read the all 32Kb in one operation
                 var allDataIn = new List<byte>();
                 var max64KbBlock = eeprom.Max64KbBlock;
                 var rInAll = eeprom.ReadPages(0, (eeprom.Max64KbBlock + 1) * 64 * 1024, allDataIn);
                 var allActualBuffer = PerformanceHelper.AsciiBufferToString(allDataIn.ToArray());
                 System.Console.WriteLine($"Reading page:{eeprom.SizeInByte} b written");
                 System.Console.WriteLine(allActualBuffer);
+                if(allActualBuffer.Length != eeprom.SizeInByte)
+                {
+                    throw new ApplicationException($"Un expected size expected:{eeprom.SizeInByte}, actual:{allActualBuffer.Length}");
+                }
 
+                // Read the all 32Kb page per page
                 asciValue = 64;
                 for (var page = 0; page < eeprom.MaxPage; page++)
                 {
@@ -287,8 +293,6 @@ namespace MadeInTheUSB.FT232H.Console
                     if (asciValue > 64 + 26)
                         asciValue = 64;
                 }
-
-                    
             }
         }
 

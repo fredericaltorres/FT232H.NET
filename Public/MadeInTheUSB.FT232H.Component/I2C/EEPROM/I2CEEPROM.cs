@@ -59,6 +59,9 @@ namespace MadeInTheUSB.FT232H.Component.I2C.EEPROM
         // https://github.com/adamjezek98/Eeprom_at24c256/blob/master/Eeprom_at24c256.cpp
         public bool ReadPages(int addr, int byteToRead, List<byte> buffer)
         {
+            if(byteToRead > this.SizeInByte)
+                byteToRead = this.SizeInByte;
+
             var outputBuffer = (new byte[] { (byte)(addr >> 8), (byte)(addr & 0xFF) }).ToList();
             outputBuffer.AddRange(buffer);
 
