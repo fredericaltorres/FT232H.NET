@@ -52,7 +52,7 @@ namespace MadeInTheUSB.FT232H.Component.I2C.EEPROM
             buffer2.AddRange(buffer);
 
             var r = this._i2cDevice.WriteBuffer(buffer2.ToArray(), this.DeviceId);
-            Thread.Sleep(5);
+            Thread.Sleep(15);
             return r;
         }
 

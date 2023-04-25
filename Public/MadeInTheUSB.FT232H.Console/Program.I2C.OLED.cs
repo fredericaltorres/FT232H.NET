@@ -255,9 +255,9 @@ namespace MadeInTheUSB.FT232H.Console
                 {
                     for (var page = 0; page < eeprom.MaxPage; page++)
                     {
-                        System.Console.WriteLine($"Writing page {page}, {page * eeprom.PageSize} b written");
+                        System.Console.WriteLine($"Writing page  {page}/{eeprom.MaxPage}, {page * eeprom.PageSize} b written");
                         var dataOut = BufferUtils.MakeBuffer(eeprom.PageSize, asciValue++);
-                        var rOut = eeprom.WritePages(page, dataOut);
+                        var rOut = eeprom.WritePages(page * eeprom.PageSize, dataOut);
                         if (asciValue > 64 + 26)
                             asciValue = 64;
                     }
@@ -266,7 +266,7 @@ namespace MadeInTheUSB.FT232H.Console
                 for (var page = 0; page < eeprom.MaxPage; page++)
                 {
                     var dataIn = new List<byte>();
-                    var rIn = eeprom.ReadPages(page, eeprom.PageSize, dataIn);
+                    var rIn = eeprom.ReadPages(page * eeprom.PageSize, eeprom.PageSize, dataIn);
                     
                     var resultString = PerformanceHelper.AsciiBufferToString(dataIn.ToArray());
                     System.Console.WriteLine($"Reading page {page}, {page * eeprom.PageSize} b written");

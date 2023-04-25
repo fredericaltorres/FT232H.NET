@@ -124,8 +124,7 @@ namespace MadeInTheUSB.FT232H
             int writtenAmount;
 
             base.LogI2CTransaction(I2CTransactionType.WRITE, (byte)deviceId, array, null);
-
-            var flags = FastModeFlag | FtdiI2CTransferOptions.StartBit;
+            var flags = FastModeFlag | FtdiI2CTransferOptions.StartBit | FtdiI2CTransferOptions.BreakOnNack;
             if(terminateTransmission)
                 flags |= FtdiI2CTransferOptions.StopBit;
 
@@ -178,7 +177,8 @@ namespace MadeInTheUSB.FT232H
             *The I2C_DeviceRead and I2C_DeviceWrite functions send commands to
             */
 
-            var flags = FastModeFlag | FtdiI2CTransferOptions.StartBit | FtdiI2CTransferOptions.StopBit;
+            var flags = FastModeFlag | FtdiI2CTransferOptions.StartBit | FtdiI2CTransferOptions.StopBit | FtdiI2CTransferOptions.BreakOnNack;
+            
             if (checkForNAck)
             {
                 // flags |= FtdiI2CTransferOptions.BreakOnNack | FtdiI2CTransferOptions.NackLastByte;
@@ -187,7 +187,8 @@ namespace MadeInTheUSB.FT232H
             var result = _write(array, array.Length, out writtenAmount, flags, deviceId);
             return result == FtdiMpsseResult.Ok;
         }
-
+        // https://www.ftdichip.com/Support/Documents/AppNotes/AN_177_User_Guide_For_LibMPSSE-I2C.pdf
+        // https://github.com/DonRuss/libMPSSE-EEPROM/blob/master/libMPSSE_EEPROM.py
         public FtdiMpsseResult _write(byte[] buffer, int sizeToTransfer, out int sizeTransfered, FtdiI2CTransferOptions options, byte deviceId)
         {
             var result = LibMpsse_AccessToCppDll.I2C_DeviceWrite(_handle, deviceId, sizeToTransfer, buffer, out sizeTransfered, options);
@@ -219,7 +220,7 @@ namespace MadeInTheUSB.FT232H
         public List<byte> ReadXByte(int count, byte deviceId)
         {
             var buffer = new byte[count];
-            if (_read1(buffer, deviceId))
+            if (_readBuffer(buffer, deviceId))
             {
                 base.LogI2CTransaction(I2CTransactionType.READ, deviceId, null, buffer);
                 return buffer.ToList();
@@ -234,7 +235,7 @@ namespace MadeInTheUSB.FT232H
         public int Read1Byte(byte deviceId)
         {
             var buffer = new byte[1];
-            if (_read1(buffer, deviceId))
+            if (_readBuffer(buffer, deviceId))
             {
                 return buffer[0];
             }
@@ -273,11 +274,12 @@ namespace MadeInTheUSB.FT232H
             return true;
         }
 
-        private bool _read1(byte[] buffer, byte deviceId)
+        private bool _readBuffer(byte[] buffer, byte deviceId)
         {
             int sizeTransfered = 0;
-            //var flags = FtdiI2CTransferOptions.StartBit | FtdiI2CTransferOptions.StopBit;
-            var flags = FtdiI2CTransferOptions.StartBit ;
+            // var flags = FtdiI2CTransferOptions.StartBit | FtdiI2CTransferOptions.StopBit; // DOES NOT WORK FOR EEPROM
+            //var flags = FtdiI2CTransferOptions.StartBit ;
+            var flags = FastModeFlag | FtdiI2CTransferOptions.StartBit | FtdiI2CTransferOptions.StopBit | FtdiI2CTransferOptions.BreakOnNack;
 
             var result = LibMpsse_AccessToCppDll.I2C_DeviceRead( _handle, deviceId, buffer.Length, buffer, out sizeTransfered, flags);
             CheckResult(result);
