@@ -15,6 +15,7 @@ using BufferUtil;
 using System.IO;
 using BufferUtil.Lib;
 using MadeInTheUSB.Display;
+using MadeInTheUSB.FT232H.Component.I2C.EEPROM;
 
 namespace MadeInTheUSB.FT232H.Console
 {
@@ -252,6 +253,13 @@ namespace MadeInTheUSB.FT232H.Console
             if (!oled.Begin())
                 oled = null;
 
+            var eeprom = new I2CEEPROM_AT24C256(i2cDevice);
+            var eepromPage = 0;
+            if (!eeprom.Begin())
+            {
+                eeprom = null;
+            }
+
             System.Console.Clear();
             ConsoleEx.TitleBar(0, "Nusbio /2 - FT232H Library", ConsoleColor.Yellow, ConsoleColor.DarkBlue);
             ConsoleEx.TitleBar(1, "I 2 C   Multi Device Demo", ConsoleColor.Yellow, ConsoleColor.DarkBlue);
@@ -264,15 +272,28 @@ namespace MadeInTheUSB.FT232H.Console
                 var tempInfoString = "No temperature info";
                 if (tempSensor != null)
                 {
-                    var FahrenheitTemp = tempSensor.GetTemperature(TemperatureType.Fahrenheit, resetTime: 50);
-                    var celciusTemp = tempSensor.GetTemperature(TemperatureType.Celsius, resetTime:50);
+                    var FahrenheitTemp = tempSensor.GetTemperature(TemperatureType.Fahrenheit, resetTime: 0);
+                    var celciusTemp = tempSensor.GetTemperature(TemperatureType.Celsius, resetTime:0);
                     tempInfoString = $"{FahrenheitTemp:0.00}F / {celciusTemp:0.00}C";
                     ConsoleEx.WriteLine($"[{DateTime.Now}] Temp:{tempInfoString}", ConsoleColor.White);
+                    tempInfoString = $"{FahrenheitTemp:0.00}F";
                 }
 
-                if(oled != null)
+                if(eeprom != null)
                 {
-                    oled.DrawWindow(" OLED ", tempInfoString);
+                    var eepromBufferIn = new List<byte>();
+                    var rIn = eeprom.ReadPages(eepromPage * eeprom.PageSize, eeprom.PageSize, eepromBufferIn);
+                    var actualBuffer = PerformanceHelper.AsciiBufferToString(eepromBufferIn.ToArray());
+                    ConsoleEx.WriteLine($"[{DateTime.Now}] EEPROM Page:{eepromPage}", ConsoleColor.White);
+                    ConsoleEx.WriteLine($"{actualBuffer}", ConsoleColor.Gray);
+                    eepromPage += 1;
+                    if (eepromPage > eeprom.MaxPage)
+                        eepromPage = 0;
+                }
+
+                if (oled != null)
+                {
+                    oled.DrawWindow(" OLED ", $"{tempInfoString}, EEPROM:{eepromPage}");
                 }
 
                 if (ledBackPackManager != null)
