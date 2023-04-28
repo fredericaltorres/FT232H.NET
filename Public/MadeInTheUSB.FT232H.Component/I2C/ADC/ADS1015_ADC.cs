@@ -33,7 +33,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-
+using System.Threading;
 using int16_t = System.Int16; // Nice C# feature allowing to use same Arduino/C type
 using uint16_t = System.UInt16;
 using uint8_t = System.Byte;
@@ -41,9 +41,7 @@ using uint8_t = System.Byte;
 
 namespace MadeInTheUSB
 {
-
-
-    public class ADS1015_ADC
+    public class ADS1115_ADC
     {
 
         public const int ADS1X15_ADDRESS = (0x48); ///< 1001 000 (ADDR = GND)
@@ -120,22 +118,22 @@ namespace MadeInTheUSB
         };
         
         /** Data rates */
-        public const int RATE_ADS1015_128SPS = (0x0000);  ///< 128 samples per second
-        public const int RATE_ADS1015_250SPS = (0x0020);  ///< 250 samples per second
-        public const int RATE_ADS1015_490SPS = (0x0040);  ///< 490 samples per second
-        public const int RATE_ADS1015_920SPS = (0x0060);  ///< 920 samples per second
-        public const int RATE_ADS1015_1600SPS = (0x0080); ///< 1600 samples per second = (default);
-        public const int RATE_ADS1015_2400SPS = (0x00A0); ///< 2400 samples per second
-        public const int RATE_ADS1015_3300SPS = (0x00C0); ///< 3300 samples per second
+        public const int RATE_ADS1015_128SPS    = (0x0000);  ///< 128 samples per second
+        public const int RATE_ADS1015_250SPS    = (0x0020);  ///< 250 samples per second
+        public const int RATE_ADS1015_490SPS    = (0x0040);  ///< 490 samples per second
+        public const int RATE_ADS1015_920SPS    = (0x0060);  ///< 920 samples per second
+        public const int RATE_ADS1015_1600SPS   = (0x0080); ///< 1600 samples per second = (default);
+        public const int RATE_ADS1015_2400SPS   = (0x00A0); ///< 2400 samples per second
+        public const int RATE_ADS1015_3300SPS   = (0x00C0); ///< 3300 samples per second
 
-        public const int RATE_ADS1115_8SPS = (0x0000);   ///< 8 samples per second
-        public const int RATE_ADS1115_16SPS = (0x0020);  ///< 16 samples per second
-        public const int RATE_ADS1115_32SPS = (0x0040);  ///< 32 samples per second
-        public const int RATE_ADS1115_64SPS = (0x0060);  ///< 64 samples per second
-        public const int RATE_ADS1115_128SPS = (0x0080); ///< 128 samples per second = (default);
-        public const int RATE_ADS1115_250SPS = (0x00A0); ///< 250 samples per second
-        public const int RATE_ADS1115_475SPS = (0x00C0); ///< 475 samples per second
-        public const int RATE_ADS1115_860SPS = (0x00E0); ///< 860 samples per second
+        public const int RATE_ADS1115_8SPS      = (0x0000);   ///< 8 samples per second
+        public const int RATE_ADS1115_16SPS     = (0x0020);  ///< 16 samples per second
+        public const int RATE_ADS1115_32SPS     = (0x0040);  ///< 32 samples per second
+        public const int RATE_ADS1115_64SPS     = (0x0060);  ///< 64 samples per second
+        public const int RATE_ADS1115_128SPS    = (0x0080); ///< 128 samples per second = (default);
+        public const int RATE_ADS1115_250SPS    = (0x00A0); ///< 250 samples per second
+        public const int RATE_ADS1115_475SPS    = (0x00C0); ///< 475 samples per second
+        public const int RATE_ADS1115_860SPS    = (0x00E0); ///< 860 samples per second
 
         public byte DeviceId;
         I2CDevice _i2cDevice;
@@ -144,11 +142,20 @@ namespace MadeInTheUSB
         adsGain_t m_gain;              ///< ADC gain
         uint16_t m_dataRate;           ///< Data rate
 
-        public ADS1015_ADC(I2CDevice i2cDevice, byte deviceId = ADS1X15_ADDRESS)
+        public enum ADS1x15_Type
+        {
+            Undefined,
+            ADS1115_16b,
+            ADS1015_12b
+        }
+
+        public ADS1x15_Type ADS_Type = ADS1x15_Type.Undefined;
+
+        public ADS1115_ADC(I2CDevice i2cDevice, ADS1x15_Type adsType, byte deviceId = ADS1X15_ADDRESS)
         {
             this._i2cDevice = i2cDevice;
-
-            m_bitShift = 4;
+            this.ADS_Type = adsType;
+            m_bitShift = (byte)((this.ADS_Type == ADS1x15_Type.ADS1015_12b) ? 4 : 0);
             m_gain = adsGain_t.GAIN_TWOTHIRDS; /* +/- 6.144V range (limited to VDD +0.3V max!) */
             m_dataRate = RATE_ADS1015_1600SPS;
         }
@@ -210,16 +217,18 @@ namespace MadeInTheUSB
             return true;
         }
 
-        public int readADC_SingleEnded(uint8_t channel)
+        public int16_t readADC_SingleEnded(int channel)
         {
             if (channel > 3)
                 return -1;
 
-            if (!startADCReading(MUX_BY_CHANNEL[channel], /*continuous=*/false)) return -1; 
+            if (!startADCReading(MUX_BY_CHANNEL[channel], /*continuous=*/false)) return -1;
 
             // Wait for the conversion to complete
             while (!conversionComplete())
             {
+                System.Console.WriteLine(".");
+                Thread.Sleep(2);
             }
             return getLastConversionResults();
         }
@@ -227,7 +236,7 @@ namespace MadeInTheUSB
         int16_t getLastConversionResults()
         {
             // Read the conversion results
-            uint16_t res = (uint8_t)(readRegister((uint8_t)ADS1X15_REG_POINTER_CONVERT) >> m_bitShift);
+            uint16_t res = (uint16_t)(readRegister((uint8_t)ADS1X15_REG_POINTER_CONVERT) >> m_bitShift);
             if (m_bitShift == 0)
             {
                 return (int16_t)res;
@@ -245,9 +254,52 @@ namespace MadeInTheUSB
             }
         }
 
+
+        /**************************************************************************/
+        /*!
+            @brief  Returns true if conversion is complete, false otherwise.
+
+            @param counts the ADC reading in raw counts
+
+            @return the ADC reading in volts
+        */
+        /**************************************************************************/
+        public float ComputeVolts(int16_t counts)
+        {
+            // see data sheet Table 3
+            float fsRange;
+            switch (m_gain)
+            {
+                case adsGain_t.GAIN_TWOTHIRDS:
+                    fsRange = 6.144f;
+                    break;
+                case adsGain_t.GAIN_ONE:
+                    fsRange = 4.096f;
+                    break;
+                case adsGain_t.GAIN_TWO:
+                    fsRange = 2.048f;
+                    break;
+                case adsGain_t.GAIN_FOUR:
+                    fsRange = 1.024f;
+                    break;
+                case adsGain_t.GAIN_EIGHT:
+                    fsRange = 0.512f;
+                    break;
+                case adsGain_t.GAIN_SIXTEEN:
+                    fsRange = 0.256f;
+                    break;
+                default:
+                    fsRange = 0.0f;
+                    break;
+            }
+            return counts * (fsRange / (32768 >> m_bitShift));
+        }
+
         bool conversionComplete()
         {
-            return (readRegister(ADS1X15_REG_POINTER_CONFIG) & 0x8000) != 0;
+            var v = readRegister(ADS1X15_REG_POINTER_CONFIG);
+            var vv = (v & 0x8000);
+            return vv != 0;
         }
 
         private UInt16 read16(uint8_t reg)

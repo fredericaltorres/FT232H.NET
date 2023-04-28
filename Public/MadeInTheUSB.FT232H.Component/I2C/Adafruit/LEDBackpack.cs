@@ -169,22 +169,17 @@ namespace MadeInTheUSB.Adafruit
 
         public bool Begin(int addr = DEFAULT_I2C_ADDRESS_0)
         {
-            var r = this._begin((byte)addr);
-            if(r)
-            {
-                this._i2CDevice.RegisterDeviceIdForLogging((byte)addr, this.GetType());
-            }
-            return r;
+            return this._begin((byte)addr);
         }
 
-        private bool _begin(byte addr )
+        private bool _begin(byte addr)
         {
             this.DeviceId = addr;
 
-            this._i2CDevice.RegisterDeviceIdForLogging((byte)addr, this.GetType());
-
             if (this._i2CDevice.DetectDevice(this.DeviceId))
             {
+                this._i2CDevice.RegisterDeviceIdForLogging((byte)addr, this.GetType());
+
                 if (!this._i2CDevice.Write(HT16K33_CMD_TURN_OSCILLATOR_ON, this.DeviceId)) return false;
                 this.Clear(true);
                 this.SetBlinkRate(HT16K33_BLINK_OFF);

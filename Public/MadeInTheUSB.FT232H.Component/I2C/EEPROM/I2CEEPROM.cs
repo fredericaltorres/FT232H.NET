@@ -23,27 +23,24 @@ namespace MadeInTheUSB.FT232H.Component.I2C.EEPROM
             _i2cDevice = i2cDevice;
         }
 
-        public int PageSize = 64;
-        public int SizeInByte = 32 * 1024;
+        public int PageSize => 64;
+        public int SizeInByte => 32 * 1024;
         public int SizeInKByte => this.SizeInByte / 1024;
         public int SizeInMByte => this.SizeInByte / 1024 / 1024;
-
-        public int MaxPage
-        {
-            get { return this.SizeInByte / (int)this.PageSize; }
-        }
-
-        public int Max64KbBlock
-        {
-            get { return this.SizeInByte / FlashMemory._64K_BLOCK_SIZE; }
-        }
-
+        public int MaxPage => this.SizeInByte / (int)this.PageSize;
+        public int Max64KbBlock => this.SizeInByte / FlashMemory._64K_BLOCK_SIZE;
 
         public bool Begin(byte deviceId = AT24C256_DEVICE_ID)
         {
             this.DeviceId = deviceId;
-            this._i2cDevice.RegisterDeviceIdForLogging((byte)this.DeviceId, this.GetType());
-            return true;
+            if (this._i2cDevice.DetectDevice(deviceId))
+            {
+                var eepromBufferIn = new List<byte>();
+                var rIn = this.ReadPages(0, this.PageSize, eepromBufferIn);
+                this._i2cDevice.RegisterDeviceIdForLogging((byte)this.DeviceId, this.GetType());
+                return true;
+            }
+            else return false;
         }
 
         public bool WritePages(int addr, List<byte> buffer, bool verify = false)
@@ -52,7 +49,7 @@ namespace MadeInTheUSB.FT232H.Component.I2C.EEPROM
             buffer2.AddRange(buffer);
 
             var r = this._i2cDevice.WriteBuffer(buffer2.ToArray(), this.DeviceId);
-            Thread.Sleep(10);
+            Thread.Sleep(10); // Unfortunately
             return r;
         }
 

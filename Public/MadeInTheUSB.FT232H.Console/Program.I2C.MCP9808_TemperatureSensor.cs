@@ -16,55 +16,35 @@ namespace MadeInTheUSB.FT232H.Console
 {
     partial class Program
     {
-        // MCP9808_TemperatureSensor
-
-        static void ADS1015_ADC_ADC(I2CDevice i2cDevice)
+        static void ADS1115_ADC_ADC(I2CDevice i2cDevice)
         {
-//            i2cDevice.I2C_SetLineStatesIdle();
-            var adc = new ADS1015_ADC(i2cDevice);
+            System.Console.Clear();
+            ConsoleEx.TitleBar(0, "ADC 16bits ADS1115", ConsoleColor.Yellow, ConsoleColor.DarkBlue);
+            ConsoleEx.WriteMenu(0, 2, "Q)uit");
+
+            var adc = new ADS1115_ADC(i2cDevice, ADS1115_ADC.ADS1x15_Type.ADS1115_16b);
             if (adc.Begin())
             {
-                var v = adc.readADC_SingleEnded(0);
-            }
-        }
+                while (true)
+                {
+                    if (System.Console.KeyAvailable)
+                    {
+                        var k = System.Console.ReadKey(true);
+                        if (k.Key == ConsoleKey.Q)
+                            break;
+                    }
 
-        /*
-        Not working
-        static void PCF8574(I2CDevice i2cDevice)
-        {
-            var gpioExpander = new PCF8574(i2cDevice);
-            if (gpioExpander.Begin(0x3F))
-            {
-                for (var gpioIndex = 7; gpioIndex >= 0; gpioIndex--)
-                {
-                    gpioExpander.PinMode(gpioIndex, GpioMode.OUTPUT);
+                    ConsoleEx.WriteLine($"", ConsoleColor.White);
+                    for (var adcIndex = 0; adcIndex < 4; adcIndex++)
+                    {
+                        var v = adc.readADC_SingleEnded(adcIndex);
+                        var volt = adc.ComputeVolts(v);
+                        ConsoleEx.WriteLine($"[{DateTime.Now}] ADC[{adcIndex}] voltagle:{v}|{volt}", ConsoleColor.White);
+                    }
+                    ConsoleEx.Wait(1);
                 }
-                for (var gpioIndex = 7; gpioIndex >= 0; gpioIndex--)
-                {
-                    gpioExpander.DigitalWrite(gpioIndex, true);
-                    gpioExpander.DigitalWrite(gpioIndex, false);
-                }
-                for (var gpioIndex = 7; gpioIndex >= 0; gpioIndex--)
-                {
-                    gpioExpander.DigitalWrite(gpioIndex, true);
-                }
-                Thread.Sleep(1);
             }
         }
-
-        C:\DVT\MadeInTheUSB.Nusbio\MadeInTheUSB.2018.02.16\MadeInTheUSB\Nusbio.Samples.TRUNK\MadeInTheUSB.Nusbio.Components\LCD.Display\LiquidCrystal.Demo.cs
-        static void LiquidCrystal(I2CDevice i2cDevice)
-        {
-            var lc = new LiquidCrystal_I2C_PCF8574(i2cDevice, 16, 2, deviceId: 0x3F);
-            if (lc.Begin(16, 2))
-            {
-                lc.Backlight();
-                lc.SetCursor(0, 0);
-                lc.Cursor();
-                lc.Print("Hello World");
-            }
-        }
-        */
 
         static void MCP9808_TemperatureSensor_Sample(I2CDevice i2cDevice)
         {

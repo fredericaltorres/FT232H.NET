@@ -248,17 +248,16 @@ namespace MadeInTheUSB.FT232H.Console
             if (!tempSensor.Begin())
                 tempSensor = null;
 
+            System.Console.WriteLine("Detect/initialize EEPROM AT24C256 32Kb");
+            var eeprom = new I2CEEPROM_AT24C256(i2cDevice);
+            var eepromPage = 0;
+            if (!eeprom.Begin())
+                eeprom = null;
+
             System.Console.WriteLine("Detect/initialize OLED Device 128x32");
             var oled = new I2C_OLED_SSD1306(i2cDevice, 128, 32);
             if (!oled.Begin())
                 oled = null;
-
-            var eeprom = new I2CEEPROM_AT24C256(i2cDevice);
-            var eepromPage = 0;
-            if (!eeprom.Begin())
-            {
-                eeprom = null;
-            }
 
             System.Console.Clear();
             ConsoleEx.TitleBar(0, "Nusbio /2 - FT232H Library", ConsoleColor.Yellow, ConsoleColor.DarkBlue);
@@ -326,11 +325,12 @@ namespace MadeInTheUSB.FT232H.Console
             System.Console.WriteLine("");
 
             i2cDevice.Gpios.Animate();
-            I2CEEPROM_AT24C256_Sample(i2cDevice);
+            ADS1115_ADC_ADC(i2cDevice);
+            // I2CEEPROM_AT24C256_Sample(i2cDevice);
             //OLED_SSD1306_Sample(i2cDevice);
             //I2CSample_Adafruit9x16LedMatrixGray(i2cDevice);
             //I2CSample_AdaFruit8x8LedMatrix(i2cDevice);
-            //MCP9808_TemperatureSensor_Sample(i2cDevice);
+            MCP9808_TemperatureSensor_Sample(i2cDevice);
         }
 
         private static ConsoleKeyInfo Pause(string message = null)
