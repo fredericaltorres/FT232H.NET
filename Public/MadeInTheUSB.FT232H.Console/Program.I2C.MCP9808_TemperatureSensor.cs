@@ -21,12 +21,16 @@ namespace MadeInTheUSB.FT232H.Console
             System.Console.Clear();
             ConsoleEx.TitleBar(0, "ADC 16bits ADS1115", ConsoleColor.Yellow, ConsoleColor.DarkBlue);
             ConsoleEx.WriteMenu(0, 2, "Q)uit");
+            i2cDevice.Log = true;
 
-            var adc = new ADS1115_ADC(i2cDevice, ADS1115_ADC.ADS1x15_Type.ADS1115_16b);
+            var adc = new ADS1X15_ADC(i2cDevice, ADS1X15_ADC.ADS1x15_Type.ADS1115_16b);
+            adc.Gain = ADS1X15_ADC.adsGain_t.GAIN_ONE__4_096V;
+
             if (adc.Begin())
             {
                 while (true)
                 {
+                    i2cDevice.ForceWriteLogCache();
                     if (System.Console.KeyAvailable)
                     {
                         var k = System.Console.ReadKey(true);

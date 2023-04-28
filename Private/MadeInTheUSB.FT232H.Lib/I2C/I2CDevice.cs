@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Linq;
+using System.Diagnostics;
 
 namespace MadeInTheUSB.FT232H
 {
@@ -123,7 +124,7 @@ namespace MadeInTheUSB.FT232H
         {
             int writtenAmount;
 
-            base.LogI2CTransaction(I2CTransactionType.WRITE, (byte)deviceId, array, null);
+            // base.LogI2CTransaction(I2CTransactionType.WRITE, (byte)deviceId, array, null);
             var flags = FastModeFlag | FtdiI2CTransferOptions.StartBit | FtdiI2CTransferOptions.BreakOnNack;
             if(terminateTransmission)
                 flags |= FtdiI2CTransferOptions.StopBit;
@@ -191,11 +192,13 @@ namespace MadeInTheUSB.FT232H
         // https://github.com/DonRuss/libMPSSE-EEPROM/blob/master/libMPSSE_EEPROM.py
         public FtdiMpsseResult _write(byte[] buffer, int sizeToTransfer, out int sizeTransfered, FtdiI2CTransferOptions options, byte deviceId)
         {
+            var sw = Stopwatch.StartNew();
             var result = LibMpsse_AccessToCppDll.I2C_DeviceWrite(_handle, deviceId, sizeToTransfer, buffer, out sizeTransfered, options);
+            sw.Stop();
             if(result == FtdiMpsseResult.Ok)
-                base.LogI2CTransaction(I2CTransactionType.WRITE, deviceId, null, buffer);
+                base.LogI2CTransaction(I2CTransactionType.WRITE, deviceId, sw.ElapsedMilliseconds, null, buffer);
             else
-                base.LogI2CTransaction(I2CTransactionType.ERROR, deviceId, null, null);
+                base.LogI2CTransaction(I2CTransactionType.ERROR, deviceId, sw.ElapsedMilliseconds, null, null);
             return result;
         }
 
@@ -209,6 +212,28 @@ namespace MadeInTheUSB.FT232H
             return false;
         }
 
+        public bool WriteUInt16Register(byte reg, UInt16 value, byte deviceId)
+        {
+            var sw = Stopwatch.StartNew();
+            var buffer = new byte[3];
+            buffer[0] = reg;
+            buffer[1] = (byte)(value >> 8);
+            buffer[2] = (byte)(value & 0xFF);
+            var r = this.WriteBuffer(buffer, deviceId);
+            sw.Stop();
+            base.LogI2CTransaction(I2CTransactionType.WRITE_REGISTER, deviceId, sw.ElapsedMilliseconds, buffer, null, $"Register:0x{reg.ToString("X2")}, value:0x{value.ToString("X4")}");
+            return r;
+        }
+        public UInt16 ReadUInt16Register(byte reg, byte deviceId)
+        {
+            var sw = Stopwatch.StartNew();
+            var registerValue = Write1ByteReadUInt16(reg, deviceId);
+            sw.Stop();
+            var inBuffer = new List<byte>() { reg };
+            base.LogI2CTransaction(I2CTransactionType.READ_REGISTER, deviceId, sw.ElapsedMilliseconds, inBuffer.ToArray(), null, $"Register:0x{reg.ToString("X2")}, value:0x{registerValue.ToString("X2")}");
+            return registerValue;
+        }
+
         public UInt16 Write1ByteReadUInt16(byte reg, byte deviceId)
         {
             this.Write(reg, deviceId);
@@ -220,14 +245,17 @@ namespace MadeInTheUSB.FT232H
         public List<byte> ReadXByte(int count, byte deviceId)
         {
             var buffer = new byte[count];
-            if (_readBuffer(buffer, deviceId))
+            var sw = Stopwatch.StartNew();
+            var r = _readBuffer(buffer, deviceId);
+            sw.Stop();
+            if (r)
             {
-                base.LogI2CTransaction(I2CTransactionType.READ, deviceId, null, buffer);
+                base.LogI2CTransaction(I2CTransactionType.READ, deviceId, sw.ElapsedMilliseconds, null, buffer);
                 return buffer.ToList();
             }
             else
             {
-                base.LogI2CTransaction(I2CTransactionType.ERROR, deviceId, null, null);
+                base.LogI2CTransaction(I2CTransactionType.ERROR, deviceId, sw.ElapsedMilliseconds, null, null);
                 return null;
             }
         }
@@ -251,41 +279,44 @@ namespace MadeInTheUSB.FT232H
             return (UInt16)value;
         }
 
-        private FtdiMpsseResult _read2(byte[] buffer, int sizeToTransfer, out int sizeTransfered, FtdiI2CTransferOptions options, byte deviceid)
-        {
-            var result = LibMpsse_AccessToCppDll.I2C_DeviceRead(_handle, deviceid, sizeToTransfer, buffer, out sizeTransfered, options);
-            CheckResult(result);
-            if (result == FtdiMpsseResult.Ok)
-                base.LogI2CTransaction(I2CTransactionType.READ, deviceid, null, buffer);
-            else
-                base.LogI2CTransaction(I2CTransactionType.ERROR, deviceid, null, null);
+        //private FtdiMpsseResult _read2(byte[] buffer, int sizeToTransfer, out int sizeTransfered, FtdiI2CTransferOptions options, byte deviceid)
+        //{
+        //    var result = LibMpsse_AccessToCppDll.I2C_DeviceRead(_handle, deviceid, sizeToTransfer, buffer, out sizeTransfered, options);
+        //    CheckResult(result);
+        //    if (result == FtdiMpsseResult.Ok)
+        //        base.LogI2CTransaction(I2CTransactionType.READ, deviceid, null, buffer);
+        //    else
+        //        base.LogI2CTransaction(I2CTransactionType.ERROR, deviceid, null, null);
 
-            return result;
-        }
+        //    return result;
+        //}
 
         public bool DetectDevice(byte deviceId)
         {
             byte[] buffer = new byte[1] { 0 };
             int sizeTransfered = 0;
             var flags = FastModeFlag | FtdiI2CTransferOptions.StartBit | FtdiI2CTransferOptions.StopBit;//| FtdiI2CTransferOptions.BreakOnNack;
+            var sw = Stopwatch.StartNew();
             var result = LibMpsse_AccessToCppDll.I2C_DeviceRead(_handle, deviceId, buffer.Length, buffer, out sizeTransfered, flags);
-            base.LogI2CTransaction(I2CTransactionType.DETECT_DEVICE, deviceId, null, null, $"{result == FtdiMpsseResult.Ok}");
+            sw.Stop();
+            base.LogI2CTransaction(I2CTransactionType.DETECT_DEVICE, deviceId, sw.ElapsedMilliseconds, null, null, $"{result == FtdiMpsseResult.Ok}");
             return result == FtdiMpsseResult.Ok;
         }
 
         private bool _readBuffer(byte[] buffer, byte deviceId)
         {
             int sizeTransfered = 0;
-            // var flags = FtdiI2CTransferOptions.StartBit | FtdiI2CTransferOptions.StopBit; // DOES NOT WORK FOR EEPROM
-            //var flags = FtdiI2CTransferOptions.StartBit ;
             var flags = FastModeFlag | FtdiI2CTransferOptions.StartBit | FtdiI2CTransferOptions.StopBit | FtdiI2CTransferOptions.BreakOnNack;
 
+            var sw = Stopwatch.StartNew();
             var result = LibMpsse_AccessToCppDll.I2C_DeviceRead( _handle, deviceId, buffer.Length, buffer, out sizeTransfered, flags);
+            sw.Stop();
+
             CheckResult(result);
             if (result == FtdiMpsseResult.Ok)
-                base.LogI2CTransaction(I2CTransactionType.READ, deviceId, null, buffer);
+                base.LogI2CTransaction(I2CTransactionType.READ, deviceId, sw.ElapsedMilliseconds, null, buffer);
             else
-                base.LogI2CTransaction(I2CTransactionType.ERROR, deviceId, null, null);
+                base.LogI2CTransaction(I2CTransactionType.ERROR, deviceId, sw.ElapsedMilliseconds, null, null);
             return result == FtdiMpsseResult.Ok;
         }
 

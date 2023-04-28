@@ -2,6 +2,7 @@
 using DynamicSugar;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -48,6 +49,10 @@ namespace MadeInTheUSB.FT232H
             WR_RD_START,
             WR_RD_END,
             DETECT_DEVICE,
+            MESSAGE_START,
+            MESSAGE_END,
+            READ_REGISTER,
+            WRITE_REGISTER
         }
 
         private static Dictionary<byte, string> registeredDeviceForLogging = new Dictionary<byte, string>();
@@ -88,14 +93,30 @@ namespace MadeInTheUSB.FT232H
             return s.PadLeft(max);
         }
 
-        public void LogI2CTransaction(I2CTransactionType transactionType, byte deviceId, byte[] bufferOut, byte[] bufferIn, string value = null, int recursiveCounter = 0)
+        public int LogI2CTransactionMessage(byte deviceId, string message, Func<int> a)
         {
+            var sw = Stopwatch.StartNew();
+            LogI2CTransaction(I2CTransactionType.MESSAGE_START, deviceId, 0, null, null, message);
+            var r = a();
+            sw.Stop();
+            LogI2CTransaction(I2CTransactionType.MESSAGE_END, deviceId, sw.ElapsedMilliseconds, null, null, message);
+            return r;
+        }
+
+        public void LogI2CTransaction(I2CTransactionType transactionType, byte deviceId, long durationMS, byte[] bufferOut, byte[] bufferIn, string value = null, int recursiveCounter = 0)
+        {
+            bool forceToFlush = false;
             if (this.Log)
             {
+                if(transactionType == I2CTransactionType.MESSAGE_START)
+                {
+                    forceToFlush = true;
+                }
+
                 var sb = new StringBuilder();
 
                 sb.Append($"[{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff")}] ");
-                sb.Append($"IC2 {transactionType.ToString().PadRight(11)} ");
+                sb.Append($"IC2 {transactionType.ToString().PadRight(14)} ");
 
                 if (registeredDeviceForLogging.ContainsKey(deviceId))
                     sb.Append(TrimPad(registeredDeviceForLogging[deviceId], 16)).Append(" ");
@@ -104,9 +125,19 @@ namespace MadeInTheUSB.FT232H
 
                 sb.Append($"0x{deviceId:X} ");
 
-                if(value != null)
+                sb.Append($"{durationMS:0000}ms ");
+                if(durationMS > 100)
                 {
-                    sb.Append($" VALUE: {value}");
+                    if (Debugger.IsAttached)
+                    {
+                        forceToFlush = true;
+                        //Debugger.Break();
+                    }
+                }
+
+                if (value != null)
+                {
+                    sb.Append($"{value} ");
                 }
 
                 if (bufferOut!= null && bufferOut.Length > 0)
@@ -137,10 +168,13 @@ namespace MadeInTheUSB.FT232H
                     if (recursiveCounter == 0)
                     {
                         Thread.Sleep(111);
-                        LogI2CTransaction(transactionType, deviceId, bufferOut, bufferIn, value, recursiveCounter + 1);
+                        LogI2CTransaction(transactionType, deviceId, durationMS, bufferOut, bufferIn, value, recursiveCounter + 1);
                     }
                     else throw;
                 }
+            }
+            if(forceToFlush) {
+                ForceWriteLogCache();
             }
         }
 

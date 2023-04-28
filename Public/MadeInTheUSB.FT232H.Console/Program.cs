@@ -317,7 +317,7 @@ namespace MadeInTheUSB.FT232H.Console
         {
             System.Console.Clear();
             System.Console.WriteLine("Detecting/Initializing device");
-            var i2cDevice = new I2CDevice(I2CClockSpeeds.FAST_MODE_400Khz, hardwareProgressBarOn: true);
+            var i2cDevice = new I2CDevice(I2CClockSpeeds.FAST_MODE_1_Mhz, hardwareProgressBarOn: true);
 
             System.Console.Clear();
             ConsoleEx.TitleBar(0, "Nusbio /2 - FT232H Library", ConsoleColor.Yellow, ConsoleColor.DarkBlue);
