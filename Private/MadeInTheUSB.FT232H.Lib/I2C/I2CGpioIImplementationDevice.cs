@@ -34,8 +34,8 @@ namespace MadeInTheUSB.FT232H
 
         internal void GpioInit()
         {
-            _directions = 0xFF;
-            _values = 0x00;
+            _directions = 0xFF; // All Out
+            _values     = 0x00;
             WriteGPIOMask(_directions, _values);
         }
 
@@ -135,9 +135,14 @@ namespace MadeInTheUSB.FT232H
         public void SetPinMode(int pin, PinMode pinMode)
         {
             if (pinMode == PinMode.Output)
+            {
                 _directions |= PowerOf2[pin];
+            }
             else
+            {
                 _directions &= ~PowerOf2[pin];
+                _values |= PowerOf2[pin];
+            }
 
             var r = WriteGPIOMask(_directions, _values);
             if (!r)
@@ -148,9 +153,7 @@ namespace MadeInTheUSB.FT232H
 
         public void SetPullUp(int p, PinState d)
         {
-            throw new NotImplementedException();
+            SetPinMode(p, PinMode.InputPullUp);
         }
     }
 }
-
-

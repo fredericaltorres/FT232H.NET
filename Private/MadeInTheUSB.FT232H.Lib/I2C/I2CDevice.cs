@@ -212,6 +212,18 @@ namespace MadeInTheUSB.FT232H
             return false;
         }
 
+        public bool WriteByteRegister(byte reg, byte value, byte deviceId)
+        {
+            var sw = Stopwatch.StartNew();
+            var buffer = new byte[2];
+            buffer[0] = reg;
+            buffer[1] = value;
+            var r = this.WriteBuffer(buffer, deviceId);
+            sw.Stop();
+            base.LogI2CTransaction(I2CTransactionType.WRITE_REGISTER, deviceId, sw.ElapsedMilliseconds, buffer, null, $"Register:0x{reg.ToString("X2")}, value:0x{value.ToString("X4")}");
+            return r;
+        }
+
         public bool WriteUInt16Register(byte reg, UInt16 value, byte deviceId)
         {
             var sw = Stopwatch.StartNew();
@@ -232,6 +244,25 @@ namespace MadeInTheUSB.FT232H
             var inBuffer = new List<byte>() { reg };
             base.LogI2CTransaction(I2CTransactionType.READ_REGISTER, deviceId, sw.ElapsedMilliseconds, inBuffer.ToArray(), null, $"Register:0x{reg.ToString("X2")}, value:0x{registerValue.ToString("X2")}");
             return registerValue;
+        }
+
+        public UInt16 ReadByteRegister(byte reg, byte deviceId)
+        {
+            var sw = Stopwatch.StartNew();
+            this.Write(reg, deviceId);
+            var buffer = this.ReadXByte(1, deviceId);
+            sw.Stop();
+            var registerValue = buffer[0];
+            var inBuffer = new List<byte>() { reg };
+            base.LogI2CTransaction(I2CTransactionType.READ_REGISTER, deviceId, sw.ElapsedMilliseconds, inBuffer.ToArray(), null, $"Register:0x{reg.ToString("X2")}, value:0x{registerValue.ToString("X2")}");
+            return registerValue;
+        }
+
+        public bool Write1ByteReadXByte(byte reg, int byteToRead, List<byte> buffer, byte deviceId)
+        {
+            this.Write(reg, deviceId);
+            buffer.AddRange(this.ReadXByte(byteToRead, deviceId));
+            return true;
         }
 
         public UInt16 Write1ByteReadUInt16(byte reg, byte deviceId)
@@ -278,18 +309,6 @@ namespace MadeInTheUSB.FT232H
 
             return (UInt16)value;
         }
-
-        //private FtdiMpsseResult _read2(byte[] buffer, int sizeToTransfer, out int sizeTransfered, FtdiI2CTransferOptions options, byte deviceid)
-        //{
-        //    var result = LibMpsse_AccessToCppDll.I2C_DeviceRead(_handle, deviceid, sizeToTransfer, buffer, out sizeTransfered, options);
-        //    CheckResult(result);
-        //    if (result == FtdiMpsseResult.Ok)
-        //        base.LogI2CTransaction(I2CTransactionType.READ, deviceid, null, buffer);
-        //    else
-        //        base.LogI2CTransaction(I2CTransactionType.ERROR, deviceid, null, null);
-
-        //    return result;
-        //}
 
         public bool DetectDevice(byte deviceId)
         {
@@ -357,9 +376,8 @@ namespace MadeInTheUSB.FT232H
         public bool SetGPIOOn(byte pin)
         {
             if (_handle == IntPtr.Zero)
-            {
                 return false;
-            }
+
             _gpo = (byte)(_gpo | (byte)(1 << pin));
 
             WriteGpios(_direction, _gpo);
@@ -369,9 +387,7 @@ namespace MadeInTheUSB.FT232H
         public bool SetGPIOOff(byte pin)
         {
             if (_handle == IntPtr.Zero)
-            {
                 return false;
-            }
 
             _gpo &= ((byte)~(1 << pin));
 
@@ -381,7 +397,7 @@ namespace MadeInTheUSB.FT232H
 
         public int ReadGPIOMask()
         {
-            int value;
+            int value = -1;
             var status = LibMpsse_AccessToCppDll.FT_ReadGPIO(_handle, out value);
             CheckResult(status);
             if (status != FtdiMpsseResult.Ok)

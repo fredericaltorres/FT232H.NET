@@ -1,5 +1,5 @@
 /*
-    Written by FT for MadeInTheUSB
+    Ported to .NET/C# by FT for MadeInTheUSB
     Copyright (C) 2015, 2023 MadeInTheUSB LLC
 
     The MIT License (MIT)
@@ -141,9 +141,8 @@ namespace MadeInTheUSB
             APDS9960_GFIFO_R = 0xFF,
         }
 
-
-        public const int APDS9960_ADDRESS = (0x39); /**< I2C Address */
-        public int DeviceID = APDS9960_ADDRESS;
+        public const byte APDS9960_ADDRESS = (0x39); /**< I2C Address */
+        public byte DeviceID = APDS9960_ADDRESS;
 
         uint8_t gestCnt;
         uint8_t UCount;
@@ -151,10 +150,10 @@ namespace MadeInTheUSB
         uint8_t LCount;
         uint8_t RCount;
 
-        I2CDevice_MPSSE_NotUsed _i2cDevice;
+        I2CDevice _i2cDevice;
         private readonly int _gpioInterrupt;
 
-        public APDS_9900_DigitalInfraredGestureSensor(I2CDevice_MPSSE_NotUsed i2cDevice, int gpioInterrupt)
+        public APDS_9900_DigitalInfraredGestureSensor(I2CDevice i2cDevice, int gpioInterrupt)
         {
             this._i2cDevice = i2cDevice;
             this._gpioInterrupt = gpioInterrupt;
@@ -165,7 +164,8 @@ namespace MadeInTheUSB
         {
             get
             {
-                return this._i2cDevice.Gpios.DigitalRead(_gpioInterrupt) == 0;
+                var state = this._i2cDevice.Gpios.DigitalRead(_gpioInterrupt);
+                return state == 0;
             }
         }
 
@@ -188,12 +188,12 @@ namespace MadeInTheUSB
         public void enable(bool en)
         {
             _enable.PON = (byte)(en ? 1:0);
-            this.write8(Registers.APDS9960_ENABLE, _enable.get());
+            this.WriteRegister(Registers.APDS9960_ENABLE, _enable.get());
         }
 
         private bool VerifyDeviceConnection(int recusiveIndex = 0)
         {
-            uint8_t x = read8(Registers.APDS9960_ID); /* Make sure we're actually connected */
+            uint8_t x = ReadRegister(Registers.APDS9960_ID); /* Make sure we're actually connected */
             var r = (x == 0xAB);
             if(r == false && recusiveIndex == 0)
             {
@@ -216,10 +216,10 @@ namespace MadeInTheUSB
          *          Wire object
          *  @return True if initialization was successful, otherwise false.
          */
-        public bool begin(uint16_t iTimeMS = 10, apds9960AGain_t aGain = apds9960AGain_t.APDS9960_AGAIN_4X, uint8_t addr = APDS9960_ADDRESS)
+        public bool Begin(uint16_t iTimeMS = 10, apds9960AGain_t aGain = apds9960AGain_t.APDS9960_AGAIN_4X, uint8_t addr = APDS9960_ADDRESS)
         {
             this.DeviceID = addr;
-            if (!this._i2cDevice.InitiateDetectionSequence(addr))
+            if (!this._i2cDevice.DetectDevice(addr))
                 return false;
 
             if (!VerifyDeviceConnection())
@@ -255,7 +255,7 @@ namespace MadeInTheUSB
 
             _gpulse.GPLEN = (byte)PulseLenghts.APDS9960_GPULSE_32US;
             _gpulse.GPULSE = 9; // 10 pulses
-            this.write8(Registers.APDS9960_GPULSE, _gpulse.get());
+            this.WriteRegister(Registers.APDS9960_GPULSE, _gpulse.get());
 
             return true;
         }
@@ -279,10 +279,10 @@ namespace MadeInTheUSB
                 temp = 0;
 
             /* Update the timing register */
-            if(!write8(Registers.APDS9960_ATIME, (uint8_t)temp))
+            if(!WriteRegister(Registers.APDS9960_ATIME, (uint8_t)temp))
             {
                 Thread.Sleep(1);
-                write8(Registers.APDS9960_ATIME, (uint8_t)temp);
+                WriteRegister(Registers.APDS9960_ATIME, (uint8_t)temp);
             }
         }
 
@@ -294,7 +294,7 @@ namespace MadeInTheUSB
         {
             double temp;
 
-            temp = read8(Registers.APDS9960_ATIME);
+            temp = ReadRegister(Registers.APDS9960_ATIME);
 
             // convert to units of 2.78 ms
             temp = 256 - temp;
@@ -313,7 +313,7 @@ namespace MadeInTheUSB
             _control.AGAIN = (byte)aGain;
 
             /* Update the timing register */
-            write8(Registers.APDS9960_CONTROL, _control.get());
+            WriteRegister(Registers.APDS9960_CONTROL, _control.get());
         }
 
         /*!
@@ -322,7 +322,7 @@ namespace MadeInTheUSB
          */
         public apds9960AGain_t getADCGain()
         {
-            return (apds9960AGain_t)(read8(Registers.APDS9960_CONTROL) & 0x03);
+            return (apds9960AGain_t)(ReadRegister(Registers.APDS9960_CONTROL) & 0x03);
         }
 
         /*!
@@ -335,7 +335,7 @@ namespace MadeInTheUSB
             _control.PGAIN = (byte)pGain;
 
             /* Update the timing register */
-            write8(Registers.APDS9960_CONTROL, _control.get());
+            WriteRegister(Registers.APDS9960_CONTROL, _control.get());
         }
 
         /*!
@@ -344,7 +344,7 @@ namespace MadeInTheUSB
          */
         public apds9960PGain_t getProxGain()
         {
-            return (apds9960PGain_t)((read8(Registers.APDS9960_CONTROL) & 0x0C) >> 2);
+            return (apds9960PGain_t)((ReadRegister(Registers.APDS9960_CONTROL) & 0x0C) >> 2);
         }
 
         /*!
@@ -365,7 +365,7 @@ namespace MadeInTheUSB
             _ppulse.PPLEN = (byte)pLen;
             _ppulse.PPULSE = pulses;
 
-            write8(Registers.APDS9960_PPULSE, _ppulse.get());
+            WriteRegister(Registers.APDS9960_PPULSE, _ppulse.get());
         }
 
         /*!
@@ -377,7 +377,7 @@ namespace MadeInTheUSB
         {
             _enable.PEN = (byte)(en ? 1: 0);
 
-            write8(Registers.APDS9960_ENABLE, _enable.get());
+            WriteRegister(Registers.APDS9960_ENABLE, _enable.get());
         }
 
         /*!
@@ -386,7 +386,7 @@ namespace MadeInTheUSB
         public void enableProximityInterrupt()
         {
             _enable.PIEN = 1;
-            write8(Registers.APDS9960_ENABLE, _enable.get());
+            WriteRegister(Registers.APDS9960_ENABLE, _enable.get());
             clearInterrupt();
         }
 
@@ -396,7 +396,7 @@ namespace MadeInTheUSB
         public void disableProximityInterrupt()
         {
             _enable.PIEN = 0;
-            write8(Registers.APDS9960_ENABLE, _enable.get());
+            WriteRegister(Registers.APDS9960_ENABLE, _enable.get());
         }
 
         /*!
@@ -410,13 +410,13 @@ namespace MadeInTheUSB
          */
         public void setProximityInterruptThreshold(uint8_t low, uint8_t high, uint8_t persistence = 4)
         {
-            write8(Registers.APDS9960_PILT, low);
-            write8(Registers.APDS9960_PIHT, high);
+            WriteRegister(Registers.APDS9960_PILT, low);
+            WriteRegister(Registers.APDS9960_PIHT, high);
 
             if (persistence > 7)
                 persistence = 7;
             _pers.PPERS = persistence;
-            write8(Registers.APDS9960_PERS, _pers.get());
+            WriteRegister(Registers.APDS9960_PERS, _pers.get());
         }
 
         /*!
@@ -425,7 +425,7 @@ namespace MadeInTheUSB
          */
         public bool getProximityInterrupt()
         {
-            _status.set(this.read8(Registers.APDS9960_STATUS));
+            _status.set(this.ReadRegister(Registers.APDS9960_STATUS));
             return _status.PINT == 1;
         }
 
@@ -433,7 +433,7 @@ namespace MadeInTheUSB
          *  @brief  Read proximity data
          *  @return Proximity
          */
-        public uint8_t readProximity() { return read8(Registers.APDS9960_PDATA); }
+        public uint8_t readProximity() { return ReadRegister(Registers.APDS9960_PDATA); }
 
         /*!
          *  @brief  Returns validity status of a gesture
@@ -441,7 +441,7 @@ namespace MadeInTheUSB
          */
         public bool gestureValid()
         {
-            _gstatus.set(this.read8(Registers.APDS9960_GSTATUS));
+            _gstatus.set(this.ReadRegister(Registers.APDS9960_GSTATUS));
             return _gstatus.GVALID == 1;
         }
 
@@ -454,7 +454,7 @@ namespace MadeInTheUSB
         public void setGestureDimensions(uint8_t dims)
         {
             _gconf3.GDIMS = dims;
-            this.write8(Registers.APDS9960_GCONF3, _gconf3.get());
+            this.WriteRegister(Registers.APDS9960_GCONF3, _gconf3.get());
         }
 
         /*!
@@ -466,7 +466,7 @@ namespace MadeInTheUSB
         public void setGestureFIFOThreshold(uint8_t thresh)
         {
             _gconf1.GFIFOTH = thresh;
-            this.write8(Registers.APDS9960_GCONF1, _gconf1.get());
+            this.WriteRegister(Registers.APDS9960_GCONF1, _gconf1.get());
         }
 
         /*!
@@ -478,7 +478,7 @@ namespace MadeInTheUSB
         public void setGestureGain(uint8_t gain)
         {
             _gconf2.GGAIN = gain;
-            this.write8(Registers.APDS9960_GCONF2, _gconf2.get());
+            this.WriteRegister(Registers.APDS9960_GCONF2, _gconf2.get());
         }
 
         /*!
@@ -488,7 +488,7 @@ namespace MadeInTheUSB
          */
         public void setGestureProximityThreshold(uint8_t thresh)
         {
-            this.write8(Registers.APDS9960_GPENTH, thresh);
+            this.WriteRegister(Registers.APDS9960_GPENTH, thresh);
         }
 
         /*!
@@ -506,10 +506,10 @@ namespace MadeInTheUSB
                                                  uint8_t offset_left,
                                                  uint8_t offset_right)
         {
-            this.write8(Registers.APDS9960_GOFFSET_U, offset_up);
-            this.write8(Registers.APDS9960_GOFFSET_D, offset_down);
-            this.write8(Registers.APDS9960_GOFFSET_L, offset_left);
-            this.write8(Registers.APDS9960_GOFFSET_R, offset_right);
+            this.WriteRegister(Registers.APDS9960_GOFFSET_U, offset_up);
+            this.WriteRegister(Registers.APDS9960_GOFFSET_D, offset_down);
+            this.WriteRegister(Registers.APDS9960_GOFFSET_L, offset_left);
+            this.WriteRegister(Registers.APDS9960_GOFFSET_R, offset_right);
         }
 
         /*!
@@ -522,10 +522,10 @@ namespace MadeInTheUSB
             if (!en)
             {
                 _gconf4.GMODE = 0;
-                write8(Registers.APDS9960_GCONF4, _gconf4.get());
+                WriteRegister(Registers.APDS9960_GCONF4, _gconf4.get());
             }
             _enable.GEN = (byte)(en ? 1 : 0);
-            write8(Registers.APDS9960_ENABLE, _enable.get());
+            WriteRegister(Registers.APDS9960_ENABLE, _enable.get());
             resetCounts();
         }
 
@@ -561,7 +561,9 @@ namespace MadeInTheUSB
                     return 0;
 
                 delay(30);
-                toRead = this.read8(Registers.APDS9960_GFLVL);
+                toRead = this.ReadRegister(Registers.APDS9960_GFLVL);
+                if (toRead == 0)
+                    return 0;
 
                 // produces sideffects needed for readGesture to work
                 this.read(Registers.APDS9960_GFIFO_U, buf, toRead);
@@ -636,10 +638,10 @@ namespace MadeInTheUSB
         {
             // set BOOST
             _config2.LED_BOOST = (byte)boost;
-            write8(Registers.APDS9960_CONFIG2, _config2.get());
+            WriteRegister(Registers.APDS9960_CONFIG2, _config2.get());
 
             _control.LDRIVE = (byte)drive;
-            write8(Registers.APDS9960_CONTROL, _control.get());
+            WriteRegister(Registers.APDS9960_CONTROL, _control.get());
         }
 
         /*!
@@ -650,7 +652,7 @@ namespace MadeInTheUSB
         public void enableColor(bool en)
         {
             _enable.AEN = (byte)(en?1:0);
-            write8(Registers.APDS9960_ENABLE, _enable.get());
+            WriteRegister(Registers.APDS9960_ENABLE, _enable.get());
         }
 
         /*!
@@ -659,7 +661,7 @@ namespace MadeInTheUSB
          */
         public bool colorDataReady()
         {
-            _status.set(this.read8(Registers.APDS9960_STATUS));
+            _status.set(this.ReadRegister(Registers.APDS9960_STATUS));
             return _status.AVALID == 1;
         }
 
@@ -750,7 +752,7 @@ namespace MadeInTheUSB
         public void enableColorInterrupt()
         {
             _enable.AIEN = 1;
-            write8(Registers.APDS9960_ENABLE, _enable.get());
+            WriteRegister(Registers.APDS9960_ENABLE, _enable.get());
         }
 
         /*!
@@ -759,7 +761,7 @@ namespace MadeInTheUSB
         public void disableColorInterrupt()
         {
             _enable.AIEN = 0;
-            write8(Registers.APDS9960_ENABLE, _enable.get());
+            WriteRegister(Registers.APDS9960_ENABLE, _enable.get());
         }
 
         /*!
@@ -767,10 +769,10 @@ namespace MadeInTheUSB
          */
         public void clearInterrupt()
         {
-            if (!this.write(Registers.APDS9960_AICLEAR, null, 0))
+            if (!this.WriteBuffer(Registers.APDS9960_AICLEAR, null, 0))
             {
                 Thread.Sleep(1);
-                this.write(Registers.APDS9960_AICLEAR, null, 0);
+                this.WriteBuffer(Registers.APDS9960_AICLEAR, null, 0);
             }
         }
 
@@ -783,10 +785,10 @@ namespace MadeInTheUSB
          */
         public void setIntLimits(uint16_t low, uint16_t high)
         {
-            write8(Registers.APDS9960_AILTIL, low & 0xFF);
-            write8(Registers.APDS9960_AILTH, low >> 8);
-            write8(Registers.APDS9960_AIHTL, high & 0xFF);
-            write8(Registers.APDS9960_AIHTH, high >> 8);
+            WriteRegister(Registers.APDS9960_AILTIL, low & 0xFF);
+            WriteRegister(Registers.APDS9960_AILTH, low >> 8);
+            WriteRegister(Registers.APDS9960_AIHTL, high & 0xFF);
+            WriteRegister(Registers.APDS9960_AIHTH, high >> 8);
         }
 
         /*!
@@ -821,18 +823,18 @@ namespace MadeInTheUSB
          *          Register to write to
          *  @return Value in register
          */
-        public uint32_t read32(uint8_t reg)
-        {
-            //uint8_t ret[4];
-            //uint32_t ret32;
-            //this.read(reg, ret, 4);
-            //ret32 = ret[3];
-            //ret32 |= (uint32_t)ret[2] << 8;
-            //ret32 |= (uint32_t)ret[1] << 16;
-            //ret32 |= (uint32_t)ret[0] << 24;
-            //return ret32;
-            return 0;
-        }
+        //public uint32_t read32(uint8_t reg)
+        //{
+        //    //uint8_t ret[4];
+        //    //uint32_t ret32;
+        //    //this.read(reg, ret, 4);
+        //    //ret32 = ret[3];
+        //    //ret32 |= (uint32_t)ret[2] << 8;
+        //    //ret32 |= (uint32_t)ret[1] << 16;
+        //    //ret32 |= (uint32_t)ret[0] << 24;
+        //    //return ret32;
+        //    return 0;
+        //}
 
         /*!
          *  @brief  Reads 16 bites from specified register
@@ -843,7 +845,7 @@ namespace MadeInTheUSB
         uint16_t read16(uint8_t reg)
         {
             var ret = new List<byte>();
-            this.read(reg, ret, 2);
+            this.ReadRegisterBuffer(reg, ret, 2);
 
             return (uint16_t)((ret[0] << 8) | ret[1]);
         }
@@ -861,14 +863,14 @@ namespace MadeInTheUSB
         uint16_t read16R(uint8_t reg)
         {
             var ret = new List<byte>();
-            this.read(reg, ret, 2);
+            this.ReadRegisterBuffer(reg, ret, 2);
 
             return (uint16_t)((ret[1] << 8) | ret[0]);
         }
 
         uint8_t read(Registers reg, List<byte> buf, uint8_t num)
         {
-            return read((byte)reg, buf, num);
+            return ReadRegisterBuffer((byte)reg, buf, num);
         }
 
         /*!
@@ -881,23 +883,20 @@ namespace MadeInTheUSB
          *          Number of bytes
          *  @return Position after reading
          */
-        uint8_t read(uint8_t reg, List<byte> buf, uint8_t num, int recusiveIndex = 0)
+        private uint8_t ReadRegisterBuffer(uint8_t reg, List<byte> buf, uint8_t num, int recusiveIndex = 0)
         {
-            var newBuf = this._i2cDevice.Send1ByteReadXByteCommand(this.DeviceID, reg, num);
-
-            if(newBuf == null && recusiveIndex == 0) // Retry once
+            var r = this._i2cDevice.Write1ByteReadXByte(reg, num, buf, this.DeviceID);
+            if(!r) // Retry once
             {
                 Thread.Sleep(10);
-                return read(reg, buf, num, recusiveIndex+1);
+                return ReadRegisterBuffer(reg, buf, num, recusiveIndex+1);
             }
-
-            buf.AddRange(newBuf);
             return num;
         }
 
-        bool write(Registers reg, List<byte> buf, uint8_t num)
+        bool WriteBuffer(Registers reg, List<byte> buf, uint8_t num)
         {
-            return write((byte)reg, buf, num);
+            return WriteBuffer((byte)reg, buf, num);
         }
 
         /*!
@@ -909,14 +908,12 @@ namespace MadeInTheUSB
          *  @param  num
          *          Number of bytes
          */
-        bool write(uint8_t reg, List<byte> buf, uint8_t num)
+        bool WriteBuffer(uint8_t reg, List<byte> buf, uint8_t num)
         {
-            //uint8_t prefix[1] = { reg };
-            //i2c_dev->write(buf, num, true, prefix, 1);
             var l = new List<byte>() { reg };
             if(buf != null)
                 l.AddRange(buf);
-            return this._i2cDevice.WriteBuffer(this.DeviceID, l.ToArray());
+            return this._i2cDevice.WriteBuffer(l.ToArray(), this.DeviceID);
         }
     }
 }

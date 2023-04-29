@@ -145,10 +145,11 @@ namespace MadeInTheUSB.FT232H.Console
         }
 
 
-        static void APDS_9900_DigitalInfraredGestureSensor_Gesture(I2CDevice_MPSSE_NotUsed i2cDevice)
+        static void APDS_9900_DigitalInfraredGestureSensor_Gesture(I2CDevice i2cDevice)
         {
+            i2cDevice.HardwareProgressBarOn = false; // Not supported because the APDS_9900 need a gpio for the interrupt
             var sensor = new APDS_9900_DigitalInfraredGestureSensor(i2cDevice, 0);
-            if (sensor.begin())
+            if (sensor.Begin())
             {
                 sensor.enableProximity(true);
                 sensor.enableGesture(true);
@@ -160,10 +161,10 @@ namespace MadeInTheUSB.FT232H.Console
                 while (!quit)
                 {
                     Gestures gesture = sensor.readGesture();
-                    if (gesture == APDS_9900_DigitalInfraredGestureSensor.Gestures.APDS9960_DOWN)   System.Console.WriteLine("v");
-                    if (gesture == APDS_9900_DigitalInfraredGestureSensor.Gestures.APDS9960_UP)     System.Console.WriteLine("^");
-                    if (gesture == APDS_9900_DigitalInfraredGestureSensor.Gestures.APDS9960_LEFT)   System.Console.WriteLine("<");
-                    if (gesture == APDS_9900_DigitalInfraredGestureSensor.Gestures.APDS9960_RIGHT)  System.Console.WriteLine(">");
+                    if (gesture == APDS_9900_DigitalInfraredGestureSensor.Gestures.APDS9960_DOWN)   System.Console.WriteLine("DOWN");
+                    if (gesture == APDS_9900_DigitalInfraredGestureSensor.Gestures.APDS9960_UP)     System.Console.WriteLine("UP");
+                    if (gesture == APDS_9900_DigitalInfraredGestureSensor.Gestures.APDS9960_LEFT)   System.Console.WriteLine("LEFT");
+                    if (gesture == APDS_9900_DigitalInfraredGestureSensor.Gestures.APDS9960_RIGHT)  System.Console.WriteLine("RIGHT");
 
                     if (System.Console.KeyAvailable)
                     {
@@ -177,10 +178,10 @@ namespace MadeInTheUSB.FT232H.Console
         }
 
 
-        static void APDS_9900_DigitalInfraredGestureSensor_Color(I2CDevice_MPSSE_NotUsed i2cDevice)
+        static void APDS_9900_DigitalInfraredGestureSensor_Color(I2CDevice i2cDevice)
         {
             var sensor = new APDS_9900_DigitalInfraredGestureSensor(i2cDevice, 0);
-            if (sensor.begin())
+            if (sensor.Begin())
             {
                 //enable proximity mode
                 sensor.enableColor(true);
@@ -210,10 +211,40 @@ namespace MadeInTheUSB.FT232H.Console
             }
         }
 
-        static void APDS_9900_DigitalInfraredGestureSensor_Proximity(I2CDevice_MPSSE_NotUsed i2cDevice)
+
+        static void Gpio_Output_InputMode(I2CDevice i2cDevice)
         {
+            i2cDevice.HardwareProgressBarOn = false;
+            var gpios = i2cDevice.Gpios;
+
+            for(var g=0; g < gpios.MaxGpio; g++)
+            {
+                gpios.SetPinMode(g, PinMode.Output);
+            }
+
+            // Gpios Test Extension - output mode - gpio 0,1,2,3 send current to gpio 4,5,6,7
+            for (var g = 0; g < gpios.MaxGpio/2; g++)
+            {
+                gpios.DigitalWrite(g, PinState.High);
+                gpios.DigitalWrite(g, PinState.Low);
+            }
+
+            //gpios.DigitalWrite(0, PinState.High);
+            //gpios.DigitalWrite(0, PinState.Low);
+            //var pin = gpios.DigitalRead(0);
+
+            //gpios.SetPullUp(0, PinState.High);
+            //var pin = gpios.DigitalRead(0);
+            //gpios.SetPinMode(0, PinMode.Output);
+            //gpios.DigitalWrite(0, PinState.High);
+            //gpios.DigitalWrite(0, PinState.Low);
+        }
+
+        static void APDS_9900_DigitalInfraredGestureSensor_Proximity(I2CDevice i2cDevice)
+        {
+            i2cDevice.HardwareProgressBarOn = false;
             var sensor = new APDS_9900_DigitalInfraredGestureSensor(i2cDevice, 0);
-            if (sensor.begin())
+            if (sensor.Begin())
             {
                 //enable proximity mode
                 sensor.enableProximity(true);
@@ -221,7 +252,7 @@ namespace MadeInTheUSB.FT232H.Console
                 sensor.enableProximityInterrupt();
 
                 System.Console.Clear();
-                ConsoleEx.TitleBar(0, "Proximity Sensor");
+                ConsoleEx.TitleBar(0, "APDS_9900 - Proximity Sensor");
                 ConsoleEx.WriteMenu(-1, 2, "Q)uit");
                 var quit = false;
                 ConsoleEx.WriteLine(1, 10, "Waiting for interrupt:", ConsoleColor.White);
@@ -230,6 +261,7 @@ namespace MadeInTheUSB.FT232H.Console
                     if(sensor.IsInterruptOn)
                     {
                         System.Console.WriteLine($"readProximity: {sensor.readProximity()}");
+                        sensor.clearInterrupt();
                         sensor.clearInterrupt();
                     }
 

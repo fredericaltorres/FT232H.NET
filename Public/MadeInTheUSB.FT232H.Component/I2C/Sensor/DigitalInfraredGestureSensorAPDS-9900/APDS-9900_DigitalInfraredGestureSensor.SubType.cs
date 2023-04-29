@@ -173,7 +173,7 @@ namespace MadeInTheUSB
             APDS9960_RIGHT = 0x04, /**< Gesture Right */
         }
 
-        class Enable
+        class EnableData
         {
             // power on
             public uint8_t PON = 1;
@@ -202,7 +202,7 @@ namespace MadeInTheUSB
             }
         };
 
-        Enable _enable = new Enable();
+        EnableData _enable = new EnableData();
 
         class Pers
         {
@@ -479,26 +479,25 @@ namespace MadeInTheUSB
         };
         Gstatus _gstatus = new Gstatus();
 
-        private byte read8(Registers reg)
+        private byte ReadRegister(Registers reg)
         {
-            return read8((byte)reg);
+            return ReadRegister((byte)reg);
         }
 
-        private byte read8(byte reg)
+        private byte ReadRegister(byte reg)
         {
-            var r = this._i2cDevice.Send1ByteRead1ByteCommand(this.DeviceID, (byte)reg);
+            var r = this._i2cDevice.ReadByteRegister((byte)reg, this.DeviceID);
             return (byte)r;
         }
 
-        private bool write8(Registers reg, int value)
+        private bool WriteRegister(Registers reg, int value)
         {
-            return write8((byte)reg, (byte)value);
+            return WriteRegister((byte)reg, (byte)value);
         }
 
-        private bool write8(byte reg, byte value)
+        private bool WriteRegister(byte reg, byte value)
         {
-            var r = this._i2cDevice.WriteBuffer(this.DeviceID, new List<byte>() { reg, value }.ToArray());
-            return r;
+            return this._i2cDevice.WriteByteRegister(reg, value, this.DeviceID);
         }
     }
 }
