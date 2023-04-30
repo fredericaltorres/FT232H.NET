@@ -47,8 +47,6 @@ namespace MadeInTheUSB.FT232H.Components
             WINBOND_25Q128JV_16MB = 0x17,
         }
 
-        public int PageSize = DEFAULT_PAGE_SIZE;
-
         public enum FLASH_ADDR_SIZE
         {
             TwoBytes    = 2,

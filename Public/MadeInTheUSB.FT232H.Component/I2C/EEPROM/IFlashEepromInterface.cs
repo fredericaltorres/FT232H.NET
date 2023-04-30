@@ -12,6 +12,6 @@ namespace MadeInTheUSB.FT232H.Component.I2C
         int SizeInMByte { get; }
 
         bool ReadPages(int addr, int byteToRead, List<byte> buffer);
-        bool WritePages(int addr, List<byte> buffer, bool verify = false);
+        bool WritePages(int addr, List<byte> buffer, bool verify = false, bool eraseBlock = true);
     }
 }

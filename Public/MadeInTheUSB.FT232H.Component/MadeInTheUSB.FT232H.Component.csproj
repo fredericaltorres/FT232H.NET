@@ -55,6 +55,7 @@
     <Compile Include="I2C\ADC\ADS1015_ADC.cs" />
     <Compile Include="I2C\EEPROM\I2CEEPROM.cs" />
     <Compile Include="I2C\EEPROM\IFlashEepromInterface.cs" />
+    <Compile Include="I2C\EEPROM\PocoFS.cs" />
     <Compile Include="I2C\LCD\PCF8574.cs" />
     <Compile Include="I2C\LCD\ILiquidCrystal_i2c.cs" />
     <Compile Include="I2C\LCD\LiquidCrystalBase.cs" />

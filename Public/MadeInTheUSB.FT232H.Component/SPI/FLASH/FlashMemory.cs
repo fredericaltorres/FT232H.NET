@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MadeInTheUSB.FT232H.Component.I2C;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -10,24 +11,20 @@ namespace MadeInTheUSB.FT232H.Components
     /// <summary>
     /// GOOD PDF ABOUT (MPSSE) Mhttp://www.ftdichip.com/Support/Documents/AppNotes/AN_135_MPSSE_Basics.pdf
     /// </summary>
-    public partial class FlashMemory
+    public partial class FlashMemory : IFlashEepromInterface
     {
-        public int SizeInByte;
+        public int SizeInByte { get; set; }
         public int SizeInKByte => this.SizeInByte / 1024;
         public int SizeInMByte => this.SizeInByte / 1024 / 1024;
+        public int PageSize { get; set; } = DEFAULT_PAGE_SIZE;
+        public int MaxPage => this.SizeInByte / (int)this.PageSize;
+        public int Max64KbBlock => this.SizeInByte / FlashMemory._64K_BLOCK_SIZE;
+
 
         private readonly ISPI _spi;
         private readonly SpiChipSelectPins _cs;
 
-        public int MaxPage
-        {
-            get { return this.SizeInByte / (int)this.PageSize; }
-        }
-
-        public int Max64KbBlock
-        {
-            get { return this.SizeInByte / FlashMemory._64K_BLOCK_SIZE; }
-        }
+       
 
         public FlashMemory(ISPI spi, SpiChipSelectPins cs) 
         {
@@ -311,7 +308,6 @@ namespace MadeInTheUSB.FT232H.Components
 
             return b;
         }
-
 
         public bool EraseFlash()
         {
