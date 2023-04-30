@@ -314,7 +314,7 @@ namespace MadeInTheUSB.FT232H
         {
             byte[] buffer = new byte[1] { 0 };
             int sizeTransfered = 0;
-            var flags = FastModeFlag | FtdiI2CTransferOptions.StartBit | FtdiI2CTransferOptions.StopBit;//| FtdiI2CTransferOptions.BreakOnNack;
+            var flags = FastModeFlag | FtdiI2CTransferOptions.StartBit | FtdiI2CTransferOptions.StopBit| FtdiI2CTransferOptions.BreakOnNack | FtdiI2CTransferOptions.NackLastByte;
             var sw = Stopwatch.StartNew();
             var result = LibMpsse_AccessToCppDll.I2C_DeviceRead(_handle, deviceId, buffer.Length, buffer, out sizeTransfered, flags);
             sw.Stop();

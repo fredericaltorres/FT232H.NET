@@ -328,14 +328,15 @@ namespace MadeInTheUSB.FT232H.Console
 
             i2cDevice.Gpios.Animate();
             // ADS1115_ADC_ADC(i2cDevice);
-            // I2CEEPROM_AT24C256_Sample(i2cDevice);
+            //I2CEEPROM_AT24C256_Sample(i2cDevice);
+            I2CEEPROM_AT24C256_PocoFileSystemSample(i2cDevice);
             //OLED_SSD1306_Sample(i2cDevice);
             //I2CSample_Adafruit9x16LedMatrixGray(i2cDevice);
             //I2CSample_AdaFruit8x8LedMatrix(i2cDevice);
             //MCP9808_TemperatureSensor_Sample(i2cDevice);
             // APDS_9900_DigitalInfraredGestureSensor_Gesture(i2cDevice);
             //APDS_9900_DigitalInfraredGestureSensor_Proximity(i2cDevice);
-            Gpio_Output_InputMode(i2cDevice);
+            //Gpio_Output_InputMode(i2cDevice);
         }
 
         private static ConsoleKeyInfo Pause(string message = null)

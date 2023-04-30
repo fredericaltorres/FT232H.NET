@@ -229,6 +229,10 @@ namespace MadeInTheUSB.FT232H.Console
                 gpios.DigitalWrite(g, PinState.Low);
             }
 
+            for (var g = 0; g < gpios.MaxGpio/2; g++)
+            {
+                gpios.SetPinMode(g, PinMode.Input);
+            }
             //gpios.DigitalWrite(0, PinState.High);
             //gpios.DigitalWrite(0, PinState.Low);
             //var pin = gpios.DigitalRead(0);
@@ -275,7 +279,53 @@ namespace MadeInTheUSB.FT232H.Console
                 }
             }
         }
-        
+
+        const string largeText = @"
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse et placerat tortor. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Suspendisse potenti. Praesent ultricies sit amet libero nec venenatis. Pellentesque sit amet luctus nisl, et consequat orci. Nunc semper sed enim id mattis. In eget augue velit. Quisque vitae tortor lorem. Etiam a ultricies mauris. Fusce felis sem, placerat at blandit in, efficitur id nunc. Pellentesque accumsan a leo a sodales.
+Interdum et malesuada fames ac ante ipsum primis in faucibus. Praesent ac ornare ipsum. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Donec condimentum id nisi ullamcorper interdum. Nullam eleifend diam quis purus viverra, sit amet volutpat urna condimentum. Praesent semper eros urna, nec convallis turpis fermentum in. Phasellus condimentum, nulla sed interdum efficitur, enim enim tincidunt tellus, vel faucibus ex lectus at ipsum. Nunc id orci fringilla, aliquet odio in, rutrum libero. Vestibulum eget neque sit amet urna iaculis semper. Etiam malesuada semper lectus, condimentum accumsan purus maximus eu. Donec vulputate risus vitae tortor luctus accumsan. Nulla venenatis, neque eu tristique congue, sem purus dictum leo, sed interdum nibh nibh id tortor. Curabitur id tempus tellus, vitae porta neque. Ut non molestie purus.
+Donec euismod malesuada vulputate. Vestibulum lobortis consequat erat sed suscipit. Vivamus porttitor pellentesque elit, in consectetur nunc fermentum sit amet. Nullam vitae nibh et metus luctus tempus sit amet vitae urna. Morbi non lectus vitae orci volutpat rutrum. Nullam aliquet, sapien a pulvinar faucibus, enim metus maximus urna, non tristique elit massa fermentum eros. Pellentesque faucibus tortor non fringilla pulvinar. Etiam cursus, neque eget euismod eleifend, nulla magna ultrices libero, in eleifend nisi augue congue neque. Sed vitae mi vitae felis mollis fermentum in quis mauris.
+Morbi ante nisl, auctor vel odio at, egestas scelerisque leo. Cras in dolor imperdiet purus congue porta. Fusce et augue eget ex congue fringilla lacinia id felis. Mauris et tortor in ex tristique volutpat. Aliquam at ex lorem. Aliquam ultricies dui vitae sapien hendrerit ultrices. Fusce quis dictum risus, sed ornare sem. Nullam a porttitor orci. Nulla nec blandit nunc. Aenean mattis tempus consequat. Integer nunc lorem, placerat in congue ac, sollicitudin ac ante. Nullam eleifend egestas nibh a sagittis. Donec posuere, arcu quis volutpat suscipit, quam tortor hendrerit magna, eu suscipit nunc tellus pharetra nisl. Ut vel ante libero. Aliquam at faucibus est, sit amet luctus tellus.
+Donec at euismod lectus. Phasellus non nunc quam. Vestibulum bibendum venenatis sem consequat sagittis. Fusce pulvinar risus lectus. Cras eget dignissim urna. Integer ut auctor neque. Integer libero tellus, sagittis id rhoncus ut, malesuada sit amet tortor. Morbi tincidunt semper mauris et tempus. Donec a dui elit. Cras vel laoreet quam. Vestibulum enim ex, auctor vitae sapien sed, facilisis egestas eros. Suspendisse ac magna quis est sollicitudin egestas convallis ac mauris. Suspendisse vestibulum erat vel tortor vulputate, at blandit leo tincidunt. Duis eleifend ut ante vitae convallis. Donec eget odio scelerisque metus semper sollicitudin. Pellentesque vestibulum luctus lacus nec posuere.
+";
+
+        public class EEpromPersistedObject
+        {
+            public int a = 1;
+            public double b = 2.0;
+            public string text = largeText;
+            public DateTime LastModified = DateTime.Now;
+
+            public bool Match(EEpromPersistedObject o)
+            {
+                return this.a == o.a && this.b == o.b && this.text == o.text && this.LastModified == o.LastModified;
+            }
+        }
+
+        static void I2CEEPROM_AT24C256_PocoFileSystemSample(I2CDevice i2cDevice)
+        {
+            System.Console.Clear();
+            ConsoleEx.TitleBar(0, "I2C EEPROM AT24C256 - Saving Poco/Json object");
+            ConsoleEx.WriteLine($"", ConsoleColor.Cyan);
+            var eeprom = new I2CEEPROM_AT24C256(i2cDevice);
+            if (eeprom.Begin())
+            {
+                ConsoleEx.WriteLine($"Writing poco object to EEPROM File System", ConsoleColor.Cyan);
+                var pocoFS = new PocoFS(eeprom);
+                var poco = new EEpromPersistedObject();
+                pocoFS.Save(poco);
+                ConsoleEx.WriteLine($"Poco written to EEPROM in {pocoFS.LastExecutionTime}ms", ConsoleColor.Cyan);
+
+                ConsoleEx.WriteLine($"Loading poco from EEPROM File System", ConsoleColor.Cyan);
+                var o = pocoFS.Load<EEpromPersistedObject>();
+                ConsoleEx.WriteLine($"Poco loaded from EEPROM in {pocoFS.LastExecutionTime}ms", ConsoleColor.Cyan);
+                if (!o.Match(poco))
+                    throw new InvalidOperationException("Object read from EEPROM does not match");
+
+                ConsoleEx.WriteLine($"Press any key", ConsoleColor.Cyan);
+                System.Console.ReadKey();
+            }
+        }
+
         static void I2CEEPROM_AT24C256_Sample(I2CDevice i2cDevice)
         {
             byte asciValue = 64;

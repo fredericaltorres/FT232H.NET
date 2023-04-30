@@ -33,6 +33,9 @@
     <Reference Include="BufferUtil.Lib, Version=1.0.4.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\BufferUtil.Lib.1.0.4\lib\netstandard2.0\BufferUtil.Lib.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Newtonsoft.Json.13.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
@@ -51,6 +54,7 @@
     <Compile Include="I2C\Adafruit\MultiLEDBackpackManager.cs" />
     <Compile Include="I2C\ADC\ADS1015_ADC.cs" />
     <Compile Include="I2C\EEPROM\I2CEEPROM.cs" />
+    <Compile Include="I2C\EEPROM\IFlashEepromInterface.cs" />
     <Compile Include="I2C\LCD\PCF8574.cs" />
     <Compile Include="I2C\LCD\ILiquidCrystal_i2c.cs" />
     <Compile Include="I2C\LCD\LiquidCrystalBase.cs" />
