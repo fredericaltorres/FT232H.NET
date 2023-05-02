@@ -329,7 +329,7 @@ namespace MadeInTheUSB.FT232H.Console
             i2cDevice.Gpios.Animate();
             // ADS1115_ADC_ADC(i2cDevice);
             //I2CEEPROM_AT24C256_Sample(i2cDevice);
-            I2CEEPROM_AT24C256_PocoFileSystemSample(i2cDevice);
+            I2C_Temperature_To_EEPROM_AT24C256_PocoFileSystemSample(i2cDevice);
             //OLED_SSD1306_Sample(i2cDevice);
             //I2CSample_Adafruit9x16LedMatrixGray(i2cDevice);
             //I2CSample_AdaFruit8x8LedMatrix(i2cDevice);

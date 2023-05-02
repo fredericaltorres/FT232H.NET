@@ -36,9 +36,9 @@ namespace MadeInTheUSB.FT232H.Component.I2C.EEPROM
             if (this._i2cDevice.DetectDevice(deviceId))
             {
                 var eepromBufferIn = new List<byte>();
-                var rIn = this.ReadPages(0, this.PageSize, eepromBufferIn);
+                var r = this.ReadPages(0, this.PageSize, eepromBufferIn);
                 this._i2cDevice.RegisterDeviceIdForLogging((byte)this.DeviceId, this.GetType());
-                return true;
+                return r;
             }
             else return false;
         }

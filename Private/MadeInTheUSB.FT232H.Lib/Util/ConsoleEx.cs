@@ -63,10 +63,16 @@ namespace MadeInTheUSB
             Console.WriteLine();
         }
 
+
         public static void WriteLine(int x, int y, string text, ConsoleColor c)
         {
             Gotoxy(x, y);
             WriteLine(text, c);
+        }
+
+        public static void WriteErrorLine(string text)
+        {
+            WriteLine($"[ERROR]{text}", ConsoleColor.Red);
         }
 
         public static void WriteLine(string text, ConsoleColor c)

@@ -18,6 +18,7 @@ using uint8_t = System.Byte;
 using static MadeInTheUSB.APDS_9900_DigitalInfraredGestureSensor;
 using MadeInTheUSB.FT232H.Component.I2C.EEPROM;
 using BufferUtil;
+using System.Security.Permissions;
 
 namespace MadeInTheUSB.FT232H.Console
 {
@@ -288,41 +289,90 @@ Morbi ante nisl, auctor vel odio at, egestas scelerisque leo. Cras in dolor impe
 Donec at euismod lectus. Phasellus non nunc quam. Vestibulum bibendum venenatis sem consequat sagittis. Fusce pulvinar risus lectus. Cras eget dignissim urna. Integer ut auctor neque. Integer libero tellus, sagittis id rhoncus ut, malesuada sit amet tortor. Morbi tincidunt semper mauris et tempus. Donec a dui elit. Cras vel laoreet quam. Vestibulum enim ex, auctor vitae sapien sed, facilisis egestas eros. Suspendisse ac magna quis est sollicitudin egestas convallis ac mauris. Suspendisse vestibulum erat vel tortor vulputate, at blandit leo tincidunt. Duis eleifend ut ante vitae convallis. Donec eget odio scelerisque metus semper sollicitudin. Pellentesque vestibulum luctus lacus nec posuere.
 ";
 
+        public class EEpromPersistedTemperatureMeasurement
+        {
+            public DateTime TimeStamp { get; set; } = DateTime.Now;
+            public double Fahrenheit { get; set; }
+        }
         public class EEpromPersistedObject
         {
-            public int a = 1;
-            public double b = 2.0;
-            public string text = largeText;
-            public DateTime LastModified = DateTime.Now;
+            public List<EEpromPersistedTemperatureMeasurement> Measurements = new List<EEpromPersistedTemperatureMeasurement>();
 
             public bool Match(EEpromPersistedObject o)
             {
-                return this.a == o.a && this.b == o.b && this.text == o.text && this.LastModified == o.LastModified;
+                return this.Measurements.Count == o.Measurements.Count;
+            }
+
+            public void Add(double fahrenheit)
+            {
+                this.Measurements.Add(new EEpromPersistedTemperatureMeasurement {
+                    TimeStamp = DateTime.Now,
+                    Fahrenheit = fahrenheit
+                });
             }
         }
 
-        static void I2CEEPROM_AT24C256_PocoFileSystemSample(I2CDevice i2cDevice)
+        static void I2C_Temperature_To_EEPROM_AT24C256_PocoFileSystemSample(I2CDevice i2cDevice)
         {
+            System.Console.Clear();
+
+            System.Console.WriteLine("Detect/initialize temperature sensor MCP9808 Device");
+            var tempSensor = new MCP9808_TemperatureSensor(i2cDevice);
+            if (!tempSensor.Begin())
+            {
+                ConsoleEx.WriteErrorLine("Cannot detect temperature sensor MCP9808");
+                return;
+            }
+
+            var eeprom = new I2CEEPROM_AT24C256(i2cDevice);
+            System.Console.WriteLine("Detect/initialize EEPROM AT24C256");
+            if (!eeprom.Begin())
+            {
+                ConsoleEx.WriteErrorLine("Cannot detect temperature EEPROM AT24C256");
+                return;
+            }
+
             System.Console.Clear();
             ConsoleEx.TitleBar(0, "I2C EEPROM AT24C256 - Saving Poco/Json object");
             ConsoleEx.WriteLine($"", ConsoleColor.Cyan);
-            var eeprom = new I2CEEPROM_AT24C256(i2cDevice);
-            if (eeprom.Begin())
+
+            var pocoFS = new PocoFS(eeprom);
+            var poco = new EEpromPersistedObject();
+            var quit = false;
+
+            /// pocoFS.Format();
+
+            if (pocoFS.Exists<EEpromPersistedObject>()) 
             {
-                ConsoleEx.WriteLine($"Writing poco object to EEPROM File System", ConsoleColor.Cyan);
-                var pocoFS = new PocoFS(eeprom);
-                var poco = new EEpromPersistedObject();
+                poco = pocoFS.Load<EEpromPersistedObject>();
+            }
+
+            while (!quit)
+            {
+                var fahrenheitTemp = tempSensor.GetTemperature(TemperatureType.Fahrenheit, resetTime: 0);
+                var celciusTemp = tempSensor.GetTemperature(TemperatureType.Celsius, resetTime: 0);
+                var tempInfoString = $"{fahrenheitTemp:0.00}F / {celciusTemp:0.00}C";
+                ConsoleEx.WriteLine($"[{DateTime.Now}] Temp:{tempInfoString}", ConsoleColor.White);
+
+                poco.Add(fahrenheitTemp);
                 pocoFS.Save(poco);
-                ConsoleEx.WriteLine($"Poco written to EEPROM in {pocoFS.LastExecutionTime}ms", ConsoleColor.Cyan);
+                ConsoleEx.WriteLine($"Poco written to EEPROM in {pocoFS.LastExecutionTime}ms, size:{pocoFS.LastPayloadSize}b", ConsoleColor.Cyan);
 
                 ConsoleEx.WriteLine($"Loading poco from EEPROM File System", ConsoleColor.Cyan);
-                var o = pocoFS.Load<EEpromPersistedObject>();
+                EEpromPersistedObject reLoadedPoco = pocoFS.Load<EEpromPersistedObject>();
                 ConsoleEx.WriteLine($"Poco loaded from EEPROM in {pocoFS.LastExecutionTime}ms", ConsoleColor.Cyan);
-                if (!o.Match(poco))
+                ConsoleEx.WriteLine($"{reLoadedPoco.Measurements.Count} Measurements written", ConsoleColor.Cyan);
+                if (!reLoadedPoco.Match(poco))
                     throw new InvalidOperationException("Object read from EEPROM does not match");
 
-                ConsoleEx.WriteLine($"Press any key", ConsoleColor.Cyan);
-                System.Console.ReadKey();
+                Thread.Sleep(1000 * 60);
+
+                if (System.Console.KeyAvailable)
+                {
+                    var k = System.Console.ReadKey(true).Key;
+                    if (k == ConsoleKey.Q)
+                        quit = true;
+                }
             }
         }
 

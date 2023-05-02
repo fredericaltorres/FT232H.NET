@@ -15,9 +15,17 @@ namespace MadeInTheUSB.FT232H.Component.I2C.EEPROM
     {
         public IFlashEepromInterface _eeprom { get; }
         public long LastExecutionTime;
+        public long LastPayloadSize;
         public PocoFS(IFlashEepromInterface eeprom)
         {
             _eeprom = eeprom;
+        }
+
+        public bool Format()
+        {
+            var buffer = new List<byte>();
+            buffer = BufferUtil.BufferUtils.MakeBuffer(_eeprom.PageSize * 10, 0);
+            return _eeprom.WritePages(0, buffer.ToList());
         }
 
         public void Save(object poco)
@@ -25,11 +33,27 @@ namespace MadeInTheUSB.FT232H.Component.I2C.EEPROM
             var sw = StopWatch.StartNew();
             var json = JsonConvert.SerializeObject(poco, Formatting.None);
             var buffer = CompressBrotli(json);
+
+            this.LastPayloadSize = buffer.Length;
+
+            if(buffer.Length > _eeprom.SizeInByte)
+                throw new ArgumentException($"Not enough space on EEPROM to store {buffer.Length} bytes");
+
             if (!_eeprom.WritePages(0, buffer.ToList()))
                 throw new InvalidOperationException($"Failed writing poco object");
 
             sw.Stop();
             this.LastExecutionTime = sw.ElapsedMilliseconds;
+        }
+
+        public bool Exists<T>()
+        {
+            try
+            {
+                var r = Load<T>();
+                return r != null;
+            }
+            catch { return false; }
         }
 
         public T Load<T>()
