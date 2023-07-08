@@ -54,6 +54,10 @@ namespace MadeInTheUSB.FT232H.Console
                 {
                     I2CDemo();
                 }
+                if (k.Key == ConsoleKey.S)
+                {
+                    SPIDemo();
+                }
                 if (k.Key == ConsoleKey.D2)
                 {
                     I2CMultiDeviceDemo();
@@ -137,6 +141,52 @@ namespace MadeInTheUSB.FT232H.Console
             // GpioSample(gpios, false);
         }
 
+
+
+        private static void SPIDemo()
+        {
+            System.Console.Clear();
+            System.Console.WriteLine("Detecting/Initializing device");
+
+            var ft232hGpioSpiDevice = new SpiDevice(SpiClockSpeeds._10Mhz);
+            ft232hGpioSpiDevice.Log = !true;
+            var spi = ft232hGpioSpiDevice.SPI;
+            var gpios = ft232hGpioSpiDevice.GPIO;
+            gpios.Animate();
+
+            System.Console.Clear();
+            ConsoleEx.TitleBar(0, "Nusbio /2 - FT232H Library", ConsoleColor.Yellow, ConsoleColor.DarkBlue);
+            ConsoleEx.TitleBar(1, "S P I Demo", ConsoleColor.Yellow, ConsoleColor.DarkBlue);
+            ConsoleEx.WriteMenu(0, 2, "Q)uit");
+            System.Console.WriteLine("");
+
+            //var flash = new FlashMemory(spi, SpiChipSelectPins.CsDbus3);
+            //flash.ReadIdentification();
+            //var maxPage = flash.MaxPage;
+            //var pageBufferCount = 256; //  256 * 256 = 65536kb buffer
+            //var flashPageAddr = 0;
+            var adc = new MCP3008(spi, SpiChipSelectPins.CsDbus3);
+            const double referenceVoltage = 3.3;
+
+            while (true)
+            {
+                gpios.ProgressNext();
+                ConsoleEx.WriteLine(0, 3, $"{DateTime.Now}", ConsoleColor.Cyan);
+                for (var adcPort = 0; adcPort < 2; adcPort++)
+                {
+                    var adcValue = adc.Read(adcPort);
+                    var voltageValue = adc.ComputeVoltage(referenceVoltage, adcValue);
+                    ConsoleEx.WriteLine(0, 4 + adcPort, $"ADC [{adcPort}] = {adcValue:0000}, voltage:{voltageValue:0.00}{Environment.NewLine}", ConsoleColor.Cyan);
+                }
+
+                if (System.Console.KeyAvailable)
+                {
+                    var k = System.Console.ReadKey(true);
+                    if (k.Key == ConsoleKey.Q) return;
+                }
+                Thread.Sleep(750);
+            }
+        }
 
         private static void SPIMultiDeviceDemo()
         {
@@ -327,9 +377,9 @@ namespace MadeInTheUSB.FT232H.Console
             System.Console.WriteLine("");
 
             i2cDevice.Gpios.Animate();
-            // ADS1115_ADC_ADC(i2cDevice);
+             ADS1115_ADC_ADC(i2cDevice);
             //I2CEEPROM_AT24C256_Sample(i2cDevice);
-            I2C_Temperature_To_EEPROM_AT24C256_PocoFileSystemSample(i2cDevice);
+            //I2C_Temperature_To_EEPROM_AT24C256_PocoFileSystemSample(i2cDevice);
             //OLED_SSD1306_Sample(i2cDevice);
             //I2CSample_Adafruit9x16LedMatrixGray(i2cDevice);
             //I2CSample_AdaFruit8x8LedMatrix(i2cDevice);

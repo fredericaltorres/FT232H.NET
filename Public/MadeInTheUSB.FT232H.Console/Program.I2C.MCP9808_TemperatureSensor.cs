@@ -43,7 +43,7 @@ namespace MadeInTheUSB.FT232H.Console
                     {
                         var v = adc.readADC_SingleEnded(adcIndex);
                         var volt = adc.ComputeVolts(v);
-                        ConsoleEx.WriteLine($"[{DateTime.Now}] ADC[{adcIndex}] voltagle:{v}|{volt}", ConsoleColor.White);
+                        ConsoleEx.WriteLine($"[{DateTime.Now}] ADC[{adcIndex}] voltagle:{volt:0.00}, {v}", ConsoleColor.White);
                     }
                     ConsoleEx.Wait(1);
                 }

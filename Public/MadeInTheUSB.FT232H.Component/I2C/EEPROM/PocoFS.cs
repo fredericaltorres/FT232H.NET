@@ -11,7 +11,10 @@ using static System.Net.Mime.MediaTypeNames;
 
 namespace MadeInTheUSB.FT232H.Component.I2C.EEPROM
 {
-    public class PocoFS  
+    /// <summary>
+    /// PocoFS - Plain Old Clr Object 
+    /// </summary>
+    public class PocoFS
     {
         public IFlashEepromInterface _eeprom { get; }
         public long LastExecutionTime;
@@ -33,7 +36,6 @@ namespace MadeInTheUSB.FT232H.Component.I2C.EEPROM
             var sw = StopWatch.StartNew();
             var json = JsonConvert.SerializeObject(poco, Formatting.None);
             var buffer = CompressBrotli(json);
-
             this.LastPayloadSize = buffer.Length;
 
             if(buffer.Length > _eeprom.SizeInByte)
@@ -62,8 +64,7 @@ namespace MadeInTheUSB.FT232H.Component.I2C.EEPROM
             try
             {
                 var compressedBuffer = new List<byte>();
-                var r = _eeprom.ReadPages(0, _eeprom.SizeInByte, compressedBuffer);
-                if (r)
+                if (ReadCompressedBuffer(compressedBuffer))
                 {
                     var buffer = DecompressBrotli(compressedBuffer.ToArray());
                     var json = Encoding.Unicode.GetString(buffer);
@@ -76,6 +77,11 @@ namespace MadeInTheUSB.FT232H.Component.I2C.EEPROM
                 sw.Stop();
                 this.LastExecutionTime = sw.ElapsedMilliseconds;
             }
+        }
+
+        private bool ReadCompressedBuffer(List<byte> compressedBuffer)
+        {
+            return  _eeprom.ReadPages(0, _eeprom.SizeInByte, compressedBuffer);
         }
 
         //https://www.dotnetperls.com/decompress

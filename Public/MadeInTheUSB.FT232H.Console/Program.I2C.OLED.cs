@@ -336,11 +336,12 @@ Donec at euismod lectus. Phasellus non nunc quam. Vestibulum bibendum venenatis 
             ConsoleEx.TitleBar(0, "I2C EEPROM AT24C256 - Saving Poco/Json object");
             ConsoleEx.WriteLine($"", ConsoleColor.Cyan);
 
+
             var pocoFS = new PocoFS(eeprom);
             var poco = new EEpromPersistedObject();
             var quit = false;
 
-            /// pocoFS.Format();
+            //pocoFS.Format();
 
             if (pocoFS.Exists<EEpromPersistedObject>()) 
             {
@@ -365,7 +366,8 @@ Donec at euismod lectus. Phasellus non nunc quam. Vestibulum bibendum venenatis 
                 if (!reLoadedPoco.Match(poco))
                     throw new InvalidOperationException("Object read from EEPROM does not match");
 
-                Thread.Sleep(1000 * 60);
+                ConsoleEx.WriteLine($"Waiting 5 seconds", ConsoleColor.Cyan);
+                Thread.Sleep(1000 * 5);
 
                 if (System.Console.KeyAvailable)
                 {
@@ -375,6 +377,14 @@ Donec at euismod lectus. Phasellus non nunc quam. Vestibulum bibendum venenatis 
                 }
             }
         }
+
+
+
+
+
+
+
+
 
         static void I2CEEPROM_AT24C256_Sample(I2CDevice i2cDevice)
         {
