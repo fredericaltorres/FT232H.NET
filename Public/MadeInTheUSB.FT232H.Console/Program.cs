@@ -41,7 +41,7 @@ namespace MadeInTheUSB.FT232H.Console
                 System.Console.Clear();
                 ConsoleEx.TitleBar(0, "Nusbio /2 - FT232H Library", ConsoleColor.Yellow, ConsoleColor.DarkBlue);
                 ConsoleEx.WriteMenu(0, 2, "I)2C Demo   2)I2C Multi Device Demo   S)PI Demo");
-                ConsoleEx.WriteMenu(0, 3, "S)PI Demo   3)SPI Multi Device Demo");
+                ConsoleEx.WriteMenu(0, 3, "S)PI Demo   3)SPI Multi Device Demo   G)PIO Demo   ");
                 ConsoleEx.WriteMenu(0, 4, "Q)uit");
 
                 var k = System.Console.ReadKey(true);
@@ -57,6 +57,10 @@ namespace MadeInTheUSB.FT232H.Console
                 if (k.Key == ConsoleKey.S)
                 {
                     SPIDemo();
+                }
+                if (k.Key == ConsoleKey.G)
+                {
+                    GPIODemo();
                 }
                 if (k.Key == ConsoleKey.D2)
                 {
@@ -141,7 +145,82 @@ namespace MadeInTheUSB.FT232H.Console
             // GpioSample(gpios, false);
         }
 
+        private static void AssertState(PinState expected, PinState actual, string msg)
+        {
+            var passed = expected == actual;
+            System.Console.WriteLine($"[{(passed ? "PASSED":"FAILED")}] {msg}, expected:{expected}, actual:{actual}");
+        }
 
+        private static void GPIODemo()
+        {
+            System.Console.Clear();
+            System.Console.WriteLine("Detecting/Initializing device");
+
+            var ft232hGpioSpiDevice = new SpiDevice(SpiClockSpeeds._10Mhz);
+            ft232hGpioSpiDevice.Log = !true;
+            var spi = ft232hGpioSpiDevice.SPI;
+            var gpios = ft232hGpioSpiDevice.GPIO;
+
+            Cls();
+
+            gpios.SetPinMode(0, PinMode.Output);
+            gpios.SetPinMode(1, PinMode.Output);
+            gpios.SetPinMode(2, PinMode.Output);
+            gpios.SetPinMode(3, PinMode.Output);
+
+            gpios.SetPinMode(7, PinMode.Input);
+            gpios.SetPinMode(4, PinMode.Input);
+            gpios.SetPinMode(5, PinMode.Input);
+            gpios.SetPinMode(6, PinMode.Input);
+            
+
+            while (true)
+            {
+                Cls();
+
+                ConsoleEx.WriteLine(0, 3, $"{DateTime.Now}", ConsoleColor.Cyan);
+
+                var pinState = PinState.Low;
+                gpios.DigitalWrite(0, pinState);
+                gpios.DigitalWrite(1, pinState);
+                gpios.DigitalWrite(2, pinState);
+                gpios.DigitalWrite(3, pinState);
+
+                AssertState(pinState, gpios.DigitalRead(4), $"Test input pin {4}");
+                AssertState(pinState, gpios.DigitalRead(5), $"Test input pin {5}");
+                AssertState(pinState, gpios.DigitalRead(6), $"Test input pin {6}");
+                AssertState(pinState, gpios.DigitalRead(7), $"Test input pin {7}");
+
+                Thread.Sleep(1000);
+
+                pinState = PinState.High;
+                gpios.DigitalWrite(0, pinState);
+                gpios.DigitalWrite(1, pinState);
+                gpios.DigitalWrite(2, pinState);
+                gpios.DigitalWrite(3, pinState);
+
+                AssertState(pinState, gpios.DigitalRead(4), $"Test input pin {4}");
+                AssertState(pinState, gpios.DigitalRead(5), $"Test input pin {5}");
+                AssertState(pinState, gpios.DigitalRead(6), $"Test input pin {6}");
+                AssertState(pinState, gpios.DigitalRead(7), $"Test input pin {7}");
+
+                if (System.Console.KeyAvailable)
+                {
+                    var k = System.Console.ReadKey(true);
+                    if (k.Key == ConsoleKey.Q) return;
+                }
+                Thread.Sleep(1000);
+            }
+
+            void Cls()
+            {
+                System.Console.Clear();
+                ConsoleEx.TitleBar(0, "Nusbio /2 - FT232H Library", ConsoleColor.Yellow, ConsoleColor.DarkBlue);
+                ConsoleEx.TitleBar(1, "G P I O Demo", ConsoleColor.Yellow, ConsoleColor.DarkBlue);
+                ConsoleEx.WriteMenu(0, 2, "Q)uit");
+                System.Console.WriteLine("");
+            }
+        }
 
         private static void SPIDemo()
         {
