@@ -148,7 +148,10 @@ namespace MadeInTheUSB.FT232H.Console
         private static void AssertState(PinState expected, PinState actual, string msg)
         {
             var passed = expected == actual;
-            System.Console.WriteLine($"[{(passed ? "PASSED":"FAILED")}] {msg}, expected:{expected}, actual:{actual}");
+            if (passed)
+                ConsoleEx.WriteLine($"[PASSED] {msg}, expected:{expected}, actual:{actual}", ConsoleColor.Green);
+            else
+                ConsoleEx.WriteLine($"[FAILED] {msg}, expected:{expected}, actual:{actual}", ConsoleColor.Red);
         }
 
         private static void GPIODemo()
@@ -157,11 +160,13 @@ namespace MadeInTheUSB.FT232H.Console
             System.Console.WriteLine("Detecting/Initializing device");
 
             var ft232hGpioSpiDevice = new SpiDevice(SpiClockSpeeds._10Mhz);
+
+            Cls();
+
             ft232hGpioSpiDevice.Log = !true;
             var spi = ft232hGpioSpiDevice.SPI;
             var gpios = ft232hGpioSpiDevice.GPIO;
-
-            Cls();
+            gpios.Animate();
 
             gpios.SetPinMode(0, PinMode.Output);
             gpios.SetPinMode(1, PinMode.Output);
