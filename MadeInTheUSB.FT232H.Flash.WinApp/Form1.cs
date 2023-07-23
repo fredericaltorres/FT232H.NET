@@ -124,7 +124,8 @@ namespace MadeInTheUSB.FT232H.Flash.WinApp
             if (_flash == null)
             {
                 _flash = new FlashMemory(this._interfaces.Spi, SpiChipSelectPins.CsDbus3);
-                if(_flash.ReadIdentification())
+                _flash = new FlashMemory(this._interfaces.Spi, SpiChipSelectPins.CsDbus7);
+                if (_flash.ReadIdentification())
                 {
                     this.ShowUser($"FLASH: {_flash.GetInformation()}");
                     return true;
@@ -324,6 +325,7 @@ namespace MadeInTheUSB.FT232H.Flash.WinApp
             this.ShowUser($"About to write {_flash.MaxPage} pages");
             var maxPage = Math.Min(_flash.MaxPage, _flash.MaxPage);
 
+            var verify = !true;
             /// _flash.ErasePage(0, FlashMemory.ERASE_BLOCK_SIZE.BLOCK_64K);
 
             for (var p = 0; p < maxPage; p++)
@@ -332,7 +334,7 @@ namespace MadeInTheUSB.FT232H.Flash.WinApp
                 if (p % 10 == 0)
                     this.ShowState($"Writing page {p}/{maxPage},  {totalWritten/1024/1024.0:0.0}/{_flash.SizeInByte / 1024/1024.0:0.0} Mb");
 
-                _flash.WritePages(p * _flash.PageSize, BufferUtils.MakeBuffer(_flash.PageSize, asciValue), verify: true, eraseBlock: true );
+                _flash.WritePages(p * _flash.PageSize, BufferUtils.MakeBuffer(_flash.PageSize, asciValue), verify: verify, eraseBlock: true );
                 asciValue += 1;
                 if (asciValue >= 128)
                     asciValue = 65;
