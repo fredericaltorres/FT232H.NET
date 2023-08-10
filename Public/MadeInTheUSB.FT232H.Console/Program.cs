@@ -249,14 +249,15 @@ namespace MadeInTheUSB.FT232H.Console
             //var maxPage = flash.MaxPage;
             //var pageBufferCount = 256; //  256 * 256 = 65536kb buffer
             //var flashPageAddr = 0;
-            var adc = new MCP3008(spi, SpiChipSelectPins.CsDbus3);
+            var adc = new MCP3008(spi, SpiChipSelectPins.CsDbus6); // On The SPI Extension the CS for the MCP 3008 ois on D6
             const double referenceVoltage = 3.3;
 
+            
             while (true)
             {
                 gpios.ProgressNext();
                 ConsoleEx.WriteLine(0, 3, $"{DateTime.Now}", ConsoleColor.Cyan);
-                for (var adcPort = 0; adcPort < 2; adcPort++)
+                for (var adcPort = 0; adcPort < adc.MaxAdConverter; adcPort++)
                 {
                     var adcValue = adc.Read(adcPort);
                     var voltageValue = adc.ComputeVoltage(referenceVoltage, adcValue);
