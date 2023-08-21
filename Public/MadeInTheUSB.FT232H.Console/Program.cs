@@ -281,34 +281,35 @@ namespace MadeInTheUSB.FT232H.Console
             {
                 gpios.ProgressNext();
 
+                ConsoleEx.WriteLine(0, 3, $"{DateTime.Now}", ConsoleColor.Cyan);
+
                 var tmpBuffer = new List<byte>();
                 flash.ReadPages(flashBufferAddr, bufferSize, tmpBuffer);
                 var bufferRepr = HexaString.ConvertTo(tmpBuffer.ToArray(), max: 4, itemFormat: "{0}, ");
                 if (bufferRepr.Contains(", "))
                 {
-                    ConsoleEx.WriteLine(0, 3, $"FLASH Addr:{flashBufferAddr}, bufferSize:{bufferSize}b, Data:{bufferRepr}", ConsoleColor.Cyan);
+                    ConsoleEx.WriteLine(0, 5, $"FLASH Addr: {flashBufferAddr}, bufferSize: {bufferSize}b, Data: {bufferRepr}", ConsoleColor.Cyan);
                     flashBufferAddr += flash.PageSize;
                 }
-
-                ConsoleEx.WriteLine(0, 5, $"{DateTime.Now}", ConsoleColor.Cyan);
-                for (var adcPort = 0; adcPort < 3/*adc.MaxAdConverter*/; adcPort++)
+                
+                for (var adcPort = 0; adcPort < 2/*adc.MaxAdConverter*/; adcPort++)
                 {
                     var adcValue = adc.Read(adcPort);
                     var voltageValue = adc.ComputeVoltage(referenceVoltage, adcValue);
-                    var adcMessage = $"ADC [{adcPort}] = {adcValue:0000}, voltage:{voltageValue:0.00}";
+                    var adcMessage = $"ADC[{adcPort}]: {adcValue:0000}, voltage:{voltageValue:0.00}";
                     if (adcPort == 0)
                     {
                         var buttonPressed = Panel5Buttons.GetButtonPressed(voltageValue);
-                        ConsoleEx.WriteLine(0, 6 + adcPort, $"Button Pressed: {buttonPressed}, {adcMessage}", ConsoleColor.Cyan);
+                        ConsoleEx.WriteLine(0, 7 + adcPort, $"{adcMessage}, Button Pressed: {buttonPressed}                ", ConsoleColor.Cyan);
                     }
                     else if (adcPort == 1)
                     {
-                        var motionSensorState = voltageValue > 0 ? "Detected" : "";
-                        ConsoleEx.WriteLine(0, 6 + adcPort, $"Motion Sensor: {motionSensorState}, {adcMessage}", ConsoleColor.Cyan);
+                        var motionSensorState = voltageValue > 0 ? "Detected" : "None";
+                        ConsoleEx.WriteLine(0, 7 + adcPort, $"{adcMessage}, Motion Sensor: {motionSensorState}              ", ConsoleColor.Cyan);
                     }
                     else
                     {
-                        ConsoleEx.WriteLine(0, 6 + adcPort, adcMessage, ConsoleColor.Cyan);
+                        ConsoleEx.WriteLine(0, 7 + adcPort, adcMessage, ConsoleColor.Cyan);
                     }
                 }
 
