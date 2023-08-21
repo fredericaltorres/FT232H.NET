@@ -16,6 +16,7 @@ using System.IO;
 using BufferUtil.Lib;
 using MadeInTheUSB.Display;
 using MadeInTheUSB.FT232H.Component.I2C.EEPROM;
+using System.Drawing.Printing;
 
 namespace MadeInTheUSB.FT232H.Console
 {
@@ -40,7 +41,7 @@ namespace MadeInTheUSB.FT232H.Console
             {
                 System.Console.Clear();
                 ConsoleEx.TitleBar(0, "Nusbio /2 - FT232H Library", ConsoleColor.Yellow, ConsoleColor.DarkBlue);
-                ConsoleEx.WriteMenu(0, 2, "I)2C Demo   2)I2C Multi Device Demo   S)PI Demo");
+                ConsoleEx.WriteMenu(0, 2, "I)2C Demo   2)I2C Multi Device Demo   S)PI Demo    4)SPI Extension Demo");
                 ConsoleEx.WriteMenu(0, 3, "S)PI Demo   3)SPI Multi Device Demo   G)PIO Demo   ");
                 ConsoleEx.WriteMenu(0, 4, "Q)uit");
 
@@ -53,6 +54,10 @@ namespace MadeInTheUSB.FT232H.Console
                 if (k.Key == ConsoleKey.I)
                 {
                     I2CDemo();
+                }
+                if (k.Key == ConsoleKey.D4)
+                {
+                    SPIExtensionDemo();
                 }
                 if (k.Key == ConsoleKey.S)
                 {
@@ -227,6 +232,94 @@ namespace MadeInTheUSB.FT232H.Console
             }
         }
 
+        public class Panel5Buttons
+        {
+            private static bool IsInRange(double value, double refValue, int percentage)
+            {
+                var delta =  (refValue * percentage / 100);
+                return value >= (refValue - delta) && value <= (refValue + delta);
+            }
+
+            private static Dictionary<int, double> _refValues = new Dictionary<int, double>()
+            {
+                { 1, 0 }, { 2, 0.45 }, { 3, 0.99 }, { 4, 1.98 }, { 5, 1.42 } // 3.3 volts reference
+            };
+
+            public static int GetButtonPressed(double voltage)
+            {
+                return _refValues.FirstOrDefault(v => IsInRange(voltage, v.Value, 3)).Key;
+            }
+        }
+
+        private static void SPIExtensionDemo()
+        {
+            System.Console.Clear();
+            System.Console.WriteLine("Detecting/Initializing device");
+
+            var ft232hGpioSpiDevice = new SpiDevice(SpiClockSpeeds._10Mhz);
+            ft232hGpioSpiDevice.Log = !true;
+            var spi = ft232hGpioSpiDevice.SPI;
+            var gpios = ft232hGpioSpiDevice.GPIO;
+            gpios.Animate();
+
+            System.Console.Clear();
+            ConsoleEx.TitleBar(0, "Nusbio /2 - FT232H Library", ConsoleColor.Yellow, ConsoleColor.DarkBlue);
+            ConsoleEx.TitleBar(1, "S P I Demo - SPI Extension", ConsoleColor.Yellow, ConsoleColor.DarkBlue);
+            ConsoleEx.WriteMenu(0, 2, "Q)uit");
+            System.Console.WriteLine("");
+
+            var flash = new FlashMemory(spi, SpiChipSelectPins.CsDbus7);
+            flash.ReadIdentification();
+            var maxPage = flash.MaxPage;
+            var pageBufferCount = 1;
+            var bufferSize = pageBufferCount * flash.PageSize;
+            var flashBufferAddr = 0;
+            var adc = new MCP3008(spi, SpiChipSelectPins.CsDbus6); // On The SPI Extension the CS for the MCP 3008 ois on D6
+            const double referenceVoltage = 3.3;
+
+            while (true)
+            {
+                gpios.ProgressNext();
+
+                var tmpBuffer = new List<byte>();
+                flash.ReadPages(flashBufferAddr, bufferSize, tmpBuffer);
+                var bufferRepr = HexaString.ConvertTo(tmpBuffer.ToArray(), max: 4, itemFormat: "{0}, ");
+                if (bufferRepr.Contains(", "))
+                {
+                    ConsoleEx.WriteLine(0, 3, $"FLASH Addr:{flashBufferAddr}, bufferSize:{bufferSize}b, Data:{bufferRepr}", ConsoleColor.Cyan);
+                    flashBufferAddr += flash.PageSize;
+                }
+
+                ConsoleEx.WriteLine(0, 5, $"{DateTime.Now}", ConsoleColor.Cyan);
+                for (var adcPort = 0; adcPort < 3/*adc.MaxAdConverter*/; adcPort++)
+                {
+                    var adcValue = adc.Read(adcPort);
+                    var voltageValue = adc.ComputeVoltage(referenceVoltage, adcValue);
+                    var adcMessage = $"ADC [{adcPort}] = {adcValue:0000}, voltage:{voltageValue:0.00}";
+                    if (adcPort == 0)
+                    {
+                        var buttonPressed = Panel5Buttons.GetButtonPressed(voltageValue);
+                        ConsoleEx.WriteLine(0, 6 + adcPort, $"Button Pressed: {buttonPressed}, {adcMessage}", ConsoleColor.Cyan);
+                    }
+                    else if (adcPort == 1)
+                    {
+                        var motionSensorState = voltageValue > 0 ? "Detected" : "";
+                        ConsoleEx.WriteLine(0, 6 + adcPort, $"Motion Sensor: {motionSensorState}, {adcMessage}", ConsoleColor.Cyan);
+                    }
+                    else
+                    {
+                        ConsoleEx.WriteLine(0, 6 + adcPort, adcMessage, ConsoleColor.Cyan);
+                    }
+                }
+
+                if (System.Console.KeyAvailable)
+                {
+                    var k = System.Console.ReadKey(true);
+                    if (k.Key == ConsoleKey.Q) return;
+                }
+                Thread.Sleep(500);
+            }
+        }
         private static void SPIDemo()
         {
             System.Console.Clear();
@@ -240,28 +333,50 @@ namespace MadeInTheUSB.FT232H.Console
 
             System.Console.Clear();
             ConsoleEx.TitleBar(0, "Nusbio /2 - FT232H Library", ConsoleColor.Yellow, ConsoleColor.DarkBlue);
-            ConsoleEx.TitleBar(1, "S P I Demo", ConsoleColor.Yellow, ConsoleColor.DarkBlue);
+            ConsoleEx.TitleBar(1, "S P I Demo - SPI Extension", ConsoleColor.Yellow, ConsoleColor.DarkBlue);
             ConsoleEx.WriteMenu(0, 2, "Q)uit");
             System.Console.WriteLine("");
 
-            //var flash = new FlashMemory(spi, SpiChipSelectPins.CsDbus3);
-            //flash.ReadIdentification();
-            //var maxPage = flash.MaxPage;
-            //var pageBufferCount = 256; //  256 * 256 = 65536kb buffer
-            //var flashPageAddr = 0;
+            var flash = new FlashMemory(spi, SpiChipSelectPins.CsDbus7);
+            flash.ReadIdentification();
+            var maxPage = flash.MaxPage;
+            var pageBufferCount = 256; //  256 * 256 = 65536kb buffer
+            var flashPageAddr = 0;
             var adc = new MCP3008(spi, SpiChipSelectPins.CsDbus6); // On The SPI Extension the CS for the MCP 3008 ois on D6
             const double referenceVoltage = 3.3;
 
-            
             while (true)
             {
                 gpios.ProgressNext();
-                ConsoleEx.WriteLine(0, 3, $"{DateTime.Now}", ConsoleColor.Cyan);
-                for (var adcPort = 0; adcPort < adc.MaxAdConverter; adcPort++)
+
+                var tmpBuffer = new List<byte>();
+                flash.ReadPages(flashPageAddr * flash.PageSize, pageBufferCount * flash.PageSize, tmpBuffer);
+                var bufferRepr = HexaString.ConvertTo(tmpBuffer.ToArray(), max: 32, itemFormat: "{0}, ");
+                if (bufferRepr.StartsWith("41, 41, 41, "))
+                {
+                    ConsoleEx.WriteLine(0, 3, $"Page 0 read from Flash OK", ConsoleColor.Cyan);
+                }
+
+                ConsoleEx.WriteLine(0, 5, $"{DateTime.Now}", ConsoleColor.Cyan);
+                for (var adcPort = 0; adcPort < 3/*adc.MaxAdConverter*/; adcPort++)
                 {
                     var adcValue = adc.Read(adcPort);
                     var voltageValue = adc.ComputeVoltage(referenceVoltage, adcValue);
-                    ConsoleEx.WriteLine(0, 4 + adcPort, $"ADC [{adcPort}] = {adcValue:0000}, voltage:{voltageValue:0.00}{Environment.NewLine}", ConsoleColor.Cyan);
+                    var adcMessage = $"ADC [{adcPort}] = {adcValue:0000}, voltage:{voltageValue:0.00}";
+                    if (adcPort == 0)
+                    {
+                        var buttonPressed = Panel5Buttons.GetButtonPressed(voltageValue);
+                        ConsoleEx.WriteLine(0, 6 + adcPort, $"Button Pressed: {buttonPressed}, {adcMessage}", ConsoleColor.Cyan);
+                    }
+                    else if (adcPort == 1)
+                    {
+                        var motionSensorState = voltageValue > 0 ? "Detected" : "";
+                        ConsoleEx.WriteLine(0, 6 + adcPort, $"Motion Sensor: {motionSensorState}, {adcMessage}", ConsoleColor.Cyan);
+                    }
+                    else
+                    {
+                        ConsoleEx.WriteLine(0, 6 + adcPort, adcMessage, ConsoleColor.Cyan);
+                    }
                 }
 
                 if (System.Console.KeyAvailable)
@@ -269,7 +384,7 @@ namespace MadeInTheUSB.FT232H.Console
                     var k = System.Console.ReadKey(true);
                     if (k.Key == ConsoleKey.Q) return;
                 }
-                Thread.Sleep(750);
+                Thread.Sleep(500);
             }
         }
 
