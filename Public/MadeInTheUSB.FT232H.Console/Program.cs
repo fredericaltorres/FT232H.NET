@@ -242,12 +242,12 @@ namespace MadeInTheUSB.FT232H.Console
 
             private static Dictionary<int, double> _refValues = new Dictionary<int, double>()
             {
-                { 1, 0 }, { 2, 0.45 }, { 3, 0.99 }, { 4, 1.98 }, { 5, 1.42 } // 3.3 volts reference
+                { 1, 0 }, { 2, 0.47 }, { 3, 0.99 }, { 4, 1.98 }, { 5, 1.42 } // 3.3 volts reference
             };
 
             public static int GetButtonPressed(double voltage)
             {
-                return _refValues.FirstOrDefault(v => IsInRange(voltage, v.Value, 3)).Key;
+                return _refValues.FirstOrDefault(v => IsInRange(voltage, v.Value, 4)).Key;
             }
         }
 
