@@ -41,8 +41,8 @@ namespace MadeInTheUSB.FT232H.Console
             {
                 System.Console.Clear();
                 ConsoleEx.TitleBar(0, "Nusbio /2 - FT232H Library", ConsoleColor.Yellow, ConsoleColor.DarkBlue);
-                ConsoleEx.WriteMenu(0, 2, "I)2C Demo   2)I2C Multi Device Demo   S)PI Demo    4)SPI Extension Demo");
-                ConsoleEx.WriteMenu(0, 3, "S)PI Demo   3)SPI Multi Device Demo   G)PIO Demo   ");
+                ConsoleEx.WriteMenu(0, 2, "I)2C Demo   2) I2C Demo   S)PI Demo    4) SPI Extension Demo 5) I2C Extension Demo");
+                ConsoleEx.WriteMenu(0, 3, "S)PI Demo   3) SPI Multi Device Demo   G)PIO Demo   ");
                 ConsoleEx.WriteMenu(0, 4, "Q)uit");
 
                 var k = System.Console.ReadKey(true);
@@ -74,6 +74,10 @@ namespace MadeInTheUSB.FT232H.Console
                 if (k.Key == ConsoleKey.D3)
                 {
                     SPIMultiDeviceDemo();
+                }
+                if (k.Key == ConsoleKey.D5)
+                {
+                    I2CExtensionDemo();
                 }
             }
 
@@ -482,6 +486,70 @@ namespace MadeInTheUSB.FT232H.Console
             _MultiLEDBackpackManagerDemoOn = !_MultiLEDBackpackManagerDemoOn;
         }
 
+        private static void I2CExtensionDemo()
+        {
+            System.Console.Clear();
+            System.Console.WriteLine("Detect/initialize Nusbio/2 (FT232H)");
+            var i2cDevice = new I2CDevice(I2CClockSpeeds.FAST_MODE_1_Mhz, hardwareProgressBarOn: true, fastMode: true);
+            i2cDevice.Log = true;
+
+            /////////////// I2CEEPROM_AT24C256_Sample(i2cDevice);
+
+            System.Console.WriteLine("Detect/initialize EEPROM AT24C256 32Kb");
+            var eeprom = new I2CEEPROM_AT24C256(i2cDevice);
+            var eepromPage = 0;
+            var eepromChar = ' ';
+            if (!eeprom.Begin())
+                eeprom = null;
+
+            System.Console.WriteLine("Detect/initialize OLED Device 128x32");
+            var oled = new I2C_OLED_SSD1306(i2cDevice, 128, 32);
+            if (!oled.Begin())
+                oled = null;
+
+            System.Console.Clear();
+            ConsoleEx.TitleBar(0, "Nusbio /2 - FT232H Library", ConsoleColor.Yellow, ConsoleColor.DarkBlue);
+            ConsoleEx.TitleBar(1, "I 2 C  Extension Demo", ConsoleColor.Yellow, ConsoleColor.DarkBlue);
+            ConsoleEx.WriteMenu(0, 2, "Q)uit");
+            System.Console.WriteLine("");
+
+
+            while (true)
+            {
+                i2cDevice.ForceWriteLogCache();
+                var lcdInfo = $"";
+
+                if (eeprom != null)
+                {
+                    var eepromBufferIn = new List<byte>();
+                    var rIn = eeprom.ReadPages(eepromPage * eeprom.PageSize, eeprom.PageSize, eepromBufferIn);
+                    var actualBuffer = PerformanceHelper.AsciiBufferToString(eepromBufferIn.ToArray());
+                    eepromChar = actualBuffer[1];
+                    ConsoleEx.WriteLine($"[{DateTime.Now}] EEPROM Page:{eepromPage}", ConsoleColor.White);
+                    ConsoleEx.WriteLine($"{actualBuffer}", ConsoleColor.Gray);
+                    eepromPage += 1;
+                    if (eepromPage > eeprom.MaxPage)
+                        eepromPage = 0;
+                }
+
+                if (oled != null)
+                {
+                    oled.DrawWindow(" EEPROM ", $"Page: {eepromPage}, Char: {eepromChar}");
+                }
+
+                if (System.Console.KeyAvailable)
+                {
+                    var k = System.Console.ReadKey(true);
+                    if (k.Key == ConsoleKey.Q)
+                    {
+                        oled.Clear(true);
+                        return;
+                    }
+                }
+                Thread.Sleep(500);
+            }
+        }
+
         private static void I2CMultiDeviceDemo()
         {
             System.Console.Clear();
@@ -561,7 +629,6 @@ namespace MadeInTheUSB.FT232H.Console
                     }
                 }
             }
-            
         }
 
         static void I2CDemo()

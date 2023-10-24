@@ -409,6 +409,7 @@ Donec at euismod lectus. Phasellus non nunc quam. Vestibulum bibendum venenatis 
                 var allDataIn = new List<byte>();
                 var max64KbBlock = eeprom.Max64KbBlock;
                 var rInAll = eeprom.ReadPages(0, (eeprom.Max64KbBlock + 1) * 64 * 1024, allDataIn);
+                //var rInAll = eeprom.ReadPages(0, 64, allDataIn);
                 var allActualBuffer = PerformanceHelper.AsciiBufferToString(allDataIn.ToArray());
                 System.Console.WriteLine($"Reading page:{eeprom.SizeInByte} b written");
                 System.Console.WriteLine(allActualBuffer);
