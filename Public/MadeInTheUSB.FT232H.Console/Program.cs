@@ -249,9 +249,17 @@ namespace MadeInTheUSB.FT232H.Console
                 { 1, 0 }, { 2, 0.47 }, { 3, 0.99 }, { 4, 1.98 }, { 5, 1.42 } // 3.3 volts reference
             };
 
-            public static int GetButtonPressed(double voltage)
+            public static int GetButtonPressed(double voltage, int percent = 4)
             {
-                return _refValues.FirstOrDefault(v => IsInRange(voltage, v.Value, 4)).Key;
+                return _refValues.FirstOrDefault(v => IsInRange(Math.Round(voltage, 2), v.Value, percent)).Key;
+            }
+
+            public static void SetI2CExtensionADS1115Values()
+            {
+                _refValues = new Dictionary<int, double>()
+                {
+                    { 1, 0 }, { 2, 0.47 }, { 3, 1.07 }, { 4, 1.63 }, { 5, 2.39 } // 3.3 volts reference
+                };
             }
         }
 
@@ -493,8 +501,6 @@ namespace MadeInTheUSB.FT232H.Console
             var i2cDevice = new I2CDevice(I2CClockSpeeds.FAST_MODE_1_Mhz, hardwareProgressBarOn: true, fastMode: true);
             i2cDevice.Log = true;
 
-            /////////////// I2CEEPROM_AT24C256_Sample(i2cDevice);
-
             System.Console.WriteLine("Detect/initialize EEPROM AT24C256 32Kb");
             var eeprom = new I2CEEPROM_AT24C256(i2cDevice);
             var eepromPage = 0;
@@ -507,13 +513,21 @@ namespace MadeInTheUSB.FT232H.Console
             if (!oled.Begin())
                 oled = null;
 
+            System.Console.WriteLine("Detect/initialize ADC ADS1x15");
+            var adc = new ADS1X15_ADC(i2cDevice, ADS1X15_ADC.ADS1x15_Type.ADS1115_16b);
+            adc.Gain = ADS1X15_ADC.adsGain_t.GAIN_ONE__4_096V;
+            if (!adc.Begin())
+                adc = null;
+            Thread.Sleep(1111);
+
+            Panel5Buttons.SetI2CExtensionADS1115Values();
+
             System.Console.Clear();
             ConsoleEx.TitleBar(0, "Nusbio /2 - FT232H Library", ConsoleColor.Yellow, ConsoleColor.DarkBlue);
             ConsoleEx.TitleBar(1, "I 2 C  Extension Demo", ConsoleColor.Yellow, ConsoleColor.DarkBlue);
             ConsoleEx.WriteMenu(0, 2, "Q)uit");
             System.Console.WriteLine("");
-
-
+            
             while (true)
             {
                 i2cDevice.ForceWriteLogCache();
@@ -525,11 +539,30 @@ namespace MadeInTheUSB.FT232H.Console
                     var rIn = eeprom.ReadPages(eepromPage * eeprom.PageSize, eeprom.PageSize, eepromBufferIn);
                     var actualBuffer = PerformanceHelper.AsciiBufferToString(eepromBufferIn.ToArray());
                     eepromChar = actualBuffer[1];
-                    ConsoleEx.WriteLine($"[{DateTime.Now}] EEPROM Page:{eepromPage}", ConsoleColor.White);
-                    ConsoleEx.WriteLine($"{actualBuffer}", ConsoleColor.Gray);
+                    ConsoleEx.WriteLine(0, 5, $"[{DateTime.Now}] EEPROM Page:{eepromPage}", ConsoleColor.White);
+                    ConsoleEx.WriteLine(0, 6, $"{actualBuffer}", ConsoleColor.Gray);
                     eepromPage += 1;
                     if (eepromPage > eeprom.MaxPage)
                         eepromPage = 0;
+                }
+
+                if (adc != null)
+                {
+                    for (var adcIndex = 0; adcIndex < 2; adcIndex++)
+                    {
+                        var v = adc.readADC_SingleEnded(adcIndex);
+                        var volt = adc.ComputeVolts(v);
+                        
+                        if(adcIndex == 0)
+                        {
+                            var buttonPressed = Panel5Buttons.GetButtonPressed(volt, 15);
+                            ConsoleEx.WriteLine(0, 8 + adcIndex, $"[{DateTime.Now}] ADC[{adcIndex}] voltagle:{volt:0.00}, {v:000000}, buttonPressed:{buttonPressed:00}", ConsoleColor.White);
+                        }
+                        else
+                        {
+                            ConsoleEx.WriteLine(0, 8 + adcIndex, $"[{DateTime.Now}] ADC[{adcIndex}] voltagle:{volt:0.00}, {v:000000}", ConsoleColor.White);
+                        }
+                    }
                 }
 
                 if (oled != null)
@@ -546,7 +579,7 @@ namespace MadeInTheUSB.FT232H.Console
                         return;
                     }
                 }
-                Thread.Sleep(500);
+                Thread.Sleep(0);
             }
         }
 
