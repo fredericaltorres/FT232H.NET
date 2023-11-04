@@ -496,6 +496,7 @@ namespace MadeInTheUSB.FT232H.Console
 
         private static void I2CExtensionDemo()
         {
+            const string Detected = "Detected";
             System.Console.Clear();
             System.Console.WriteLine("Detect/initialize Nusbio/2 (FT232H)");
             var i2cDevice = new I2CDevice(I2CClockSpeeds.FAST_MODE_1_Mhz, hardwareProgressBarOn: true, fastMode: true);
@@ -518,7 +519,7 @@ namespace MadeInTheUSB.FT232H.Console
             adc.Gain = ADS1X15_ADC.adsGain_t.GAIN_ONE__4_096V;
             if (!adc.Begin())
                 adc = null;
-            Thread.Sleep(1111);
+            Thread.Sleep(2000);
 
             Panel5Buttons.SetI2CExtensionADS1115Values();
 
@@ -556,11 +557,18 @@ namespace MadeInTheUSB.FT232H.Console
                         if(adcIndex == 0)
                         {
                             var buttonPressed = Panel5Buttons.GetButtonPressed(volt, 15);
-                            ConsoleEx.WriteLine(0, 8 + adcIndex, $"[{DateTime.Now}] ADC[{adcIndex}] voltagle:{volt:0.00}, {v:000000}, buttonPressed:{buttonPressed:00}", ConsoleColor.White);
+                            var buttonPressedStr = buttonPressed == 0 ? "None" : $"{buttonPressed}   ";
+                            ConsoleEx.WriteLine(0, 8 + adcIndex, $"[{DateTime.Now}] ADC[{adcIndex}] voltagle:{volt:0.00}, buttonPressed:{buttonPressedStr}", ConsoleColor.White);
+                        }
+                        else if (adcIndex == 1)
+                        {
+                            var motionDetected = volt > 1;
+                            var motionDetectedStr = motionDetected ? Detected : "None".PadRight(Detected.Length);
+                            ConsoleEx.WriteLine(0, 8 + adcIndex, $"[{DateTime.Now}] ADC[{adcIndex}] voltagle:{volt:0.00}, motion:{motionDetectedStr}", ConsoleColor.White);
                         }
                         else
                         {
-                            ConsoleEx.WriteLine(0, 8 + adcIndex, $"[{DateTime.Now}] ADC[{adcIndex}] voltagle:{volt:0.00}, {v:000000}", ConsoleColor.White);
+                            ConsoleEx.WriteLine(0, 8 + adcIndex, $"[{DateTime.Now}] ADC[{adcIndex}] voltagle:{volt:0.00}", ConsoleColor.White);
                         }
                     }
                 }
