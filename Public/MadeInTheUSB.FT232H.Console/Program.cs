@@ -30,7 +30,12 @@ namespace MadeInTheUSB.FT232H.Console
             var ft232Device = FT232HDetector.Detect();
             if (ft232Device.Ok)
             {
-                Pause(ft232Device.ToString());
+                var parts = ft232Device.ToString().Split(',').ToList();
+                parts = parts.Select(s => s.Trim()).ToList();
+                System.Console.Clear();
+                ConsoleEx.TitleBar(0, "Nusbio /2 - FT232H Library", ConsoleColor.Yellow, ConsoleColor.DarkBlue);
+                ConsoleEx.WriteMenu(0, 2, $"Detected:{Environment.NewLine}  {string.Join(Environment.NewLine+"  ", parts)}");
+                Pause();
             }
             else
             {
@@ -41,9 +46,10 @@ namespace MadeInTheUSB.FT232H.Console
             {
                 System.Console.Clear();
                 ConsoleEx.TitleBar(0, "Nusbio /2 - FT232H Library", ConsoleColor.Yellow, ConsoleColor.DarkBlue);
-                ConsoleEx.WriteMenu(0, 2, "I)2C Demo   2) I2C Demo   S)PI Demo    4) SPI Extension Demo 5) I2C Extension Demo");
-                ConsoleEx.WriteMenu(0, 3, "S)PI Demo   3) SPI Multi Device Demo   G)PIO Demo   ");
-                ConsoleEx.WriteMenu(0, 4, "Q)uit");
+                ConsoleEx.WriteMenu(0, 2, "I)2C Demo, 2) I2C Demo, S)PI Demo, 4) SPI Extension Demo");
+                ConsoleEx.WriteMenu(0, 3, "S)PI Demo, 3) SPI Multi Device Demo, G)PIO Demo");
+                ConsoleEx.WriteMenu(0, 4, "5) I2C Extension Demo");
+                ConsoleEx.WriteMenu(0, 5, "Q)uit");
 
                 var k = System.Console.ReadKey(true);
                 if (k.Key == ConsoleKey.Q)
@@ -520,6 +526,7 @@ namespace MadeInTheUSB.FT232H.Console
             if (!adc.Begin())
                 adc = null;
             Thread.Sleep(2000);
+            Pause();
 
             Panel5Buttons.SetI2CExtensionADS1115Values();
 
@@ -557,7 +564,7 @@ namespace MadeInTheUSB.FT232H.Console
                         if(adcIndex == 0)
                         {
                             var buttonPressed = Panel5Buttons.GetButtonPressed(volt, 15);
-                            var buttonPressedStr = buttonPressed == 0 ? "None" : $"{buttonPressed}   ";
+                            var buttonPressedStr = buttonPressed == 0 ? " None" : $" {buttonPressed}   ";
                             ConsoleEx.WriteLine(0, 8 + adcIndex, $"[{DateTime.Now}] ADC[{adcIndex}] voltagle:{volt:0.00}, buttonPressed:{buttonPressedStr}", ConsoleColor.White);
                         }
                         else if (adcIndex == 1)
