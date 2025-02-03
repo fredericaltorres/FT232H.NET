@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DynamicSugar;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 
@@ -20,6 +21,8 @@ namespace MadeInTheUSB.FT232H
         {
             get { return _maxGpio; }
         }
+
+        public List<int> GpioIndexes => DS.Range(0, MaxGpio, 1);
 
         public List<int> PowerOf2 = new List<int>()
         {

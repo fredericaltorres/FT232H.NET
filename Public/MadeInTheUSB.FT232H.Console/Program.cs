@@ -17,6 +17,10 @@ using BufferUtil.Lib;
 using MadeInTheUSB.Display;
 using MadeInTheUSB.FT232H.Component.I2C.EEPROM;
 using System.Drawing.Printing;
+using DynamicSugar;
+using fAI;
+using static DynamicSugar.DS;
+using fAI.Tests;
 
 namespace MadeInTheUSB.FT232H.Console
 {
@@ -47,7 +51,7 @@ namespace MadeInTheUSB.FT232H.Console
                 System.Console.Clear();
                 ConsoleEx.TitleBar(0, "Nusbio /2 - FT232H Library", ConsoleColor.Yellow, ConsoleColor.DarkBlue);
                 ConsoleEx.WriteMenu(0, 2, "I)2C Demo, 2) I2C Demo, S)PI Demo, 4) SPI Extension Demo");
-                ConsoleEx.WriteMenu(0, 3, "S)PI Demo, 3) SPI Multi Device Demo, G)PIO Demo");
+                ConsoleEx.WriteMenu(0, 3, "S)PI Demo, 3) SPI Multi Device Demo, G)PIO Demo, A)I Demo");
                 ConsoleEx.WriteMenu(0, 4, "5) I2C Extension Demo");
                 ConsoleEx.WriteMenu(0, 5, "Q)uit");
 
@@ -69,9 +73,13 @@ namespace MadeInTheUSB.FT232H.Console
                 {
                     SPIDemo();
                 }
+                if (k.Key == ConsoleKey.A)
+                {
+                    AiGpioDemo();
+                }
                 if (k.Key == ConsoleKey.G)
                 {
-                    GPIODemo();
+                    GpioDemo();
                 }
                 if (k.Key == ConsoleKey.D2)
                 {
@@ -169,7 +177,87 @@ namespace MadeInTheUSB.FT232H.Console
                 ConsoleEx.WriteLine($"[FAILED] {msg}, expected:{expected}, actual:{actual}", ConsoleColor.Red);
         }
 
-        private static void GPIODemo()
+        private static void AiGpioDemo()
+        {
+            System.Console.Clear();
+            System.Console.WriteLine("Detecting/Initializing device");
+            var ft232hGpioSpiDevice = new SpiDevice(SpiClockSpeeds._10Mhz);
+            Cls();
+            ft232hGpioSpiDevice.Log = !true;
+            var gpios = ft232hGpioSpiDevice.GPIO;
+            gpios.Animate();
+            gpios.GpioIndexes.ForEach(gx => gpios.SetPinMode(gx, PinMode.Output));
+
+            var p = new Anthropic_Prompt_Claude_3_5_Sonnet()
+            {
+                System = null,
+                Messages = new List<AnthropicMessage>()
+                {
+                    new AnthropicMessage { Role =  MessageRole.user,
+                         Content = DS.List<AnthropicContentMessage>(new AnthropicContentText(@"
+You are controlling a electronic device displaying 9 LED named:
+ LED_0, LED_1, LED_2, LED_3, LED_4, LED_5,LED_6, LED_7.
+
+All output should be in JSON, using a main object containing a ""sequences"" property containing an array of the following properties:
+""comment"" which is a string, ""actions"" is an array of object containing the properties ""command"" and ""value"".
+
+To turn on LED LED_0, you must output: LED_0 ON.
+To turn off LED LED_0, you must output: LED_0 OFF.
+To wait 1 second, you must output: WAIT 1.
+
+For each character of the word ""HELLO""
+    Write a sequence which display the character ASCII in binary
+    Wait 1 second
+"))
+                    }
+                }
+            };
+
+            System.Console.WriteLine($"Calling Claude.AI {p.Messages[0].Role}, {((AnthropicContentText)p.Messages[0].Content[0]).Text}");
+
+            var response = new Anthropic().Completions.Create(p);
+            var text = response.Text;
+            var sequences = response.Deserialize<LedSequence>();
+
+            while (true)
+            {
+                foreach (var s in sequences.Sequences)
+                {
+                    System.Console.WriteLine(s.Comment);
+                    foreach (var a in s.Actions)
+                    {
+                        System.Console.WriteLine($"Command:{a.Command}, Value:{a.Value}");
+                        if (a.Command == "WAIT")
+                            Thread.Sleep(a.ValueAsInt * 1000);
+                        else
+                            gpios.DigitalWrite(a.GetLedIndex(), a.On ? PinState.High : PinState.Low);
+                    }
+
+                    if (System.Console.KeyAvailable)
+                    {
+                        var k = System.Console.ReadKey(true);
+                        if (k.Key == ConsoleKey.Q) return;
+                    }
+                }
+              
+                Thread.Sleep(1000);
+                gpios.GpioIndexes.ForEach(gx => gpios.DigitalWrite(gx, PinState.Low));
+                Cls();
+                Thread.Sleep(1000);
+            }
+
+            void Cls()
+            {
+                System.Console.Clear();
+                ConsoleEx.TitleBar(0, "Nusbio /2 - FT232H Library", ConsoleColor.Yellow, ConsoleColor.DarkBlue);
+                ConsoleEx.TitleBar(1, "A I - G P I O Demo", ConsoleColor.Yellow, ConsoleColor.DarkBlue);
+                ConsoleEx.WriteMenu(0, 2, "Q)uit");
+                System.Console.WriteLine("");
+            }
+        }
+
+
+        private static void GpioDemo()
         {
             System.Console.Clear();
             System.Console.WriteLine("Detecting/Initializing device");

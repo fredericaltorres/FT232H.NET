@@ -1,10 +1,12 @@
-﻿using System;
+﻿using DynamicSugar;
+using System;
+using System.Collections.Generic;
 using System.Security.AccessControl;
 using System.Threading;
 
 namespace MadeInTheUSB.FT232H
 {
-    public class GpioI2CImplementationDevice_MPSSE_NotUsed  : FT232HDeviceBaseClass, IDigitalWriteRead
+    public class GpioI2CImplementationDevice_MPSSE_NotUsed : FT232HDeviceBaseClass, IDigitalWriteRead
     {
         private int _values;
         private int _directions;
@@ -89,6 +91,9 @@ namespace MadeInTheUSB.FT232H
 
         static bool _progressModeInitialized = false;
         static int _progressModeIndex = -1;
+
+        public List<int> GpioIndexes => DS.Range(0, MaxGpio, 1);
+
         public void ProgressNext(bool clear = false)
         {
             if (!_progressModeInitialized)
