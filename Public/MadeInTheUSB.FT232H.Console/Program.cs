@@ -195,15 +195,17 @@ namespace MadeInTheUSB.FT232H.Console
                 {
                     new AnthropicMessage { Role =  MessageRole.user,
                          Content = DS.List<AnthropicContentMessage>(new AnthropicContentText(@"
-You are controlling a electronic device displaying 9 LED named:
- LED_0, LED_1, LED_2, LED_3, LED_4, LED_5,LED_6, LED_7.
+You are controlling an electronic device displaying 9 LEDs named:
+ LED_0, LED_1, LED_2, LED_3, LED_4, LED_5, LED_6, LED_7.
 
-All output should be in JSON, using a main object containing a ""sequences"" property containing an array of the following properties:
-""comment"" which is a string, ""actions"" is an array of object containing the properties ""command"" and ""value"".
+The output should be in JSON format, using a main object containing a ""sequences"" property containing an array of the following properties:
+""comment"" which is a string, ""actions"" which is an array of object containing the properties ""command"" and ""value"".
 
-To turn on LED LED_0, you must output: LED_0 ON.
-To turn off LED LED_0, you must output: LED_0 OFF.
+To turn on LED_0, you must output: LED_0 ON.
+To turn off LED_0, you must output: LED_0 OFF.
 To wait 1 second, you must output: WAIT 1.
+
+LED 0 is the least significant bit.
 
 For each character of the word ""HELLO""
     Write a sequence which display the character ASCII in binary
@@ -213,8 +215,11 @@ For each character of the word ""HELLO""
                 }
             };
 
-            System.Console.WriteLine($"Calling Claude.AI {p.Messages[0].Role}, {((AnthropicContentText)p.Messages[0].Content[0]).Text}");
-
+            System.Console.WriteLine($"About To Call Claude.AI");
+            System.Console.WriteLine($"".PadLeft(64, '-'));
+            System.Console.WriteLine($"Role: {p.Messages[0].Role}, {((AnthropicContentText)p.Messages[0].Content[0]).Text}");
+            Pause();
+            System.Console.WriteLine($"Calling Claude.AI...");
             var response = new Anthropic().Completions.Create(p);
             var text = response.Text;
             var sequences = response.Deserialize<LedSequence>();
@@ -223,7 +228,7 @@ For each character of the word ""HELLO""
             {
                 foreach (var s in sequences.Sequences)
                 {
-                    System.Console.WriteLine(s.Comment);
+                    System.Console.WriteLine($"{Environment.NewLine}{s.Comment}");
                     foreach (var a in s.Actions)
                     {
                         System.Console.WriteLine($"Command:{a.Command}, Value:{a.Value}");
@@ -238,12 +243,14 @@ For each character of the word ""HELLO""
                         var k = System.Console.ReadKey(true);
                         if (k.Key == ConsoleKey.Q) return;
                     }
+                    Pause();
                 }
-              
+
                 Thread.Sleep(1000);
-                gpios.GpioIndexes.ForEach(gx => gpios.DigitalWrite(gx, PinState.Low));
+                gpios.GpioIndexes.ForEach(gx => gpios.DigitalWrite(gx, PinState.Low));                
                 Cls();
                 Thread.Sleep(1000);
+                break;
             }
 
             void Cls()
@@ -256,6 +263,11 @@ For each character of the word ""HELLO""
             }
         }
 
+        private static void Pause()
+        {
+            System.Console.WriteLine($"Hit enter to continue");
+            System.Console.ReadKey(true);
+        }
 
         private static void GpioDemo()
         {
@@ -280,7 +292,6 @@ For each character of the word ""HELLO""
             gpios.SetPinMode(4, PinMode.Input);
             gpios.SetPinMode(5, PinMode.Input);
             gpios.SetPinMode(6, PinMode.Input);
-            
 
             while (true)
             {
@@ -315,10 +326,12 @@ For each character of the word ""HELLO""
                 if (System.Console.KeyAvailable)
                 {
                     var k = System.Console.ReadKey(true);
-                    if (k.Key == ConsoleKey.Q) return;
+                    if (k.Key == ConsoleKey.Q) break;
                 }
                 Thread.Sleep(1000);
             }
+            gpios.GpioIndexes.ForEach(gx => gpios.SetPinMode(gx, PinMode.Output));
+            gpios.GpioIndexes.ForEach(gx => gpios.DigitalWrite(gx, PinState.Low));
 
             void Cls()
             {
