@@ -318,10 +318,10 @@ For each character of the word ""HELLO""
                 gpios.DigitalWrite(2, pinState);
                 gpios.DigitalWrite(3, pinState);
 
-                AssertState(pinState, gpios.DigitalRead(4), $"Test input pin {4}");
-                AssertState(pinState, gpios.DigitalRead(5), $"Test input pin {5}");
-                AssertState(pinState, gpios.DigitalRead(6), $"Test input pin {6}");
-                AssertState(pinState, gpios.DigitalRead(7), $"Test input pin {7}");
+                AssertState(PinState.Low, gpios.DigitalRead(4), $"Test input pin {4}");
+                AssertState(PinState.Low, gpios.DigitalRead(5), $"Test input pin {5}");
+                AssertState(PinState.Low, gpios.DigitalRead(6), $"Test input pin {6}");
+                AssertState(PinState.Low, gpios.DigitalRead(7), $"Test input pin {7}");
 
                 if (System.Console.KeyAvailable)
                 {
