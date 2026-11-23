@@ -275,6 +275,7 @@ For each character of the word ""HELLO""
             System.Console.WriteLine("Detecting/Initializing device");
 
             var ft232hGpioSpiDevice = new SpiDevice(SpiClockSpeeds._10Mhz);
+            
 
             Cls();
 
