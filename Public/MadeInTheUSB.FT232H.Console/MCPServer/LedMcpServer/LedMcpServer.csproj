@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net48</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <RootNamespace>LedMcpServer</RootNamespace>
+    <AssemblyName>LedMcpServer</AssemblyName>
+    <!-- App.config already declares the supported runtime -->
+    <GenerateSupportedRuntime>false</GenerateSupportedRuntime>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <!-- Lets the SDK-style project build net48 without the Developer Pack installed -->
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\Private\MadeInTheUSB.FT232H.Lib\MadeInTheUSB.FT232H.Lib.csproj" />
+    <ProjectReference Include="..\..\..\MadeInTheUSB.FT232H.Component\MadeInTheUSB.FT232H.Component.csproj" />
+  </ItemGroup>
+
+</Project>
