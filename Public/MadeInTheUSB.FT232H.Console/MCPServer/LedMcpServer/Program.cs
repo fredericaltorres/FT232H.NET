@@ -10,10 +10,38 @@ namespace LedMcpServer
 {
     internal static class Program
     {
-        // Usage: LedMcpServer.exe [--port COM3] [--baud 115200]
-        // No --port (and no LED_PORT env var) => simulated device, logs to stderr.
+        /*
+         
+            Get-Content "$env:APPDATA\Claude\claude_desktop_config.json" -Raw | ConvertFrom-Json | Out-Null; "valid JSON"
+            Get-Process LedMcpServer -ErrorAction SilentlyContinue | Select-Object Id, StartTime, Path
+
+            C:\Users\FredericTorres\AppData\Roaming\Claude
+            C:\Users\FredericTorres\AppData\Roaming\Claude\claude_desktop_config.json
+            C:\Users\FredericTorres\AppData\Local\Claude-Data\claude_pzs8sxrjxfjjc\claude_desktop_config.json
+
+
+$exe = "C:\DVT\FT232H.NET\Public\MadeInTheUSB.FT232H.Console\MCPServer\LedMcpServer\bin\Debug\net48\LedMcpServer.exe"
+"exe exists: " + (Test-Path $exe)
+Get-ChildItem "$env:APPDATA\Claude\logs" -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 8 Name, LastWriteTime, Length | Format-Table -AutoSize | Out-String
+"--- mcp-server-led.log ---"
+Get-Content "$env:APPDATA\Claude\logs\mcp-server-led.log" -Tail 30 -ErrorAction SilentlyContinue
+"--- mcp.log (led lines) ---"
+Select-String -Path "$env:APPDATA\Claude\logs\mcp.log" -Pattern "led" -ErrorAction SilentlyContinue | Select-Object -Last 15 | ForEach-Object { $_.Line }
+
+
+         */
         private static int Main(string[] args)
         {
+            if (Environment.GetEnvironmentVariable("LED_DEBUG") == "1")
+            {
+                Console.WriteLine("Waiting to be attached");
+                while (!System.Diagnostics.Debugger.IsAttached)
+                {
+                    System.Threading.Thread.Sleep(500);
+                }
+                System.Diagnostics.Debugger.Break();
+            }
+
             var ft232Device = FT232HDetector.Detect();
             if (ft232Device.Ok)
             {
