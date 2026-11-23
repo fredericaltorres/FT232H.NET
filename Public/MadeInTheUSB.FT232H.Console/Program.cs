@@ -293,6 +293,8 @@ For each character of the word ""HELLO""
             gpios.SetPinMode(5, PinMode.Input);
             gpios.SetPinMode(6, PinMode.Input);
 
+
+
             while (true)
             {
                 Cls();
