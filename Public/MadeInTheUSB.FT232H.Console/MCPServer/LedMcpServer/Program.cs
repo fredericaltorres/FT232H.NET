@@ -31,6 +31,7 @@ Get-Content "$env:APPDATA\Claude\logs\mcp-server-led.log" -Tail 30 -ErrorAction 
 "--- mcp.log (led lines) ---"
 Select-String -Path "$env:APPDATA\Claude\logs\mcp.log" -Pattern "led" -ErrorAction SilentlyContinue | Select-Object -Last 15 | ForEach-Object { $_.Line }
 
+Is Nusbio USB Device connected?
 NUSBIO USB Device, Animate LED.
 NUSBIO USB Device, Run Initialization Sequence.
 NUSBIO USB Device, Init Sequence.

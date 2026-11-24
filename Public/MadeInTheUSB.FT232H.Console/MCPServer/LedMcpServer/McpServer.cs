@@ -149,7 +149,7 @@ namespace LedMcpServer
             return new JObject
             {
                 ["name"] = "animate_led",
-                ["description"] = "NUSBIO USB Device, Animate all the LEDs on the connected USB device. Execute an initialization fun sequence",
+                ["description"] = "NUSBIO USB Device, Animate all the LEDs on the connected USB device. Execute the initialization fun sequence of the usb device.",
                 ["inputSchema"] = new JObject
                 {
                     ["type"] = "object",
@@ -166,7 +166,7 @@ namespace LedMcpServer
             return new JObject
             {
                 ["name"] = "nusbio_connected",
-                ["description"] = "Check if NUSBIO USB Device is connected to computer, returns true or false",
+                ["description"] = "Check if NUSBIO USB Device is connected to computer, if connected returns a few properties about the device",
                 ["inputSchema"] = new JObject
                 {
                     ["type"] = "object",
