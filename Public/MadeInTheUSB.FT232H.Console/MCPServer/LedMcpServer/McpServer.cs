@@ -1,6 +1,7 @@
+using Newtonsoft.Json.Linq;
 using System;
 using System.IO;
-using Newtonsoft.Json.Linq;
+using System.Runtime.CompilerServices;
 
 namespace LedMcpServer
 {
@@ -15,14 +16,22 @@ namespace LedMcpServer
         private readonly TextReader _in;
         private readonly TextWriter _out;
 
+        public static string Trace(string message, [CallerMemberName] string methodName = "")
+        {
+            return Logger.Trace(message, null, methodName: methodName);
+        }
+
         public McpServer(TextReader input, TextWriter output)
         {
+            Trace("McpServer.Starting....");
             _in = input;
             _out = output;
+            _device = new SimulatedLedDevice();
         }
 
         public void Run()
         {
+            Trace("McpServer.Running....");
             string line;
             while ((line = _in.ReadLine()) != null)
             {
@@ -31,10 +40,12 @@ namespace LedMcpServer
                 JObject request;
                 try
                 {
+                    Trace($"McpServer.Running line: {line}");
                     request = JObject.Parse(line);
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
+                    Trace($"[ERROR]McpServer.Running(1) {ex}");
                     Send(Error(JValue.CreateNull(), -32700, "Parse error"));
                     continue;
                 }
@@ -46,7 +57,7 @@ namespace LedMcpServer
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine("Internal error: " + ex);
+                    Trace($"[ERROR]McpServer.Running(2) {ex}");
                     JToken id = request["id"];
                     if (id != null) Send(Error(id.DeepClone(), -32603, "Internal error"));
                 }
@@ -58,6 +69,8 @@ namespace LedMcpServer
             string method = (string)req["method"];
             JToken id = req["id"];
             bool isNotification = id == null;
+
+            Trace($"McpServer.Handle method: {method}");
 
             switch (method)
             {
@@ -124,6 +137,9 @@ namespace LedMcpServer
         private JObject CallTool(JObject p)
         {
             string name = p == null ? null : (string)p["name"];
+
+            Trace($"McpServer.CallTool name: {name}");
+
             if (name != "set_led")
                 return ToolResult("Unknown tool: " + name, true);
 
@@ -131,12 +147,18 @@ namespace LedMcpServer
             if (indexToken == null || indexToken.Type != JTokenType.Integer)
                 return ToolResult("Argument 'index' is required and must be an integer 0-7.", true);
 
+
+            Trace($"McpServer.CallTool indexToken: {indexToken}");
+
             long index = (long)indexToken;
             if (index < 0 || index > 7)
                 return ToolResult("Argument 'index' must be between 0 and 7 (got " + index + ").", true);
 
             bool on = true;
             JToken onToken = p["arguments"]["on"];
+
+            Trace($"McpServer.CallTool on: {onToken}");
+
             if (onToken != null && onToken.Type != JTokenType.Null)
             {
                 if (onToken.Type != JTokenType.Boolean)

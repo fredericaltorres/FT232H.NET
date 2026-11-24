@@ -31,6 +31,9 @@ Get-Content "$env:APPDATA\Claude\logs\mcp-server-led.log" -Tail 30 -ErrorAction 
 Select-String -Path "$env:APPDATA\Claude\logs\mcp.log" -Pattern "led" -ErrorAction SilentlyContinue | Select-Object -Last 15 | ForEach-Object { $_.Line }
 
 
+NUSBIO USB Device, Turn on LED 0.
+Light the first LED.
+Set the LED at index 0.
          */
 
         public static string Trace(string message, [CallerMemberName] string methodName = "")
@@ -38,59 +41,69 @@ Select-String -Path "$env:APPDATA\Claude\logs\mcp.log" -Pattern "led" -ErrorActi
             return Logger.Trace(message, null, methodName: methodName);
         }
 
+        public const bool DEBUG = false;
+
         private static int Main(string[] args)
         {
-            Trace($"Starting....", null);
-            
-            if (Environment.GetEnvironmentVariable("LED_DEBUG") == "1")
+            try
             {
-                Trace("Waiting to be attached");
-                while (!System.Diagnostics.Debugger.IsAttached)
+                Trace($"Starting....", null);
+
+                if (DEBUG && Environment.GetEnvironmentVariable("LED_DEBUG") == "1")
                 {
-                    System.Threading.Thread.Sleep(500);
+                    Trace("Waiting to be attached");
+                    while (!System.Diagnostics.Debugger.IsAttached)
+                    {
+                        System.Threading.Thread.Sleep(500);
+                    }
+                    System.Diagnostics.Debugger.Break();
                 }
-                System.Diagnostics.Debugger.Break();
+
+
+                Trace("Detecting...");
+
+                var ft232Device = FT232HDetector.Detect();
+                if (ft232Device.Ok)
+                {
+                    var parts = ft232Device.ToString().Split(',').ToList();
+                    parts = parts.Select(s => s.Trim()).ToList();
+                    //System.Console.Clear();
+                    Trace("Nusbio /2 - FT232H Library - MCP Server");
+                    Trace($"Detected:{Environment.NewLine}  {string.Join(Environment.NewLine + "  ", parts)}");
+
+                    var ft232hGpioSpiDevice = new SpiDevice(SpiClockSpeeds._10Mhz);
+                    SimulatedLedDevice.__ft232hGpioSpiDevice = ft232hGpioSpiDevice;
+
+                    ft232hGpioSpiDevice.Log = true;
+                    var spi = ft232hGpioSpiDevice.SPI;
+                    var gpios = ft232hGpioSpiDevice.GPIO;
+                    gpios.Animate();
+
+                    gpios.SetPinMode(0, PinMode.Output);
+                    gpios.SetPinMode(1, PinMode.Output);
+                    gpios.SetPinMode(2, PinMode.Output);
+                    gpios.SetPinMode(3, PinMode.Output);
+                    gpios.SetPinMode(4, PinMode.Output);
+                    gpios.SetPinMode(5, PinMode.Output);
+                    gpios.SetPinMode(6, PinMode.Output);
+                    gpios.SetPinMode(7, PinMode.Output);
+                }
+                else
+                {
+                }
+
+                // stdout carries ONLY protocol messages; UTF-8 without BOM.
+                var utf8 = new UTF8Encoding(false);
+                var input = new StreamReader(Console.OpenStandardInput(), utf8);
+                var output = new StreamWriter(Console.OpenStandardOutput(), utf8) { AutoFlush = true, NewLine = "\n" };
+
+                Trace("Nusbio /2 - FT232H Library - MCP Server - RUNNING");
+                new McpServer(input, output).Run();
             }
-
-
-            Trace("Detecting...");
-
-            var ft232Device = FT232HDetector.Detect();
-            if (ft232Device.Ok)
+            catch (Exception ex)
             {
-                var parts = ft232Device.ToString().Split(',').ToList();
-                parts = parts.Select(s => s.Trim()).ToList();
-                //System.Console.Clear();
-                Trace("Nusbio /2 - FT232H Library - MCP Server");
-                Trace($"Detected:{Environment.NewLine}  {string.Join(Environment.NewLine + "  ", parts)}");
-
-                var ft232hGpioSpiDevice = new SpiDevice(SpiClockSpeeds._10Mhz);
-                SimulatedLedDevice.__ft232hGpioSpiDevice = ft232hGpioSpiDevice;
-
-                ft232hGpioSpiDevice.Log = true;
-                var spi = ft232hGpioSpiDevice.SPI;
-                var gpios = ft232hGpioSpiDevice.GPIO;
-                gpios.Animate();
-
-                gpios.SetPinMode(0, PinMode.Output);
-                gpios.SetPinMode(1, PinMode.Output);
-                gpios.SetPinMode(2, PinMode.Output);
-                gpios.SetPinMode(3, PinMode.Output);
-                gpios.SetPinMode(4, PinMode.Output);
-                gpios.SetPinMode(5, PinMode.Output);
-                gpios.SetPinMode(6, PinMode.Output);
-                gpios.SetPinMode(7, PinMode.Output);
+                Trace($"[ERROR]{ex}");
             }
-            else
-            {
-            }
-
-            // stdout carries ONLY protocol messages; UTF-8 without BOM.
-            var utf8 = new UTF8Encoding(false);
-            var input = new StreamReader(Console.OpenStandardInput(), utf8);
-            var output = new StreamWriter(Console.OpenStandardOutput(), utf8) { AutoFlush = true, NewLine = "\n" };
-
-            new McpServer(input, output).Run();
             return 0;
         }
     }
