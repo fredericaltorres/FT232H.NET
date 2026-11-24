@@ -12,6 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="DynamicSugarStandard" Version="1.0.94" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <!-- Lets the SDK-style project build net48 without the Developer Pack installed -->
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />

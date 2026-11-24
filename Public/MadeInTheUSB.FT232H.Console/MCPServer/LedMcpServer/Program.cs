@@ -1,8 +1,10 @@
 using MadeInTheUSB;
 using MadeInTheUSB.FT232H;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using static MadeInTheUSB.FT232H.SpiConfig;
 
@@ -30,11 +32,19 @@ Select-String -Path "$env:APPDATA\Claude\logs\mcp.log" -Pattern "led" -ErrorActi
 
 
          */
+
+        public static string Trace(string message, [CallerMemberName] string methodName = "")
+        {
+            return Logger.Trace(message, null, methodName: methodName);
+        }
+
         private static int Main(string[] args)
         {
+            Trace($"Starting....", null);
+            
             if (Environment.GetEnvironmentVariable("LED_DEBUG") == "1")
             {
-                Console.WriteLine("Waiting to be attached");
+                Trace("Waiting to be attached");
                 while (!System.Diagnostics.Debugger.IsAttached)
                 {
                     System.Threading.Thread.Sleep(500);
@@ -42,14 +52,17 @@ Select-String -Path "$env:APPDATA\Claude\logs\mcp.log" -Pattern "led" -ErrorActi
                 System.Diagnostics.Debugger.Break();
             }
 
+
+            Trace("Detecting...");
+
             var ft232Device = FT232HDetector.Detect();
             if (ft232Device.Ok)
             {
                 var parts = ft232Device.ToString().Split(',').ToList();
                 parts = parts.Select(s => s.Trim()).ToList();
-                System.Console.Clear();
-                ConsoleEx.TitleBar(0, "Nusbio /2 - FT232H Library - MCP Server", ConsoleColor.Yellow, ConsoleColor.DarkBlue);
-                ConsoleEx.WriteMenu(0, 2, $"Detected:{Environment.NewLine}  {string.Join(Environment.NewLine + "  ", parts)}");
+                //System.Console.Clear();
+                Trace("Nusbio /2 - FT232H Library - MCP Server");
+                Trace($"Detected:{Environment.NewLine}  {string.Join(Environment.NewLine + "  ", parts)}");
 
                 var ft232hGpioSpiDevice = new SpiDevice(SpiClockSpeeds._10Mhz);
                 SimulatedLedDevice.__ft232hGpioSpiDevice = ft232hGpioSpiDevice;

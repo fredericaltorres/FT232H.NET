@@ -44,8 +44,8 @@
     <Reference Include="Deepgram, Version=3.4.1.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Deepgram.3.4.1\lib\netstandard2.0\Deepgram.dll</HintPath>
     </Reference>
-    <Reference Include="DynamicSugarStandard, Version=1.0.45.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\DynamicSugarStandard.1.0.45\lib\netstandard2.0\DynamicSugarStandard.dll</HintPath>
+    <Reference Include="DynamicSugarStandard, Version=1.0.94.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\DynamicSugarStandard.1.0.94\lib\netstandard2.0\DynamicSugarStandard.dll</HintPath>
     </Reference>
     <Reference Include="fAI, Version=1.0.34.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\fAI.1.0.34\lib\netstandard2.0\fAI.dll</HintPath>
