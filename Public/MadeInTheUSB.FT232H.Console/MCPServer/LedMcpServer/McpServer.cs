@@ -93,10 +93,16 @@ namespace LedMcpServer
                     return isNotification ? null : Result(id, new JObject());
 
                 case "tools/list":
-                    return Result(id, new JObject { ["tools"] = new JArray(SetLedToolDefinition()) });
+                    {
+                        Trace($"McpServer.Init tools");
+                        return Result(id, new JObject { ["tools"] = new JArray(SetLedToolDefinition()) });
+                    }
 
                 case "tools/call":
-                    return Result(id, CallTool(req["params"] as JObject));
+                    {
+                        Trace($"McpServer.tools/call");
+                        return Result(id, CallTool(req["params"] as JObject));
+                    }
 
                 default:
                     return isNotification ? null : Error(id, -32601, "Method not found: " + method);

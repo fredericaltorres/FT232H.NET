@@ -20,6 +20,7 @@ namespace LedMcpServer
             C:\Users\FredericTorres\AppData\Roaming\Claude
             C:\Users\FredericTorres\AppData\Roaming\Claude\claude_desktop_config.json
             C:\Users\FredericTorres\AppData\Local\Claude-Data\claude_pzs8sxrjxfjjc\claude_desktop_config.json
+            C:\Users\FredericTorres\AppData\Local\Claude\logs
 
 
 $exe = "C:\DVT\FT232H.NET\Public\MadeInTheUSB.FT232H.Console\MCPServer\LedMcpServer\bin\Debug\net48\LedMcpServer.exe"
@@ -47,7 +48,7 @@ Set the LED at index 0.
         {
             try
             {
-                Trace($"Starting....", null);
+                Trace($"Starting....  {Environment.CommandLine} ", null);
 
                 if (DEBUG && Environment.GetEnvironmentVariable("LED_DEBUG") == "1")
                 {
@@ -59,9 +60,28 @@ Set the LED at index 0.
                     System.Diagnostics.Debugger.Break();
                 }
 
+                var nusbioInitialized = InitNusbio();
 
+                // stdout carries ONLY protocol messages; UTF-8 without BOM.
+                var utf8 = new UTF8Encoding(false);
+                var input = new StreamReader(Console.OpenStandardInput(), utf8);
+                var output = new StreamWriter(Console.OpenStandardOutput(), utf8) { AutoFlush = true, NewLine = "\n" };
+
+                Trace($"Nusbio /2 - FT232H Library - MCP Server - RUNNING - nusbioInitialized: {nusbioInitialized}");
+                new McpServer(input, output).Run();
+            }
+            catch (Exception ex)
+            {
+                Trace($"[ERROR]{ex}");
+            }
+            return 0;
+        }
+
+        private static bool InitNusbio()
+        {
+            try
+            {
                 Trace("Detecting...");
-
                 var ft232Device = FT232HDetector.Detect();
                 if (ft232Device.Ok)
                 {
@@ -87,24 +107,17 @@ Set the LED at index 0.
                     gpios.SetPinMode(5, PinMode.Output);
                     gpios.SetPinMode(6, PinMode.Output);
                     gpios.SetPinMode(7, PinMode.Output);
+                    return true;
                 }
                 else
                 {
                 }
-
-                // stdout carries ONLY protocol messages; UTF-8 without BOM.
-                var utf8 = new UTF8Encoding(false);
-                var input = new StreamReader(Console.OpenStandardInput(), utf8);
-                var output = new StreamWriter(Console.OpenStandardOutput(), utf8) { AutoFlush = true, NewLine = "\n" };
-
-                Trace("Nusbio /2 - FT232H Library - MCP Server - RUNNING");
-                new McpServer(input, output).Run();
             }
-            catch (Exception ex)
+            catch(Exception ex)
             {
-                Trace($"[ERROR]{ex}");
+                Trace($"Nusbio init failed {ex}");
             }
-            return 0;
+            return false;
         }
     }
 }
