@@ -95,7 +95,11 @@ namespace LedMcpServer
                 case "tools/list":
                     {
                         Trace($"McpServer.Init tools");
-                        return Result(id, new JObject { ["tools"] = new JArray(SetLedToolDefinition()) });
+                        return Result(id, new JObject { ["tools"] = new JArray(
+                            SetLedToolDefinition(), 
+                            AnimateLedToolDefinition(), 
+                            CheckIsNusbioUsbDeviceIsConnectedToComputerToolDefinition() 
+                        )});
                     }
 
                 case "tools/call":
@@ -140,19 +144,95 @@ namespace LedMcpServer
             };
         }
 
+        private static JObject AnimateLedToolDefinition()
+        {
+            return new JObject
+            {
+                ["name"] = "animate_led",
+                ["description"] = "NUSBIO USB Device, Animate all the LEDs on the connected USB device. Execute an initialization fun sequence",
+                ["inputSchema"] = new JObject
+                {
+                    ["type"] = "object",
+                    ["properties"] = new JObject
+                    {
+                    },
+                    ["additionalProperties"] = false
+                }
+            };
+        }
+
+        private static JObject CheckIsNusbioUsbDeviceIsConnectedToComputerToolDefinition()
+        {
+            return new JObject
+            {
+                ["name"] = "nusbio_connected",
+                ["description"] = "Check if NUSBIO USB Device is connected to computer, returns true or false",
+                ["inputSchema"] = new JObject
+                {
+                    ["type"] = "object",
+                    ["properties"] = new JObject
+                    {
+                    },
+                    ["additionalProperties"] = false
+                }
+            };
+        }
+
         private JObject CallTool(JObject p)
         {
             string name = p == null ? null : (string)p["name"];
 
             Trace($"McpServer.CallTool name: {name}");
 
-            if (name != "set_led")
-                return ToolResult("Unknown tool: " + name, true);
+            if (name == "set_led")
+            {
+                return ExecuteSetLed(p);
+            }
+            else if (name == "animate_led")
+            {
+                return AnimateLed(p);
+            }
+            else if (name == "nusbio_connected")
+            {
+                return IsNusbioConnected(p);
+            }
+            else return ToolResult("Unknown tool: " + name, true);
+        }
 
+
+        private JObject IsNusbioConnected(JObject p)
+        {
+            try
+            {
+                var properties = _device.IsNusbioConnected();
+                return ToolResult($"Nusbio: {properties}", false);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("Device error: " + ex);
+                return ToolResult("Device error: " + ex.Message, true);
+            }
+        }
+
+        private JObject AnimateLed(JObject p)
+        {
+            try
+            {
+                _device.Animate();
+                return ToolResult("Animation executed.", false);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("Device error: " + ex);
+                return ToolResult("Device error: " + ex.Message, true);
+            }
+        }
+
+        private JObject ExecuteSetLed(JObject p)
+        {
             JToken indexToken = p["arguments"] == null ? null : p["arguments"]["index"];
             if (indexToken == null || indexToken.Type != JTokenType.Integer)
                 return ToolResult("Argument 'index' is required and must be an integer 0-7.", true);
-
 
             Trace($"McpServer.CallTool indexToken: {indexToken}");
 
@@ -175,7 +255,7 @@ namespace LedMcpServer
             try
             {
                 _device.SetLed((int)index, on);
-                return ToolResult("LED " + index + (on ? " turned on." : " turned off."), false);
+                return ToolResult($"LED {index} {(on ? "ON" : "OFF")}.", false);
             }
             catch (Exception ex)
             {

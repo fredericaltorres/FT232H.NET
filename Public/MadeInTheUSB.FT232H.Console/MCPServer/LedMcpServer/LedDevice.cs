@@ -11,12 +11,15 @@ namespace LedMcpServer
     public interface ILedDevice : IDisposable
     {
         void SetLed(int index, bool on);
+        void Animate();
+        string IsNusbioConnected();
     }
 
     /// <summary>No hardware: logs to stderr (stdout is reserved for MCP protocol messages).</summary>
     public sealed class SimulatedLedDevice : ILedDevice
     {
         public static SpiDevice __ft232hGpioSpiDevice = null;
+        public static string    __nusbioProperties = null;
 
         public static string Trace(string message, [CallerMemberName] string methodName = "")
         {
@@ -36,7 +39,9 @@ namespace LedMcpServer
                     parts = parts.Select(s => s.Trim()).ToList();
                     //System.Console.Clear();
                     Trace("Nusbio /2 - FT232H Library - MCP Server");
-                    Trace($"Detected:{Environment.NewLine}  {string.Join(Environment.NewLine + "  ", parts)}");
+
+                    __nusbioProperties = string.Join(Environment.NewLine + "  ", parts);
+                    Trace($"Detected:{Environment.NewLine}  {__nusbioProperties}");
 
                     var ft232hGpioSpiDevice = new SpiDevice(SpiClockSpeeds._10Mhz);
                     SimulatedLedDevice.__ft232hGpioSpiDevice = ft232hGpioSpiDevice;
@@ -66,22 +71,36 @@ namespace LedMcpServer
             }
             return false;
         }
+        
+        public string IsNusbioConnected()
+        {
+            InitializeNusbio();
+            return __nusbioProperties;
+        }
+
+        public void Animate()
+        {
+            InitializeNusbio();
+            Trace($"[nusbio] Animate");
+            for (var i = 0; i < 3; i++)
+            {
+                __ft232hGpioSpiDevice.GPIO.Animate();
+                System.Threading.Thread.Sleep(555);
+            }
+        }
 
         public void SetLed(int index, bool on)
+        {
+            InitializeNusbio();
+            Trace($"[nusbio] set_led({index}, {(on ? "on" : "off")})");
+            __ft232hGpioSpiDevice.GPIO.DigitalWrite(index, on ? PinState.High : PinState.Low);
+        }
+
+        private static void InitializeNusbio()
         {
             if (__ft232hGpioSpiDevice == null)
             {
                 InitNusbio();
-            }
-
-            if (__ft232hGpioSpiDevice != null)
-            {
-                Trace($"[nusbio] set_led({index}, {(on ? "on" : "off")})");
-                __ft232hGpioSpiDevice.GPIO.DigitalWrite(index, on ? PinState.High : PinState.Low);
-            }
-            else
-            {
-                Trace($"[nusbio][not_initialized] set_led({index}, {(on ? "on" : "off")}) -- ");
             }
         }
 

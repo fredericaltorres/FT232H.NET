@@ -31,6 +31,9 @@ Get-Content "$env:APPDATA\Claude\logs\mcp-server-led.log" -Tail 30 -ErrorAction 
 "--- mcp.log (led lines) ---"
 Select-String -Path "$env:APPDATA\Claude\logs\mcp.log" -Pattern "led" -ErrorAction SilentlyContinue | Select-Object -Last 15 | ForEach-Object { $_.Line }
 
+NUSBIO USB Device, Animate LED.
+NUSBIO USB Device, Run Initialization Sequence.
+NUSBIO USB Device, Init Sequence.
 
 NUSBIO USB Device, Turn on LED 0.
 Light the first LED.
@@ -41,6 +44,7 @@ Turn all led off.
 Using the syntax `Turn on LED 0` and `Turn off LED 0`. 
 using the led index 0 to 7, create a 10 step sequence that randomly turn on and off an led.
 then send the sequence to the NUSBIO USB Device.
+Then Turn all led off.
          */
 
         public static string Trace(string message, [CallerMemberName] string methodName = "")
