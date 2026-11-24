@@ -48,9 +48,10 @@ Set the LED at index 0.
         {
             try
             {
-                Trace($"Starting....  {Environment.CommandLine} ", null);
+                var led_debug = Environment.GetEnvironmentVariable("LED_DEBUG");
+                Trace($"Starting....  led_debug: {led_debug}, {Environment.CommandLine} ", null);
 
-                if (DEBUG && Environment.GetEnvironmentVariable("LED_DEBUG") == "1")
+                if (DEBUG && led_debug == "1")
                 {
                     Trace("Waiting to be attached");
                     while (!System.Diagnostics.Debugger.IsAttached)
@@ -60,14 +61,12 @@ Set the LED at index 0.
                     System.Diagnostics.Debugger.Break();
                 }
 
-                var nusbioInitialized = InitNusbio();
-
                 // stdout carries ONLY protocol messages; UTF-8 without BOM.
                 var utf8 = new UTF8Encoding(false);
                 var input = new StreamReader(Console.OpenStandardInput(), utf8);
                 var output = new StreamWriter(Console.OpenStandardOutput(), utf8) { AutoFlush = true, NewLine = "\n" };
 
-                Trace($"Nusbio /2 - FT232H Library - MCP Server - RUNNING - nusbioInitialized: {nusbioInitialized}");
+                Trace($"Nusbio /2 - FT232H Library - MCP Server - RUNNING");
                 new McpServer(input, output).Run();
             }
             catch (Exception ex)
@@ -77,47 +76,5 @@ Set the LED at index 0.
             return 0;
         }
 
-        private static bool InitNusbio()
-        {
-            try
-            {
-                Trace("Detecting...");
-                var ft232Device = FT232HDetector.Detect();
-                if (ft232Device.Ok)
-                {
-                    var parts = ft232Device.ToString().Split(',').ToList();
-                    parts = parts.Select(s => s.Trim()).ToList();
-                    //System.Console.Clear();
-                    Trace("Nusbio /2 - FT232H Library - MCP Server");
-                    Trace($"Detected:{Environment.NewLine}  {string.Join(Environment.NewLine + "  ", parts)}");
-
-                    var ft232hGpioSpiDevice = new SpiDevice(SpiClockSpeeds._10Mhz);
-                    SimulatedLedDevice.__ft232hGpioSpiDevice = ft232hGpioSpiDevice;
-
-                    ft232hGpioSpiDevice.Log = true;
-                    var spi = ft232hGpioSpiDevice.SPI;
-                    var gpios = ft232hGpioSpiDevice.GPIO;
-                    gpios.Animate();
-
-                    gpios.SetPinMode(0, PinMode.Output);
-                    gpios.SetPinMode(1, PinMode.Output);
-                    gpios.SetPinMode(2, PinMode.Output);
-                    gpios.SetPinMode(3, PinMode.Output);
-                    gpios.SetPinMode(4, PinMode.Output);
-                    gpios.SetPinMode(5, PinMode.Output);
-                    gpios.SetPinMode(6, PinMode.Output);
-                    gpios.SetPinMode(7, PinMode.Output);
-                    return true;
-                }
-                else
-                {
-                }
-            }
-            catch(Exception ex)
-            {
-                Trace($"Nusbio init failed {ex}");
-            }
-            return false;
-        }
     }
 }
